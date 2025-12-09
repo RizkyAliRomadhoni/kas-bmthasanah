@@ -3,20 +3,14 @@
         <x-app.navbar />
         <div class="px-5 py-4 container-fluid">
             <div class="mt-4 row">
-                <div class="col-12">
-                    <div class="alert alert-dark text-sm" role="alert">
-                        <strong>Add, Edit, Delete features are not functional!</strong> This is a
-                        <strong>PRO</strong> feature ! Click <a href="#" target="_blank" class="text-bold">here</a>
-                        to see the <strong>PRO</strong> product!
-                    </div>
+                
                     <div class="card">
                         <div class="pb-0 card-header">
                             <div class="row">
                                 <div class="col-6">
-                                    <h5 class="">User Management</h5>
+                                    <h5 class="">User Activity</h5>
                                     <p class="mb-0 text-sm">
-                                        Here you can manage users.
-                                    </p>
+                                        Monitoring your Activitiy!!
                                 </div>
                                 <div class="col-6 text-end">
                                     <a href="#" class="btn btn-dark btn-primary">

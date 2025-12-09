@@ -2,7 +2,7 @@
     <div class="container py-2">
         <nav aria-label="breadcrumb">
             <div class="d-flex align-items-center">
-                <span class="px-3 font-weight-bold text-lg text-white me-4">Corporate UI</span>
+                <span class="px-3 font-weight-bold text-lg text-white me-4">ENGLIFY</span>
             </div>
         </nav>
         <ul class="navbar-nav d-none d-lg-flex">
@@ -13,17 +13,17 @@
             </li>
             <li class="nav-item px-3 py-3 border-radius-sm  d-flex align-items-center">
                 <a href="{{ route('tables') }}" class="nav-link text-white p-0">
-                    Tables
+                    Kursus & Jadwal
                 </a>
             </li>
             <li class="nav-item px-3 py-3 border-radius-sm bg-slate-800 d-flex align-items-center">
                 <a href="{{ route('wallet') }}" class="nav-link text-white p-0">
-                    Wallet
+                    Latihan Soal
                 </a>
             </li>
             <li class="nav-item px-3 py-3 border-radius-sm  d-flex align-items-center">
                 <a href="{{ route('RTL') }}" class="nav-link text-white p-0">
-                    RTL
+                    Progres Belajar
                 </a>
             </li>
         </ul>
