@@ -1,6 +1,5 @@
 {{-- resources/views/dashboard.blade.php --}}
 <x-app-layout>
-     <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg bg-gray-50">
   {{-- Top-level layout jadi flex column supaya footer bisa berada di bawah --}}
   <div class="min-h-screen flex flex-col bg-gray-50">
     <x-slot name="header"></x-slot>
