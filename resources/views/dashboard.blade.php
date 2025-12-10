@@ -121,7 +121,7 @@
     </div>
 
     {{-- main content (flex-1 so footer stays bottom). Add content-with-sidebar so desktop reserves space --}}
-    <main class="flex-1 content-with-sidebar container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+    <main class="flex-1 content-with-sidebar container mx-auto px-4 sm:px-6 py-6 sm:py-8 position-relative max-height-vh-100 h-100 border-radius-lg bg-gray-50">
 
       {{-- HERO --}}
       <section class="hero-bg rounded-2xl overflow-hidden relative">
