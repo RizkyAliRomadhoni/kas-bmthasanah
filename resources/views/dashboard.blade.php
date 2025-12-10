@@ -102,6 +102,7 @@
         .hero-title { font-size: 1.15rem; }
       }
     </style>
+    <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg bg-gray-50">
 
     {{-- overlay for sidebar (will be toggled by JS) --}}
     <div class="sidebar-overlay hidden"></div>
@@ -478,4 +479,5 @@
       });
     })();
   </script>
+  </main>
 </x-app-layout>
