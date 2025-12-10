@@ -104,7 +104,7 @@
       }
     </style>
     {{-- overlay for sidebar (will be toggled by JS) --}}
-    <div class="sidebar-overlay hidden"></div>
+    <div class="sidebar-overlay"></div>
 
     {{-- TOP: hamburger (mobile) + optional space for layout --}}
     <div class="w-full bg-transparent p-4 flex items-center justify-between lg:hidden">
