@@ -4,7 +4,7 @@
   <div class="min-h-screen flex flex-col bg-gray-50">
     <x-slot name="header"></x-slot>
 
-    {{-- Jika layout global sudah memuat Tailwind/FontAwesome, bisa dihapus; tetap ku-include aman --}}
+    {{-- Assets (hapus jika sudah dimuat di layout global) --}}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -21,7 +21,7 @@
 
       /* Glass card */
       .glass {
-        background: rgba(255,255,255,0.7);
+        background: rgba(255,255,255,0.75);
         box-shadow: 0 10px 30px rgba(2,6,23,0.08);
         border: 1px solid rgba(30,58,138,0.06);
         backdrop-filter: blur(8px);
@@ -46,13 +46,83 @@
       .muted { color: var(--muted); }
       .label { font-size: .82rem; color: var(--muted); }
 
-      /* Small fix: make canvas responsive inside its container (fallback for older browsers) */
+      /* Chart responsive fallback */
       .chart-wrapper { width: 100%; }
       .chart-canvas { width: 100% !important; height: auto !important; display:block; }
+
+      /* SIDEBAR: off-canvas basic behavior (applies only if your layout includes .sidebar element) */
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 260px;
+        transform: translateX(0);
+        transition: transform .28s ease;
+        z-index: 50;
+      }
+
+      /* When hidden on mobile */
+      @media (max-width: 1023px) {
+        .sidebar { transform: translateX(-100%); }
+        body.sidebar-open .sidebar { transform: translateX(0); }
+        /* dim overlay when sidebar open */
+        .sidebar-overlay { display: none; }
+        body.sidebar-open .sidebar-overlay { display: block; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:40; }
+        /* main content shift when sidebar open on mobile is handled by overlay only */
+      }
+
+      /* On desktop, reserve space so content won't be covered if sidebar exists */
+      @media (min-width: 1024px) {
+        .content-with-sidebar { margin-left: 260px; } /* match .sidebar width */
+      }
+
+      /* Mobile cards 2 per row, small spacing */
+      .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0,1fr));
+        gap: 0.75rem;
+      }
+      @media (min-width: 640px) { /* sm */
+        .cards-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      }
+      @media (min-width: 1024px) { /* lg */
+        .cards-grid { grid-template-columns: repeat(4, minmax(0,1fr)); }
+      }
+
+      /* Ensure table wrapper doesn't create extra horizontal overflow */
+      .table-wrapper { overflow-x:auto; -webkit-overflow-scrolling: touch; }
+
+      /* Minor utility: hide the hamburger on desktop */
+      .sidebar-toggle { display: inline-flex; }
+      @media (min-width: 1024px) { .sidebar-toggle { display: none; } }
+
+      /* Make hero text slightly smaller on very small screens */
+      @media (max-width: 420px) {
+        .hero-title { font-size: 1.15rem; }
+      }
     </style>
 
-    {{-- main content (flex-1 so footer stays bottom) --}}
-    <main class="flex-1 container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+    {{-- overlay for sidebar (will be toggled by JS) --}}
+    <div class="sidebar-overlay hidden"></div>
+
+    {{-- TOP: hamburger (mobile) + optional space for layout --}}
+    <div class="w-full bg-transparent p-4 flex items-center justify-between lg:hidden">
+      <button id="sidebarToggle" aria-label="Toggle sidebar" class="sidebar-toggle inline-flex items-center gap-2 px-3 py-2 rounded-md bg-white/90 shadow-sm">
+        <i class="fa-solid fa-bars"></i>
+        <span class="text-sm font-medium">Menu</span>
+      </button>
+
+      {{-- optional quick actions collapse on mobile --}}
+      <div class="flex items-center gap-2">
+        <a href="{{ route('farm.index') }}" class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded bg-[var(--primary)] text-white text-sm">
+          <i class="fa-solid fa-warehouse"></i>
+        </a>
+      </div>
+    </div>
+
+    {{-- main content (flex-1 so footer stays bottom). Add content-with-sidebar so desktop reserves space --}}
+    <main class="flex-1 content-with-sidebar container mx-auto px-4 sm:px-6 py-6 sm:py-8">
 
       {{-- HERO --}}
       <section class="hero-bg rounded-2xl overflow-hidden relative">
@@ -62,7 +132,7 @@
           {{-- MOBILE-FIRST: stack kolom jadi column di mobile, row di md+ --}}
           <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div class="max-w-2xl">
-              <h1 class="text-2xl md:text-3xl font-extrabold text-[var(--text)] leading-tight">
+              <h1 class="hero-title text-2xl md:text-3xl font-extrabold text-[var(--text)] leading-tight">
                 Dashboard Ringkas — Smart Farm & Finance
               </h1>
               <p class="mt-2 text-sm md:text-base muted max-w-xl">
@@ -92,7 +162,7 @@
                 <i class="fa-solid fa-warehouse"></i> Kelola Farm
               </a>
 
-              <a href="{{ route('kas.create') }}" class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-[var(--secondary)] bg-white/90 cta-glow w-full">
+              <a href="{{ route('kas.create') }}" class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-[var(--secondary)] bg-white/90 border border-transparent cta-glow w-full">
                 <i class="fa-solid fa-plus"></i> Tambah Transaksi
               </a>
 
@@ -118,8 +188,8 @@
         </div>
       </section>
 
-      {{-- SUMMARY CARDS --}}
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+      {{-- SUMMARY CARDS: mobile shows 2 cards per row via .cards-grid --}}
+      <div class="cards-grid mt-6">
         {{-- Keep structure, ensure padding and wrapping OK --}}
         <div class="glass rounded-xl p-4 card-hover">
           <div class="flex items-start justify-between">
@@ -187,7 +257,7 @@
           {{-- Responsive chart container: parent defines height on breakpoints --}}
           <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="flex items-center justify-center chart-wrapper">
-              {{-- set fixed height on small screens, taller on md+ --}}
+              {{-- set responsive height with utility classes --}}
               <div class="w-full max-w-[420px]">
                 <canvas id="miniSummaryChart" class="chart-canvas w-full h-56 md:h-60"></canvas>
               </div>
@@ -256,7 +326,7 @@
           </div>
 
           {{-- FIX: horizontal scroll pada mobile --}}
-          <div class="overflow-x-auto -mx-4 px-4">
+          <div class="table-wrapper -mx-4 px-4">
             <table class="min-w-full text-left text-sm">
               <thead class="text-xs uppercase text-muted">
                 <tr>
@@ -324,9 +394,33 @@
     </footer>
   </div>
 
-  {{-- SCRIPTS: Charts & small interactions --}}
+  {{-- SCRIPTS: Charts, sidebar toggle & small interactions --}}
   <script>
     (function(){
+      // Sidebar toggle (works only if layout contains .sidebar element)
+      const body = document.body;
+      const toggle = document.getElementById('sidebarToggle');
+      const overlay = document.querySelector('.sidebar-overlay');
+
+      function setSidebarOpen(open) {
+        if(open) {
+          body.classList.add('sidebar-open');
+        } else {
+          body.classList.remove('sidebar-open');
+        }
+      }
+
+      if(toggle){
+        toggle.addEventListener('click', () => {
+          const open = body.classList.contains('sidebar-open');
+          setSidebarOpen(!open);
+        });
+      }
+
+      if(overlay){
+        overlay.addEventListener('click', () => setSidebarOpen(false));
+      }
+
       // Finance doughnut
       const totalIn = Number(@json($totalKasMasuk ?? $totalIn ?? 0));
       const totalOut = Number(@json($totalKasKeluar ?? $totalOut ?? 0));
@@ -369,6 +463,18 @@
           el.style.opacity = 1;
           el.style.transform = 'translateY(0)';
         }, 80 * idx);
+      });
+
+      // Make chart resize properly on container change
+      window.addEventListener('resize', () => {
+        if(window.Chart && Chart.instances) {
+          // Trigger update on all charts (Chart.js v4 stores instances differently; this is safe-ish)
+          // We attempt to update known chart by id
+          try {
+            const ch = Chart.getChart('miniSummaryChart');
+            if(ch) ch.resize();
+          } catch(e){}
+        }
       });
     })();
   </script>
