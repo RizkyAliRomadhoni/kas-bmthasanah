@@ -1,5 +1,6 @@
 {{-- resources/views/dashboard.blade.php --}}
 <x-app-layout>
+     <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg bg-gray-50">
   {{-- Top-level layout jadi flex column supaya footer bisa berada di bawah --}}
   <div class="min-h-screen flex flex-col bg-gray-50">
     <x-slot name="header"></x-slot>
@@ -103,7 +104,7 @@
       }
     </style>
     {{-- overlay for sidebar (will be toggled by JS) --}}
-    <div class="sidebar-overlay"></div>
+    <div class="sidebar-overlay hidden"></div>
 
     {{-- TOP: hamburger (mobile) + optional space for layout --}}
     <div class="w-full bg-transparent p-4 flex items-center justify-between lg:hidden">
@@ -121,7 +122,7 @@
     </div>
 
     {{-- main content (flex-1 so footer stays bottom). Add content-with-sidebar so desktop reserves space --}}
-    <main class="flex-1 content-with-sidebar container mx-auto px-4 sm:px-6 py-6 sm:py-8 position-relative max-height-vh-100 h-100 border-radius-lg bg-gray-50">
+    <main class="flex-1 content-with-sidebar container mx-auto px-4 sm:px-6 py-6 sm:py-8">
 
       {{-- HERO --}}
       <section class="hero-bg rounded-2xl overflow-hidden relative">
