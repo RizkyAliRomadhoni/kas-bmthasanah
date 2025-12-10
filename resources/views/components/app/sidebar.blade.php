@@ -1,4 +1,5 @@
-<aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 bg-slate-900 fixed-start"
+<!-- Tempelkan kode lengkap sidebar.blade.php Anda di sini -->
+<aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 bg-slate-900 fixed-start w-64"
        id="sidenav-main">
 
     {{-- SIDENAV HEADER --}}
@@ -180,11 +181,18 @@ document.addEventListener("DOMContentLoaded", function () {
 /* MOBILE BEHAVIOR */
 @media (max-width: 1199px) {
     #sidenav-main {
+        width: 260px !important;
         transform: translateX(-100%);
         position: fixed !important;
         height: 100vh !important;
         top: 0;
+        left: 0;
+        background: #0f172a !important;
     }
+    #sidenav-main.mobile-open {
+        transform: translateX(0);
+    }
+}
     #sidenav-main.mobile-open {
         transform: translateX(0);
     }
