@@ -110,40 +110,9 @@
     {{-- overlay for sidebar (will be toggled by JS) --}}
     <div class="sidebar-overlay hidden"></div>
 
-    {{-- TOP: hamburger (mobile) + NAVBAR RESPONSIVE --}}
-    <nav class="w-full bg-white shadow-sm lg:hidden px-4 py-4 mb-2 rounded-lg flex flex-col gap-3">
-  <div class="font-bold text-gray-800 text-center text-lg">MENU UTAMA</div>
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
-    <a href="{{ route('farm.index') }}" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--primary)] text-white text-sm font-semibold">
-      <i class="fa-solid fa-warehouse"></i> Kelola Farm
-    </a>
-    <a href="{{ route('kas.create') }}" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-[var(--secondary)] border text-sm font-semibold">
-      <i class="fa-solid fa-plus"></i> Tambah Transaksi
-    </a>
-    <a href="{{ route('kas.index') }}" class="flex items-center gap-2 px-4 py-2 rounded-lg border bg-white text-sm font-semibold">
-      <i class="fa-solid fa-file-invoice-dollar"></i> Laporan Keuangan
-    </a>
-  </div>
-</nav>
 
     {{-- TOP: hamburger (mobile) + optional space for layout --}}
     
-
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
-    <a href="{{ route('farm.index') }}" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--primary)] text-white text-sm font-semibold">
-      <i class="fa-solid fa-warehouse"></i> Kelola Farm
-    </a>
-
-    <a href="{{ route('kas.create') }}" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-[var(--secondary)] border text-sm font-semibold">
-      <i class="fa-solid fa-plus"></i> Tambah Transaksi
-    </a>
-
-    <a href="{{ route('kas.index') }}" class="flex items-center gap-2 px-4 py-2 rounded-lg border bg-white text-sm font-semibold">
-      <i class="fa-solid fa-file-invoice-dollar"></i> Laporan Keuangan
-    </a>
-  </div>
-</div>
-    </div>
 
     {{-- main content (flex-1 so footer stays bottom). Add content-with-sidebar so desktop reserves space --}}
     <main class="flex-1 content-with-sidebar container mx-auto px-4 sm:px-6 py-6 sm:py-8">
