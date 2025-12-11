@@ -1,6 +1,48 @@
 {{-- resources/views/dashboard.blade.php --}}
 <x-app-layout>
-     <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg bg-gray-50">
+     <main class="main-content position-relative max-height-vh-100 h-100">
+
+    <!-- MOBILE MENU - Always visible on mobile -->
+    <nav class="block lg:hidden w-full bg-slate-900 text-white py-3 px-4 shadow-md">
+        <ul class="grid grid-cols-1 gap-3">
+            <li>
+                <a href="{{ route('dashboard') }}" class="flex items-center gap-2 py-2 px-3 rounded-lg bg-slate-800">
+                    <i class="fa fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{{ route('kas.index') }}" class="flex items-center gap-2 py-2 px-3 rounded-lg bg-slate-800">
+                    <i class="fa fa-file-invoice"></i>
+                    <span>Laporan & Input Kas</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{{ route('neraca.index') }}" class="flex items-center gap-2 py-2 px-3 rounded-lg bg-slate-800">
+                    <i class="fa fa-balance-scale"></i>
+                    <span>Laporan Neraca</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{{ route('aset.index') }}" class="flex items-center gap-2 py-2 px-3 rounded-lg bg-slate-800">
+                    <i class="fa fa-box"></i>
+                    <span>Data Aset</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{{ route('farm.index') }}" class="flex items-center gap-2 py-2 px-3 rounded-lg bg-slate-800">
+                    <i class="fa fa-hippo"></i>
+                    <span>BMT Hasanah Farm</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+
   {{-- Top-level layout jadi flex column supaya footer bisa berada di bawah --}}
   <div class="min-h-screen flex flex-col bg-gray-50">
     <x-slot name="header"></x-slot>
