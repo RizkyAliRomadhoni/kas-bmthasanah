@@ -106,6 +106,14 @@
     {{-- overlay for sidebar (will be toggled by JS) --}}
     <div class="sidebar-overlay hidden"></div>
 
+    {{-- TOP: hamburger (mobile) + NAVBAR RESPONSIVE --}}
+    <nav class="w-full bg-white shadow-sm lg:hidden flex items-center justify-between px-4 py-3 mb-2 rounded-lg">
+      <div class="font-bold text-gray-800">Smart Farm</div>
+      <button id="sidebarToggleMobile" class="px-3 py-2 rounded-md bg-gray-100">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </nav>
+
     {{-- TOP: hamburger (mobile) + optional space for layout --}}
     <div class="w-full bg-transparent p-4 flex items-center justify-between lg:hidden">
       <button id="sidebarToggle" aria-label="Toggle sidebar" class="sidebar-toggle inline-flex items-center gap-2 px-3 py-2 rounded-md bg-white/90 shadow-sm">
