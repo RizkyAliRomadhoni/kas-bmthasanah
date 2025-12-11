@@ -133,7 +133,7 @@
           <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div class="max-w-2xl">
               <h1 class="hero-title text-2xl md:text-3xl font-extrabold text-[var(--text)] leading-tight">
-                Dashboard Ringkas — Smart Farm & Finance
+                Dashboard — Smart Farm & Finance
               </h1>
               <p class="mt-2 text-sm md:text-base muted max-w-xl">
                 Tampilan ringkasan operasional peternakan & keuangan terintegrasi. Gunakan dashboard ini untuk memantau pemasukan, pengeluaran, kesehatan hewan, dan konsumsi pakan — semua dalam satu layar.
