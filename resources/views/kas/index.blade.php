@@ -1,56 +1,73 @@
-<!-- Responsive Kas Index Page (mirip style dashboard) -->
 <x-app-layout>
-    <style>
-        /* Soft UI + Responsive */
-        .card-soft { border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        .btn-soft { border-radius: 12px; font-weight: 600; }
-        .table td, .table th { vertical-align: middle; }
-        .table-soft { border-radius: 16px; overflow: hidden; }
 
-        /* Mobile Adjustments */
-        @media (max-width: 768px) {
-            .mobile-card { padding: 15px !important; }
-            .mobile-title { font-size: 18px !important; }
-            
-            .grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        }
-    </style>
+{{-- ========================= --}}
+{{--  STYLE tambahan --}}
+{{-- ========================= --}}
+<style>
+    .glass-card {
+        backdrop-filter: blur(12px);
+        background: rgba(255, 255, 255, 0.75);
+    }
+</style>
 
-    <main class="main-content position-relative max-height-vh-100 h-100 bg-gray-50 p-4">
+{{-- ========================= --}}
+{{--  MOBILE HEADER --}}
+{{-- ========================= --}}
+<div class="lg:hidden w-full bg-slate-900 text-white py-4 px-5 flex items-center justify-between shadow-md">
+    <h1 class="text-lg font-bold">💰 Data Kas Utama</h1>
 
-        <!-- MOBILE MENU (OTOMATIS) -->
-        <div class="d-lg-none mb-4">
-            <div class="card card-soft p-3">
-                <div class="grid-mobile">
-                    <a href="{{ route('farm.index') }}" class="btn btn-primary btn-soft">Kelola Farm</a>
-                    <a href="{{ route('kas.create') }}" class="btn btn-success btn-soft">Tambah Transaksi</a>
-                    <a href="{{ route('kas.laporan') }}" class="btn btn-info btn-soft">Laporan</a>
-                </div>
-            </div>
-        </div>
+    <button id="mobileMenuBtn" class="text-white text-2xl">
+        <i class="fas fa-bars"></i>
+    </button>
+</div>
 
-        <!-- HEADER + BUTTON TAMBAH -->
-        <div class="card card-soft p-4 mb-4">
-            <div class="d-flex justify-content-between align-items-center flex-wrap">
-                <h4 class="fw-bold text-primary mobile-title">💰 Data Kas Utama</h4>
+{{-- BACKGROUND --}}
+<main class="main-content max-height-vh-100 h-100 bg-gray-100">
 
-                <a href="{{ route('kas.create') }}" class="btn btn-light text-primary fw-bold shadow-sm btn-soft mt-2 mt-lg-0">
+    {{-- ========================= --}}
+    {{--  WRAPPER --}}
+    {{-- ========================= --}}
+    <div class="container-fluid px-4 py-6">
+
+        {{-- ========================= --}}
+        {{--  CARD HEADER --}}
+        {{-- ========================= --}}
+        <div class="glass-card shadow-xl border border-gray-200 rounded-3xl p-5 mb-6">
+
+            <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+
+                <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                    <span>💰</span> Data Kas Utama
+                </h2>
+
+                <a href="{{ route('kas.create') }}"
+                   class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow">
                     + Tambah Transaksi
                 </a>
+
             </div>
         </div>
 
-        <!-- FILTER -->
-        <div class="card card-soft p-4 mb-4 mobile-card">
-            <form method="GET" action="{{ route('kas.index') }}" class="row g-3">
-                <div class="col-md-4 col-6">
-                    <label class="fw-semibold">📅 Bulan</label>
-                    <input type="month" name="bulan" class="form-control shadow-sm" value="{{ request('bulan') }}">
+        {{-- ========================= --}}
+        {{--  FILTER --}}
+        {{-- ========================= --}}
+        <div class="glass-card shadow-lg border border-gray-200 rounded-3xl p-5 mb-6">
+
+            <form action="{{ route('kas.index') }}" method="GET"
+                class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+                {{-- BULAN --}}
+                <div>
+                    <label class="font-semibold text-slate-700">📅 Pilih Bulan</label>
+                    <input type="month" name="bulan" value="{{ request('bulan') }}"
+                        class="mt-1 w-full rounded-xl border-gray-300 shadow-sm">
                 </div>
 
-                <div class="col-md-4 col-6">
-                    <label class="fw-semibold">💼 Akun</label>
-                    <select name="akun" class="form-select shadow-sm">
+                {{-- AKUN --}}
+                <div>
+                    <label class="font-semibold text-slate-700">💼 Akun</label>
+                    <select name="akun"
+                        class="mt-1 w-full rounded-xl border-gray-300 shadow-sm">
                         <option value="">Semua Akun</option>
                         @foreach($akunList as $akun)
                             <option value="{{ $akun }}" {{ request('akun') == $akun ? 'selected' : '' }}>
@@ -60,98 +77,188 @@
                     </select>
                 </div>
 
-                <div class="col-md-4 col-12 d-flex align-items-end">
-                    <button class="btn btn-primary w-100 btn-soft shadow-sm">Tampilkan</button>
+                {{-- TAMPILKAN --}}
+                <div class="flex items-end">
+                    <button type="submit"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl shadow">
+                        <i class="fas fa-eye me-1"></i> Tampilkan
+                    </button>
                 </div>
 
-                <div class="col-12 mt-2">
-                    <a href="{{ route('kas.exportPdf', request()->query()) }}" class="btn btn-danger btn-soft shadow-sm">
-                        Export PDF
+                {{-- EXPORT PDF --}}
+                <div class="flex items-end">
+                    <a href="{{ route('kas.exportPdf', request()->query()) }}"
+                        class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-xl shadow">
+                        <i class="fas fa-file-pdf"></i> Export PDF
                     </a>
                 </div>
+
             </form>
         </div>
 
-        <!-- RINGKASAN -->
-        <div class="card card-soft p-4 mb-4">
-            <h5 class="fw-bold text-primary mb-3">📊 Ringkasan Transaksi</h5>
+        {{-- ========================= --}}
+        {{--  RINGKASAN --}}
+        {{-- ========================= --}}
+        <div class="glass-card shadow-lg border border-gray-200 rounded-3xl p-5 mb-6">
 
-            <div class="row text-center g-3">
-                <div class="col-md-4 col-12">
-                    <div class="p-3 bg-success bg-opacity-10 rounded-3 shadow-sm">
-                        <h6 class="fw-bold text-success">Pemasukan</h6>
-                        <h4 class="fw-bold">Rp{{ number_format($totalMasuk,0,',','.') }}</h4>
-                    </div>
+            <h4 class="font-bold text-slate-700 mb-4">
+                📊 Ringkasan Transaksi
+                @if(request('bulan'))
+                    Bulan {{ \Carbon\Carbon::parse(request('bulan'))->translatedFormat('F Y') }}
+                @endif
+                @if(request('akun'))
+                    — Akun: {{ request('akun') }}
+                @endif
+            </h4>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                {{-- PEMASUKAN --}}
+                <div class="p-5 rounded-2xl bg-green-100 shadow text-center">
+                    <h6 class="text-green-700 font-bold">Pemasukan</h6>
+                    <p class="text-2xl font-extrabold text-green-900">
+                        Rp{{ number_format($totalMasuk, 0, ',', '.') }}
+                    </p>
                 </div>
 
-                <div class="col-md-4 col-12">
-                    <div class="p-3 bg-danger bg-opacity-10 rounded-3 shadow-sm">
-                        <h6 class="fw-bold text-danger">Pengeluaran</h6>
-                        <h4 class="fw-bold">Rp{{ number_format($totalKeluar,0,',','.') }}</h4>
-                    </div>
+                {{-- PENGELUARAN --}}
+                <div class="p-5 rounded-2xl bg-red-100 shadow text-center">
+                    <h6 class="text-red-700 font-bold">Pengeluaran</h6>
+                    <p class="text-2xl font-extrabold text-red-900">
+                        Rp{{ number_format($totalKeluar, 0, ',', '.') }}
+                    </p>
                 </div>
 
-                <div class="col-md-4 col-12">
-                    <div class="p-3 bg-primary bg-opacity-10 rounded-3 shadow-sm">
-                        <h6 class="fw-bold text-primary">Saldo Akhir</h6>
-                        <h4 class="fw-bold">Rp{{ number_format($saldoRingkasan,0,',','.') }}</h4>
-                    </div>
+                {{-- SALDO --}}
+                <div class="p-5 rounded-2xl bg-blue-100 shadow text-center">
+                    <h6 class="text-blue-700 font-bold">Saldo Akhir</h6>
+                    <p class="text-2xl font-extrabold text-blue-900">
+                        Rp{{ number_format($saldoRingkasan, 0, ',', '.') }}
+                    </p>
                 </div>
+
             </div>
         </div>
 
-        <!-- TABEL -->
-        <div class="card card-soft p-3 table-soft">
-            <div class="table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead class="bg-primary text-white">
+        {{-- ========================= --}}
+        {{--  TABLE --}}
+        {{-- ========================= --}}
+        <div class="glass-card shadow-xl border border-gray-200 rounded-3xl p-5">
+
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse text-sm">
+
+                    <thead class="bg-blue-600 text-white">
                         <tr>
-                            <th>No</th>
-                            <th>Tanggal</th>
-                            <th>Keterangan</th>
-                            <th>Jenis</th>
-                            <th>Jumlah</th>
-                            <th>Akun</th>
-                            <th>Saldo</th>
-                            <th>Aksi</th>
+                            <th class="p-3 text-center">No</th>
+                            <th class="p-3 text-left">Tanggal</th>
+                            <th class="p-3 text-left">Keterangan</th>
+                            <th class="p-3">Jenis</th>
+                            <th class="p-3">Jumlah</th>
+                            <th class="p-3">Akun</th>
+                            <th class="p-3">Saldo</th>
+                            <th class="p-3 text-center">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @foreach($kas as $i => $item)
+
+                    <tbody class="divide-y">
+
+                        @forelse($kas as $i => $item)
+
                             @php
                                 $isMasuk = strtolower($item->jenis_transaksi) === 'masuk';
+                                $jumlahClass = $isMasuk ? 'text-green-600' : 'text-red-600';
+                                $saldoClass = $item->saldo >= 0 ? 'text-green-600' : 'text-red-600';
                             @endphp
 
-                            <tr>
-                                <td>{{ $i+1 }}</td>
-                                <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
-                                <td style="white-space: normal; max-width: 200px;">{{ $item->keterangan }}</td>
-                                <td class="{{ $isMasuk ? 'text-success' : 'text-danger' }} fw-bold">{{ ucfirst($item->jenis_transaksi) }}</td>
-                                <td class="{{ $isMasuk ? 'text-success' : 'text-danger' }} fw-bold">Rp{{ number_format($item->jumlah,0,',','.') }}</td>
-                                <td>{{ $item->akun ?? '-' }}</td>
-                                <td class="fw-bold {{ $item->saldo >= 0 ? 'text-success' : 'text-danger' }}">Rp{{ number_format($item->saldo,0,',','.') }}</td>
+                            <tr class="bg-white hover:bg-blue-50">
+                                <td class="p-3 text-center">{{ $i + 1 }}</td>
 
-                                <td>
-                                    <a href="{{ route('kas.show', $item->id) }}" class="btn btn-info btn-sm btn-soft">Detail</a>
-                                    <a href="{{ route('kas.edit', $item->id) }}" class="btn btn-warning btn-sm btn-soft">Edit</a>
-                                    <form method="POST" action="{{ route('kas.destroy',$item->id) }}" class="d-inline">
+                                <td class="p-3">
+                                    {{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}
+                                </td>
+
+                                <td class="p-3 max-w-xs whitespace-normal">
+                                    {{ $item->keterangan }}
+                                </td>
+
+                                <td class="p-3 font-bold {{ $jumlahClass }}">
+                                    {{ ucfirst($item->jenis_transaksi) }}
+                                </td>
+
+                                <td class="p-3 font-bold {{ $jumlahClass }}">
+                                    Rp{{ number_format($item->jumlah, 0, ',', '.') }}
+                                </td>
+
+                                <td class="p-3">{{ $item->akun ?? '-' }}</td>
+
+                                <td class="p-3 font-bold {{ $saldoClass }}">
+                                    Rp{{ number_format($item->saldo, 0, ',', '.') }}
+                                </td>
+
+                                <td class="p-3 text-center">
+
+                                    <a href="{{ route('kas.show', $item->id) }}"
+                                       class="px-3 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs">
+                                        Detail
+                                    </a>
+
+                                    <a href="{{ route('kas.edit', $item->id) }}"
+                                       class="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-xs">
+                                        Edit
+                                    </a>
+
+                                    <form action="{{ route('kas.destroy', $item->id) }}" method="POST"
+                                          class="inline">
                                         @csrf @method('DELETE')
-                                        <button onclick="return confirm('Hapus data ini?')" class="btn btn-danger btn-sm btn-soft">Hapus</button>
+                                        <button onclick="return confirm('Hapus data ini?')"
+                                                class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs">
+                                            Hapus
+                                        </button>
                                     </form>
+
                                 </td>
                             </tr>
-                        @endforeach
+
+                        @empty
+                            <tr>
+                                <td colspan="8" class="p-5 text-center text-gray-500">
+                                    Belum ada data kas.
+                                </td>
+                            </tr>
+                        @endforelse
+
                     </tbody>
                 </table>
             </div>
+
+            {{-- TOTAL SALDO --}}
+            <p class="mt-6 text-lg font-bold text-slate-800">
+                💵 Total Saldo Akhir: Rp{{ number_format($saldo, 0, ',', '.') }}
+            </p>
+
         </div>
 
-        <!-- FOOTER SALDO -->
-        <div class="mt-4">
-            <h5 class="fw-bold">Total Saldo Akhir: Rp{{ number_format($saldo,0,',','.') }}</h5>
-
-            <a href="{{ route('kas.resetSaldo') }}" onclick="return confirm('Hitung ulang saldo dari awal?')" class="btn btn-danger btn-soft mt-2">Reset Saldo</a>
+        {{-- RESET SALDO --}}
+        <div class="mt-6">
+            <a href="{{ route('kas.resetSaldo') }}"
+               onclick="return confirm('Hitung ulang saldo dari awal?')"
+               class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl shadow">
+                Reset Saldo
+            </a>
         </div>
 
-    </main>
+    </div>
+
+</main>
+
+{{-- ========================= --}}
+{{--  JS MOBILE MENU --}}
+{{-- ========================= --}}
+<script>
+document.getElementById("mobileMenuBtn").addEventListener("click", () => {
+    document.getElementById("sidenav-main")?.classList.toggle("hidden");
+});
+</script>
+
 </x-app-layout>
