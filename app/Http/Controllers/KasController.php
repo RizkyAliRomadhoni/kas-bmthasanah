@@ -295,6 +295,90 @@ class KasController extends Controller
 
     return view('kas.show', compact('kas'));
 }
+/**
+ * =========================
+ * KELOLA AKUN (INLINE FORM)
+ * =========================
+ */
+public function kelolaAkun(Request $request)
+{
+    $akunFile = storage_path('app/akun.json');
+
+    if (!File::exists($akunFile)) {
+        File::put($akunFile, json_encode([
+            'Modal','Utang','Piutang','Kambing','Tabungan','Lainnya'
+        ], JSON_PRETTY_PRINT));
+    }
+
+    $akunList = json_decode(File::get($akunFile), true);
+
+    /**
+     * =====================
+     * TAMBAH AKUN
+     * =====================
+     */
+    if ($request->filled('tambah_akun')) {
+        $akunBaru = trim($request->tambah_akun);
+
+        if (!in_array($akunBaru, $akunList)) {
+            $akunList[] = $akunBaru;
+            File::put($akunFile, json_encode($akunList, JSON_PRETTY_PRINT));
+        }
+
+        return back()->with('success', 'Akun berhasil ditambahkan');
+    }
+
+    /**
+     * =====================
+     * HAPUS AKUN
+     * =====================
+     */
+    if ($request->filled('hapus_akun')) {
+        $akun = $request->hapus_akun;
+
+        // Cegah hapus jika sudah dipakai
+        $dipakai = Kas::where('akun', $akun)->exists();
+        if ($dipakai) {
+            return back()->with('error', 'Akun tidak bisa dihapus karena sudah digunakan transaksi');
+        }
+
+        $akunList = array_values(array_filter($akunList, function ($item) use ($akun) {
+            return $item !== $akun;
+        }));
+
+        File::put($akunFile, json_encode($akunList, JSON_PRETTY_PRINT));
+
+        return back()->with('success', 'Akun berhasil dihapus');
+    }
+
+    /**
+     * =====================
+     * GANTI NAMA AKUN
+     * =====================
+     */
+    if ($request->filled('akun_lama') && $request->filled('akun_baru')) {
+        $akunLama = $request->akun_lama;
+        $akunBaru = trim($request->akun_baru);
+
+        // Update di list akun
+        foreach ($akunList as &$item) {
+            if ($item === $akunLama) {
+                $item = $akunBaru;
+            }
+        }
+
+        File::put($akunFile, json_encode($akunList, JSON_PRETTY_PRINT));
+
+        // Update SEMUA transaksi yang pakai akun lama
+        Kas::where('akun', $akunLama)->update([
+            'akun' => $akunBaru
+        ]);
+
+        return back()->with('success', 'Nama akun berhasil diperbarui');
+    }
+
+    return back();
+}
 
 }
 

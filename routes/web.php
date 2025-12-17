@@ -151,4 +151,8 @@ Route::middleware(['auth'])->group(function () {
     // Weight & Feed
     Route::post('farm/{id}/weight', [FarmController::class,'updateWeight'])->name('farm.updateWeight');
     Route::post('farm/{id}/feed', [FarmController::class,'addFeed'])->name('farm.addFeed');
+    
 });
+
+
+
