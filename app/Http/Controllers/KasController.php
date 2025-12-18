@@ -277,7 +277,7 @@ class KasController extends Controller
         $totalKeluar = (clone $query)->where('jenis_transaksi', 'Keluar')->sum('jumlah');
         $saldoRingkasan = $totalMasuk - $totalKeluar;
 
-        $pdf = Pdf::loadView('kas.exportpdf', [
+        $pdf = Pdf::loadView('kas.export-pdf', [
             'kas' => $kas,
             'bulan' => $request->bulan,
             'akun' => $request->akun,
