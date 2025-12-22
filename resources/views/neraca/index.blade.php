@@ -1,78 +1,84 @@
 <x-app-layout>
-    <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg bg-gray-50">
-<div class="container mx-auto px-4 py-6">
+    <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg bg-light">
+        <div class="container-fluid py-4">
 
-<h2 class="text-xl font-bold mb-4">NERACA TAHUN {{ $tahun }}</h2>
+            {{-- HEADER --}}
+            <div class="card shadow border-0 mb-4 rounded-4">
+                <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold">📊 NERACA KEUANGAN ({{ $tahun }})</h5>
+                </div>
+            </div>
 
-<div class="overflow-x-auto">
-<table class="min-w-full border text-sm">
-<thead class="bg-gray-100 sticky top-0">
-<tr>
-<th class="border px-2 py-1 text-left">AKUN</th>
-<th class="border px-2 py-1 text-right">Saldo Awal</th>
-@foreach($bulanList as $b)
-<th class="border px-2 py-1 text-right">
-{{ \Carbon\Carbon::createFromFormat('Y-m',$b)->translatedFormat('M Y') }}
-</th>
-@endforeach
-</tr>
-</thead>
+            {{-- TABEL NERACA --}}
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body table-responsive" style="overflow-x:auto;">
+                    <table class="table table-bordered table-hover align-middle text-nowrap">
+                        <thead class="table-dark sticky-top">
+                            <tr>
+                                <th style="min-width:220px;">AKUN</th>
+                                @foreach ($bulanList as $bulan)
+                                    <th class="text-end">
+                                        {{ \Carbon\Carbon::createFromFormat('Y-m', $bulan)->format('M Y') }}
+                                    </th>
+                                @endforeach
+                            </tr>
+                        </thead>
 
-<tbody>
+                        <tbody>
+                            {{-- ================= AKTIVA ================= --}}
+                            <tr class="table-secondary fw-bold">
+                                <td colspan="{{ count($bulanList) + 1 }}">AKTIVA</td>
+                            </tr>
 
-{{-- ===================== AKTIVA ===================== --}}
-<tr class="bg-gray-200 font-bold">
-<td colspan="{{ 2 + count($bulanList) }}">AKTIVA</td>
-</tr>
+                            @foreach ($akunAktiva as $akun)
+                                <tr>
+                                    <td>{{ $akun }}</td>
+                                    @foreach ($bulanList as $bulan)
+                                        <td class="text-end">
+                                            Rp {{ number_format($saldo[$akun][$bulan] ?? 0, 0, ',', '.') }}
+                                        </td>
+                                    @endforeach
+                                </tr>
+                            @endforeach
 
-@foreach($akunAktiva as $akun)
-<tr>
-<td class="border px-2 py-1">{{ $akun }}</td>
-<td class="border px-2 py-1 text-right">
-{{ number_format($saldoAwal[$akun] ?? 0,0,',','.') }}
-</td>
-@foreach($bulanList as $b)
-<td class="border px-2 py-1 text-right">
-{{ number_format($saldo[$akun][$b] ?? 0,0,',','.') }}
-</td>
-@endforeach
-</tr>
-@endforeach
+                            <tr class="table-success fw-bold">
+                                <td>TOTAL AKTIVA</td>
+                                @foreach ($bulanList as $bulan)
+                                    <td class="text-end">
+                                        Rp {{ number_format($totalAktiva[$bulan] ?? 0, 0, ',', '.') }}
+                                    </td>
+                                @endforeach
+                            </tr>
 
-{{-- ===================== PASIVA ===================== --}}
-<tr class="bg-gray-200 font-bold">
-<td colspan="{{ 2 + count($bulanList) }}">PASIVA</td>
-</tr>
+                            {{-- ================= PASIVA ================= --}}
+                            <tr class="table-secondary fw-bold">
+                                <td colspan="{{ count($bulanList) + 1 }}">PASIVA</td>
+                            </tr>
 
-@foreach($akunPasiva as $akun)
-<tr>
-<td class="border px-2 py-1">{{ $akun }}</td>
-<td class="border px-2 py-1 text-right">
-{{ number_format($saldoAwal[$akun] ?? 0,0,',','.') }}
-</td>
-@foreach($bulanList as $b)
-<td class="border px-2 py-1 text-right">
-{{ number_format($saldo[$akun][$b] ?? 0,0,',','.') }}
-</td>
-@endforeach
-</tr>
-@endforeach
+                            @foreach ($akunPasiva as $akun)
+                                <tr>
+                                    <td>{{ $akun }}</td>
+                                    @foreach ($bulanList as $bulan)
+                                        <td class="text-end">
+                                            Rp {{ number_format($saldo[$akun][$bulan] ?? 0, 0, ',', '.') }}
+                                        </td>
+                                    @endforeach
+                                </tr>
+                            @endforeach
 
-{{-- ===================== LABA RUGI ===================== --}}
-<tr class="bg-blue-100 font-bold">
-<td>Laba Rugi Berjalan</td>
-<td class="border"></td>
-@foreach($bulanList as $b)
-<td class="border px-2 py-1 text-right">
-{{ number_format($labaRugi[$b] ?? 0,0,',','.') }}
-</td>
-@endforeach
-</tr>
+                            <tr class="table-danger fw-bold">
+                                <td>TOTAL PASIVA</td>
+                                @foreach ($bulanList as $bulan)
+                                    <td class="text-end">
+                                        Rp {{ number_format($totalPasiva[$bulan] ?? 0, 0, ',', '.') }}
+                                    </td>
+                                @endforeach
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-</tbody>
-</table>
-</div>
-
-</div>
-</main>
+        </div>
+    </main>
 </x-app-layout>
