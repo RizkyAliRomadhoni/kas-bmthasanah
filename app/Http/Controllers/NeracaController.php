@@ -8,145 +8,122 @@ use Carbon\Carbon;
 
 class NeracaController extends Controller
 {
+    /**
+     * ======================================================
+     * 🔹 METHOD LAMA — TETAP DIPAKAI
+     * ======================================================
+     */
     public function index(Request $request)
     {
         $tahun = $request->input('tahun', Carbon::now()->year);
         $bulan = $request->input('bulan', '');
         $akun  = $request->input('akun', '');
 
-        // ============================
-        // 🔹 Ambil semua data kas sesuai filter
-        // ============================
         $kas = Kas::query()
             ->when($tahun, fn($q) => $q->whereYear('tanggal', $tahun))
             ->when($bulan, fn($q) => $q->whereMonth('tanggal', $bulan))
             ->when($akun, fn($q) => $q->where('akun', $akun))
-            ->orderBy('tanggal', 'ASC')
+            ->orderBy('tanggal')
             ->get();
 
-        // ============================
-        // 🔹 Hitung pemasukan & pengeluaran
-        // ============================
-        $pemasukan = $kas->where('jenis_transaksi', 'Masuk')->sum('jumlah');
+        $pemasukan   = $kas->where('jenis_transaksi', 'Masuk')->sum('jumlah');
         $pengeluaran = $kas->where('jenis_transaksi', 'Keluar')->sum('jumlah');
-        $saldoAkhir = $pemasukan - $pengeluaran;
+        $saldoAkhir  = $pemasukan - $pengeluaran;
 
-        // ============================
-        // 🔹 Laba Rugi (tanpa kategori)
-        // ============================
         $pendapatan = $pemasukan;
-        $biaya = $pengeluaran;
+        $biaya      = $pengeluaran;
         $labaBersih = $pendapatan - $biaya;
 
-        // ============================
-        // 🔹 Aktiva & Pasiva sederhana
-        // ============================
         $aktiva = $pemasukan;
         $pasiva = $pengeluaran;
 
-        // ============================
-        // 🔹 Grafik Per Bulan berdasarkan FILTER
-        // ============================
-        $dataPerBulan = $kas->groupBy(fn($i) => Carbon::parse($i->tanggal)->format('Y-m'));
-
-        $labels = [];
-        $grafikPemasukan = [];
-        $grafikPengeluaran = [];
-
-        foreach ($dataPerBulan as $key => $data) {
-            $labels[] = Carbon::parse($key . '-01')->translatedFormat('F Y');
-            $grafikPemasukan[] = $data->where('jenis_transaksi', 'Masuk')->sum('jumlah');
-            $grafikPengeluaran[] = $data->where('jenis_transaksi', 'Keluar')->sum('jumlah');
-        }
-
-        // ============================
-        // 🔹 Dropdown Filter Tahun & Akun
-        // ============================
-        $tahunList = Kas::selectRaw('YEAR(tanggal) as tahun')
-            ->where('tanggal', '!=', '0000-00-00')
-            ->distinct()
-            ->pluck('tahun');
-
-        $akunList = Kas::select('akun')
-            ->distinct()
-            ->pluck('akun')
-            ->filter()
-            ->values();
+        $tahunList = Kas::selectRaw('YEAR(tanggal) as tahun')->distinct()->pluck('tahun');
 
         $bulanList = [
-            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
-            7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
         ];
 
-        // ============================================================
-        // 🔥 ANALISIS EFEKTIVITAS USAHA (Kambing, Pakan, Operasional)
-        // ============================================================
+        $akunList = Kas::select('akun')->distinct()->pluck('akun')->filter()->values();
 
-        $modalKambing = Kas::where('akun', 'Kambing')
-            ->where('jenis_transaksi', 'Keluar')
-            ->sum('jumlah');
+        /**
+         * ======================================================
+         * 🔹 NERACA TABEL (GANTI EFEKTIVITAS USAHA)
+         * ======================================================
+         */
 
-        $pakan = Kas::where('akun', 'Pakan')
-            ->where('jenis_transaksi', 'Keluar')
-            ->sum('jumlah');
+        // Header bulan format Y-m (AMAN)
+        $bulanHeader = Kas::selectRaw("DATE_FORMAT(tanggal,'%Y-%m') as ym")
+            ->whereYear('tanggal', $tahun)
+            ->groupBy('ym')
+            ->orderBy('ym')
+            ->pluck('ym')
+            ->toArray();
 
-        $operasional = Kas::where('akun', 'Operasional')
-            ->where('jenis_transaksi', 'Keluar')
-            ->sum('jumlah');
+        // Mapping nama bulan (TIDAK pakai Carbon di Blade)
+        $namaBulan = [
+            '01'=>'Januari','02'=>'Februari','03'=>'Maret','04'=>'April',
+            '05'=>'Mei','06'=>'Juni','07'=>'Juli','08'=>'Agustus',
+            '09'=>'September','10'=>'Oktober','11'=>'November','12'=>'Desember'
+        ];
 
-        $perawatan = Kas::where('akun', 'Perawatan')
-            ->where('jenis_transaksi', 'Keluar')
-            ->sum('jumlah');
+        // Akun Aktiva & Pasiva
+        $akunAktiva = [
+            'Kas','Piutang','Kambing','Kandang','Perlengkapan',
+            'Operasional','Pakan','Upah','Perawatan','Complifit'
+        ];
 
-        // Total biaya
-        $totalBiaya = $modalKambing + $pakan + $operasional + $perawatan;
+        $akunPasiva = [
+            'Penyertaan BMT Hasanah',
+            'Penyertaan DF',
+            'Titipan',
+            'Hutang'
+        ];
 
-        // Pendapatan (penjualan)
-        $penjualan = Kas::where('akun', 'Penjualan')
-            ->where('jenis_transaksi', 'Masuk')
-            ->sum('jumlah');
+        // Matrix saldo [akun][bulan]
+        $saldo = [];
 
-        // Laba usaha
-        $labaRugi = $penjualan - $totalBiaya;
+        foreach (array_merge($akunAktiva, $akunPasiva) as $a) {
+            foreach ($bulanHeader as $ym) {
+                $masuk = Kas::where('akun', $a)
+                    ->where('jenis_transaksi', 'Masuk')
+                    ->whereRaw("DATE_FORMAT(tanggal,'%Y-%m') = ?", [$ym])
+                    ->sum('jumlah');
 
-        // Efektivitas (%)
-        $efektivitas = $totalBiaya > 0 ? ($penjualan / $totalBiaya) * 100 : 0;
+                $keluar = Kas::where('akun', $a)
+                    ->where('jenis_transaksi', 'Keluar')
+                    ->whereRaw("DATE_FORMAT(tanggal,'%Y-%m') = ?", [$ym])
+                    ->sum('jumlah');
 
-        // ============================
-        // 🔹 KIRIM KE VIEW
-        // ============================
+                $saldo[$a][$ym] = $masuk - $keluar;
+            }
+        }
+
+        // Laba rugi bulanan (modal)
+        $labaRugi = [];
+        foreach ($bulanHeader as $ym) {
+            $masuk = Kas::where('jenis_transaksi','Masuk')
+                ->whereRaw("DATE_FORMAT(tanggal,'%Y-%m') = ?",[$ym])
+                ->sum('jumlah');
+
+            $keluar = Kas::where('jenis_transaksi','Keluar')
+                ->whereRaw("DATE_FORMAT(tanggal,'%Y-%m') = ?",[$ym])
+                ->sum('jumlah');
+
+            $labaRugi[$ym] = $masuk - $keluar;
+        }
+
         return view('neraca.index', compact(
-            'pemasukan',
-            'pengeluaran',
-            'saldoAkhir',
-            'pendapatan',
-            'biaya',
-            'labaBersih',
-            'aktiva',
-            'pasiva',
-            'labels',
-            'grafikPemasukan',
-            'grafikPengeluaran',
-            'tahunList',
-            'bulanList',
-            'tahun',
-            'bulan',
-            'akun',
-            'akunList',
+            'pemasukan','pengeluaran','saldoAkhir',
+            'pendapatan','biaya','labaBersih',
+            'aktiva','pasiva',
+            'tahunList','bulanList','tahun','bulan','akun','akunList',
 
-            // 🔥 Analisis Usaha
-            'modalKambing',
-            'pakan',
-            'operasional',
-            'perawatan',
-            'totalBiaya',
-            'penjualan',
-            'labaRugi',
-            'efektivitas'
+            // NERACA TABEL
+            'bulanHeader','namaBulan',
+            'akunAktiva','akunPasiva',
+            'saldo','labaRugi'
         ));
-
-   
     }
-    
 }
-
