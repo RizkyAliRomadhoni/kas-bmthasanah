@@ -5,9 +5,15 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Kas;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class NeracaController extends Controller
 {
+    /**
+     * ======================================================
+     * 🔹 METHOD LAMA — JANGAN DIUBAH / DIHAPUS
+     * ======================================================
+     */
     public function index(Request $request)
     {
         $tahun = $request->input('tahun', Carbon::now()->year);
@@ -15,7 +21,7 @@ class NeracaController extends Controller
         $akun  = $request->input('akun', '');
 
         // ============================
-        // 🔹 Ambil semua data kas sesuai filter
+        // 🔹 Ambil data kas
         // ============================
         $kas = Kas::query()
             ->when($tahun, fn($q) => $q->whereYear('tanggal', $tahun))
@@ -25,14 +31,14 @@ class NeracaController extends Controller
             ->get();
 
         // ============================
-        // 🔹 Hitung pemasukan & pengeluaran
+        // 🔹 Pemasukan & Pengeluaran
         // ============================
         $pemasukan = $kas->where('jenis_transaksi', 'Masuk')->sum('jumlah');
         $pengeluaran = $kas->where('jenis_transaksi', 'Keluar')->sum('jumlah');
         $saldoAkhir = $pemasukan - $pengeluaran;
 
         // ============================
-        // 🔹 Laba Rugi (tanpa kategori)
+        // 🔹 Laba Rugi
         // ============================
         $pendapatan = $pemasukan;
         $biaya = $pengeluaran;
@@ -45,7 +51,7 @@ class NeracaController extends Controller
         $pasiva = $pengeluaran;
 
         // ============================
-        // 🔹 Grafik Per Bulan berdasarkan FILTER
+        // 🔹 Grafik Bulanan
         // ============================
         $dataPerBulan = $kas->groupBy(fn($i) => Carbon::parse($i->tanggal)->format('Y-m'));
 
@@ -60,10 +66,9 @@ class NeracaController extends Controller
         }
 
         // ============================
-        // 🔹 Dropdown Filter Tahun & Akun
+        // 🔹 Dropdown
         // ============================
         $tahunList = Kas::selectRaw('YEAR(tanggal) as tahun')
-            ->where('tanggal', '!=', '0000-00-00')
             ->distinct()
             ->pluck('tahun');
 
@@ -74,79 +79,110 @@ class NeracaController extends Controller
             ->values();
 
         $bulanList = [
-            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
-            7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
         ];
 
-        // ============================================================
-        // 🔥 ANALISIS EFEKTIVITAS USAHA (Kambing, Pakan, Operasional)
-        // ============================================================
+        // ============================
+        // 🔥 Analisis Usaha
+        // ============================
+        $modalKambing = Kas::where('akun', 'Kambing')->where('jenis_transaksi', 'Keluar')->sum('jumlah');
+        $pakan = Kas::where('akun', 'Pakan')->where('jenis_transaksi', 'Keluar')->sum('jumlah');
+        $operasional = Kas::where('akun', 'Operasional')->where('jenis_transaksi', 'Keluar')->sum('jumlah');
+        $perawatan = Kas::where('akun', 'Perawatan')->where('jenis_transaksi', 'Keluar')->sum('jumlah');
 
-        $modalKambing = Kas::where('akun', 'Kambing')
-            ->where('jenis_transaksi', 'Keluar')
-            ->sum('jumlah');
-
-        $pakan = Kas::where('akun', 'Pakan')
-            ->where('jenis_transaksi', 'Keluar')
-            ->sum('jumlah');
-
-        $operasional = Kas::where('akun', 'Operasional')
-            ->where('jenis_transaksi', 'Keluar')
-            ->sum('jumlah');
-
-        $perawatan = Kas::where('akun', 'Perawatan')
-            ->where('jenis_transaksi', 'Keluar')
-            ->sum('jumlah');
-
-        // Total biaya
         $totalBiaya = $modalKambing + $pakan + $operasional + $perawatan;
 
-        // Pendapatan (penjualan)
-        $penjualan = Kas::where('akun', 'Penjualan')
-            ->where('jenis_transaksi', 'Masuk')
-            ->sum('jumlah');
+        $penjualan = Kas::where('akun', 'Penjualan')->where('jenis_transaksi', 'Masuk')->sum('jumlah');
 
-        // Laba usaha
         $labaRugi = $penjualan - $totalBiaya;
-
-        // Efektivitas (%)
         $efektivitas = $totalBiaya > 0 ? ($penjualan / $totalBiaya) * 100 : 0;
 
-        // ============================
-        // 🔹 KIRIM KE VIEW
-        // ============================
         return view('neraca.index', compact(
-            'pemasukan',
-            'pengeluaran',
-            'saldoAkhir',
-            'pendapatan',
-            'biaya',
-            'labaBersih',
-            'aktiva',
-            'pasiva',
-            'labels',
-            'grafikPemasukan',
-            'grafikPengeluaran',
-            'tahunList',
-            'bulanList',
-            'tahun',
-            'bulan',
-            'akun',
-            'akunList',
-
-            // 🔥 Analisis Usaha
-            'modalKambing',
-            'pakan',
-            'operasional',
-            'perawatan',
-            'totalBiaya',
-            'penjualan',
-            'labaRugi',
-            'efektivitas'
+            'pemasukan','pengeluaran','saldoAkhir',
+            'pendapatan','biaya','labaBersih',
+            'aktiva','pasiva',
+            'labels','grafikPemasukan','grafikPengeluaran',
+            'tahunList','bulanList','tahun','bulan','akun','akunList',
+            'modalKambing','pakan','operasional','perawatan',
+            'totalBiaya','penjualan','labaRugi','efektivitas'
         ));
-
-   
     }
-    
-}
 
+    /**
+     * ======================================================
+     * 🔹 METHOD BARU — NERACA TABEL (EXCEL STYLE)
+     * ======================================================
+     */
+    public function neracaTabel(Request $request)
+    {
+        $tahun = $request->tahun ?? date('Y');
+
+        // ============================
+        // 🔹 Header Bulan Otomatis
+        // ============================
+        $bulanList = Kas::selectRaw("DATE_FORMAT(tanggal,'%Y-%m') as bulan")
+            ->whereYear('tanggal', $tahun)
+            ->groupBy('bulan')
+            ->orderBy('bulan')
+            ->pluck('bulan');
+
+        // ============================
+        // 🔹 AKUN AKTIVA & PASIVA
+        // ============================
+        $akunAktiva = [
+            'Kas','Piutang','Kambing','Kandang','Perlengkapan',
+            'Operasional','Pakan','Upah','Perawatan','Complifit'
+        ];
+
+        $akunPasiva = [
+            'Penyertaan BMT Hasanah',
+            'Penyertaan DF',
+            'Titipan',
+            'Hutang'
+        ];
+
+        // ============================
+        // 🔹 SALDO PER AKUN PER BULAN
+        // ============================
+        $saldo = [];
+
+        foreach (array_merge($akunAktiva, $akunPasiva) as $akun) {
+            foreach ($bulanList as $bulan) {
+                $masuk = Kas::where('akun', $akun)
+                    ->where('jenis_transaksi', 'Masuk')
+                    ->whereRaw("DATE_FORMAT(tanggal,'%Y-%m') = ?", [$bulan])
+                    ->sum('jumlah');
+
+                $keluar = Kas::where('akun', $akun)
+                    ->where('jenis_transaksi', 'Keluar')
+                    ->whereRaw("DATE_FORMAT(tanggal,'%Y-%m') = ?", [$bulan])
+                    ->sum('jumlah');
+
+                $saldo[$akun][$bulan] = $masuk - $keluar;
+            }
+        }
+
+        // ============================
+        // 🔹 LABA RUGI BULANAN
+        // ============================
+        $labaRugi = [];
+
+        foreach ($bulanList as $bulan) {
+            $masuk = Kas::where('jenis_transaksi', 'Masuk')
+                ->whereRaw("DATE_FORMAT(tanggal,'%Y-%m') = ?", [$bulan])
+                ->sum('jumlah');
+
+            $keluar = Kas::where('jenis_transaksi', 'Keluar')
+                ->whereRaw("DATE_FORMAT(tanggal,'%Y-%m') = ?", [$bulan])
+                ->sum('jumlah');
+
+            $labaRugi[$bulan] = $masuk - $keluar;
+        }
+
+        return view('neraca.neraca-tabel', compact(
+            'tahun','bulanList','akunAktiva','akunPasiva','saldo','labaRugi'
+        ));
+    }
+}
