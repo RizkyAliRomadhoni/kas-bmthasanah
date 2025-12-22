@@ -97,6 +97,8 @@ Route::get('/kas/{id}', [KasController::class, 'show'])->name('kas.show')->middl
 Route::get('/neraca', [NeracaController::class, 'index'])
     ->name('neraca.index')
     ->middleware('auth');
+Route::get('/neraca-tabel', [NeracaController::class, 'neracaTabel'])
+    ->name('neraca.tabel');
 
 
 // =====================================================================
