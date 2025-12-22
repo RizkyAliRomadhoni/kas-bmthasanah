@@ -1,116 +1,124 @@
 <x-app-layout>
-<main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg bg-light">
-<div class="container-fluid py-4">
+    <main class="p-4 bg-gray-50 min-h-screen">
 
-{{-- ================= HEADER & FILTER ================= --}}
-<div class="card shadow border-0 mb-4 rounded-4">
-    <div class="card-header bg-gradient-primary text-white d-flex flex-wrap justify-content-between align-items-center">
-        <h5 class="fw-bold mb-0">📊 NERACA KEUANGAN</h5>
+        {{-- HEADER --}}
+        <div class="mb-4">
+            <h2 class="text-xl font-bold">NERACA KEUANGAN {{ $tahun }}</h2>
+            <p class="text-sm text-gray-500">Format Neraca (Aktiva = Pasiva)</p>
+        </div>
 
-        <form method="GET" class="d-flex gap-2 align-items-center">
-            <select name="tahun" class="form-select form-select-sm">
-                @foreach($tahunList as $t)
-                    <option value="{{ $t }}" {{ $tahun == $t ? 'selected' : '' }}>{{ $t }}</option>
-                @endforeach
-            </select>
+        {{-- TABLE WRAPPER --}}
+        <div class="overflow-x-auto bg-white shadow rounded-lg">
 
-            <button class="btn btn-light btn-sm fw-bold">
-                <i class="fas fa-sync"></i> Tampilkan
-            </button>
-        </form>
-    </div>
-</div>
+            <table class="min-w-full border text-sm">
+                <thead class="bg-gray-100 sticky top-0 z-10">
+                    <tr>
+                        <th class="border px-3 py-2 text-left">AKUN</th>
 
-{{-- ================= TABEL NERACA ================= --}}
-<div class="card shadow-sm border-0 rounded-4">
-<div class="card-body table-responsive">
+                        @foreach($bulanList as $bulan)
+                            <th class="border px-3 py-2 text-right">
+                                {{ \Carbon\Carbon::createFromFormat('Y-m', $bulan)->translatedFormat('M Y') }}
+                            </th>
+                        @endforeach
+                    </tr>
+                </thead>
 
-<table class="table table-bordered table-sm align-middle text-nowrap">
-<thead class="table-dark sticky-top">
-<tr>
-    <th style="min-width:220px">AKUN</th>
-    <th class="text-end">NERACA AWAL</th>
+                <tbody>
 
-    {{-- HEADER BULAN (AMAN) --}}
-    @foreach($bulanList as $bulanAngka => $namaBulan)
-        <th class="text-end">
-            {{ \Carbon\Carbon::createFromDate($tahun, $bulanAngka, 1)->translatedFormat('M y') }}
-        </th>
-    @endforeach
-</tr>
-</thead>
+                    {{-- ================= AKTIVA ================= --}}
+                    <tr class="bg-green-50 font-bold">
+                        <td class="border px-3 py-2" colspan="{{ count($bulanList)+1 }}">
+                            AKTIVA
+                        </td>
+                    </tr>
 
-<tbody>
+                    @foreach($akunAktiva as $akun)
+                        <tr>
+                            <td class="border px-3 py-2">{{ strtoupper($akun) }}</td>
 
-{{-- ================= AKTIVA ================= --}}
-<tr class="table-success fw-bold">
-    <td colspan="{{ count($bulanList) + 2 }}">AKTIVA</td>
-</tr>
+                            @foreach($bulanList as $bulan)
+                                <td class="border px-3 py-2 text-right">
+                                    Rp {{ number_format($saldo[$akun][$bulan] ?? 0, 0, ',', '.') }}
+                                </td>
+                            @endforeach
+                        </tr>
+                    @endforeach
 
-@foreach($akunAktiva as $akun)
-<tr>
-    <td>{{ strtoupper($akun) }}</td>
-    <td class="text-end">Rp {{ number_format($saldoAwalAktiva[$akun] ?? 0,0,',','.') }}</td>
+                    {{-- TOTAL AKTIVA --}}
+                    <tr class="bg-green-100 font-bold">
+                        <td class="border px-3 py-2">TOTAL AKTIVA</td>
 
-    @foreach($bulanList as $bulanAngka => $namaBulan)
-        <td class="text-end">
-            Rp {{ number_format($neracaAktiva[$akun][$bulanAngka] ?? 0,0,',','.') }}
-        </td>
-    @endforeach
-</tr>
-@endforeach
+                        @foreach($bulanList as $bulan)
+                            @php
+                                $totalAktiva = 0;
+                                foreach($akunAktiva as $a){
+                                    $totalAktiva += $saldo[$a][$bulan] ?? 0;
+                                }
+                            @endphp
+                            <td class="border px-3 py-2 text-right">
+                                Rp {{ number_format($totalAktiva,0,',','.') }}
+                            </td>
+                        @endforeach
+                    </tr>
 
-<tr class="fw-bold table-light">
-    <td>TOTAL ASET</td>
-    <td class="text-end">Rp {{ number_format($totalAwalAktiva,0,',','.') }}</td>
+                    {{-- ================= PASIVA ================= --}}
+                    <tr class="bg-red-50 font-bold">
+                        <td class="border px-3 py-2" colspan="{{ count($bulanList)+1 }}">
+                            PASIVA
+                        </td>
+                    </tr>
 
-    @foreach($bulanList as $bulanAngka => $namaBulan)
-        <td class="text-end">
-            Rp {{ number_format($totalAktivaPerBulan[$bulanAngka] ?? 0,0,',','.') }}
-        </td>
-    @endforeach
-</tr>
+                    @foreach($akunPasiva as $akun)
+                        <tr>
+                            <td class="border px-3 py-2">{{ strtoupper($akun) }}</td>
 
-{{-- ================= PASIVA ================= --}}
-<tr class="table-danger fw-bold">
-    <td colspan="{{ count($bulanList) + 2 }}">PASIVA</td>
-</tr>
+                            @foreach($bulanList as $bulan)
+                                <td class="border px-3 py-2 text-right">
+                                    Rp {{ number_format($saldo[$akun][$bulan] ?? 0, 0, ',', '.') }}
+                                </td>
+                            @endforeach
+                        </tr>
+                    @endforeach
 
-@foreach($akunPasiva as $akun)
-<tr>
-    <td>{{ strtoupper($akun) }}</td>
-    <td class="text-end">Rp {{ number_format($saldoAwalPasiva[$akun] ?? 0,0,',','.') }}</td>
+                    {{-- LABA RUGI --}}
+                    <tr class="bg-blue-50 font-bold">
+                        <td class="border px-3 py-2">LABA RUGI BULAN BERJALAN</td>
 
-    @foreach($bulanList as $bulanAngka => $namaBulan)
-        <td class="text-end">
-            Rp {{ number_format($neracaPasiva[$akun][$bulanAngka] ?? 0,0,',','.') }}
-        </td>
-    @endforeach
-</tr>
-@endforeach
+                        @foreach($bulanList as $bulan)
+                            <td class="border px-3 py-2 text-right">
+                                Rp {{ number_format($labaRugi[$bulan] ?? 0,0,',','.') }}
+                            </td>
+                        @endforeach
+                    </tr>
 
-<tr class="fw-bold table-light">
-    <td>TOTAL PASIVA</td>
-    <td class="text-end">Rp {{ number_format($totalAwalPasiva,0,',','.') }}</td>
+                    {{-- TOTAL PASIVA --}}
+                    <tr class="bg-red-100 font-bold">
+                        <td class="border px-3 py-2">TOTAL PASIVA</td>
 
-    @foreach($bulanList as $bulanAngka => $namaBulan)
-        <td class="text-end">
-            Rp {{ number_format($totalPasivaPerBulan[$bulanAngka] ?? 0,0,',','.') }}
-        </td>
-    @endforeach
-</tr>
+                        @foreach($bulanList as $bulan)
+                            @php
+                                $totalPasiva = 0;
+                                foreach($akunPasiva as $a){
+                                    $totalPasiva += $saldo[$a][$bulan] ?? 0;
+                                }
+                                $totalPasiva += $labaRugi[$bulan] ?? 0;
+                            @endphp
+                            <td class="border px-3 py-2 text-right">
+                                Rp {{ number_format($totalPasiva,0,',','.') }}
+                            </td>
+                        @endforeach
+                    </tr>
 
-</tbody>
-</table>
+                </tbody>
+            </table>
 
-</div>
-</div>
+        </div>
 
-{{-- ================= FOOTER ================= --}}
-<div class="text-center mt-4 text-muted small">
-    <em>© {{ date('Y') }} Neraca Keuangan Peternakan</em>
-</div>
+        {{-- CATATAN --}}
+        <div class="mt-4 text-sm text-gray-500">
+            <p>* Neraca dihitung otomatis dari tabel <b>kas</b></p>
+            <p>* Aktiva HARUS sama dengan Pasiva</p>
+        </div>
 
-</div>
-</main>
+    </main>
 </x-app-layout>
