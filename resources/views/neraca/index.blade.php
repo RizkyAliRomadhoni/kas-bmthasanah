@@ -1,84 +1,82 @@
 <x-app-layout>
-    <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg bg-light">
-        <div class="container-fluid py-4">
+    <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
+    <div class="container-fluid py-4">
 
-            {{-- HEADER --}}
-            <div class="card shadow border-0 mb-4 rounded-4">
-                <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 fw-bold">📊 NERACA KEUANGAN ({{ $tahun }})</h5>
-                </div>
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white">
+                <h5 class="mb-0 fw-bold">NERACA (Logika Kumulatif)</h5>
             </div>
 
-            {{-- TABEL NERACA --}}
-            <div class="card shadow-sm border-0 rounded-4">
-                <div class="card-body table-responsive" style="overflow-x:auto;">
-                    <table class="table table-bordered table-hover align-middle text-nowrap">
-                        <thead class="table-dark sticky-top">
+            <div class="card-body table-responsive">
+                <table class="table table-bordered table-sm text-center align-middle">
+
+                    {{-- HEADER --}}
+                    <thead class="table-light">
+                        <tr>
+                            <th rowspan="2" class="text-start">AKUN</th>
+                            <th rowspan="2">Saldo Awal</th>
+                            <th colspan="{{ count($bulanList) }}">Saldo Akhir per Bulan</th>
+                        </tr>
+                        <tr>
+                            @foreach ($bulanList as $bulan)
+                                <th>
+                                    {{ \Carbon\Carbon::createFromFormat('Y-m', $bulan)->translatedFormat('M Y') }}
+                                </th>
+                            @endforeach
+                        </tr>
+                    </thead>
+
+                    {{-- BODY --}}
+                    <tbody>
+
+                        {{-- ===================== --}}
+                        {{-- 🔹 AKTIVA --}}
+                        {{-- ===================== --}}
+                        <tr class="table-secondary fw-bold">
+                            <td colspan="{{ 2 + count($bulanList) }}" class="text-start">AKTIVA</td>
+                        </tr>
+
+                        @foreach ($akunAktiva as $akun)
                             <tr>
-                                <th style="min-width:220px;">AKUN</th>
+                                <td class="text-start">{{ $akun }}</td>
+                                <td>{{ number_format($saldoAwal[$akun], 0, ',', '.') }}</td>
+
                                 @foreach ($bulanList as $bulan)
-                                    <th class="text-end">
-                                        {{ \Carbon\Carbon::createFromFormat('Y-m', $bulan)->format('M Y') }}
-                                    </th>
-                                @endforeach
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            {{-- ================= AKTIVA ================= --}}
-                            <tr class="table-secondary fw-bold">
-                                <td colspan="{{ count($bulanList) + 1 }}">AKTIVA</td>
-                            </tr>
-
-                            @foreach ($akunAktiva as $akun)
-                                <tr>
-                                    <td>{{ $akun }}</td>
-                                    @foreach ($bulanList as $bulan)
-                                        <td class="text-end">
-                                            Rp {{ number_format($saldo[$akun][$bulan] ?? 0, 0, ',', '.') }}
-                                        </td>
-                                    @endforeach
-                                </tr>
-                            @endforeach
-
-                            <tr class="table-success fw-bold">
-                                <td>TOTAL AKTIVA</td>
-                                @foreach ($bulanList as $bulan)
-                                    <td class="text-end">
-                                        Rp {{ number_format($totalAktiva[$bulan] ?? 0, 0, ',', '.') }}
+                                    <td>
+                                        @if ($akun === 'Kas')
+                                            —
+                                        @else
+                                            {{ number_format($saldo[$akun][$bulan] ?? 0, 0, ',', '.') }}
+                                        @endif
                                     </td>
                                 @endforeach
                             </tr>
+                        @endforeach
 
-                            {{-- ================= PASIVA ================= --}}
-                            <tr class="table-secondary fw-bold">
-                                <td colspan="{{ count($bulanList) + 1 }}">PASIVA</td>
-                            </tr>
+                        {{-- ===================== --}}
+                        {{-- 🔹 PASIVA --}}
+                        {{-- ===================== --}}
+                        <tr class="table-secondary fw-bold">
+                            <td colspan="{{ 2 + count($bulanList) }}" class="text-start">PASIVA</td>
+                        </tr>
 
-                            @foreach ($akunPasiva as $akun)
-                                <tr>
-                                    <td>{{ $akun }}</td>
-                                    @foreach ($bulanList as $bulan)
-                                        <td class="text-end">
-                                            Rp {{ number_format($saldo[$akun][$bulan] ?? 0, 0, ',', '.') }}
-                                        </td>
-                                    @endforeach
-                                </tr>
-                            @endforeach
+                        @foreach ($akunPasiva as $akun)
+                            <tr>
+                                <td class="text-start">{{ $akun }}</td>
+                                <td>{{ number_format($saldoAwal[$akun], 0, ',', '.') }}</td>
 
-                            <tr class="table-danger fw-bold">
-                                <td>TOTAL PASIVA</td>
                                 @foreach ($bulanList as $bulan)
-                                    <td class="text-end">
-                                        Rp {{ number_format($totalPasiva[$bulan] ?? 0, 0, ',', '.') }}
+                                    <td>
+                                        {{ number_format($saldo[$akun][$bulan] ?? 0, 0, ',', '.') }}
                                     </td>
                                 @endforeach
                             </tr>
-                        </tbody>
-                    </table>
-                </div>
+                        @endforeach
+
+                    </tbody>
+                </table>
             </div>
-
         </div>
-    </main>
+</main>
+    </div>
 </x-app-layout>
