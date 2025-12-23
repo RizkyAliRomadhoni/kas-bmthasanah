@@ -17,7 +17,7 @@ class NeracaController extends Controller
     public function index(Request $request)
     {
         // ==================================================
-        // 🔹 AMBIL BULAN UNIK DARI DATA KAS (OTOMATIS)
+        // 🔹 AMBIL BULAN UNIK DARI DATA KAS
         // ==================================================
         $bulanList = Kas::selectRaw("DATE_FORMAT(tanggal,'%Y-%m') as bulan")
             ->groupBy('bulan')
@@ -25,11 +25,10 @@ class NeracaController extends Controller
             ->pluck('bulan');
 
         // ==================================================
-        // 🔹 DAFTAR AKUN AKTIVA
-        // ⚠️ KAS ADALAH RESIDUAL — BUKAN AKUN TRANSAKSI
+        // 🔹 AKUN AKTIVA (KAS = RESIDUAL)
         // ==================================================
         $akunAktiva = [
-            'Kas', // RESIDUAL (DIHITUNG TERAKHIR)
+            'Kas',
             'Kambing',
             'Pakan',
             'Operasional',
@@ -39,7 +38,7 @@ class NeracaController extends Controller
         ];
 
         // ==================================================
-        // 🔹 DAFTAR AKUN PASIVA
+        // 🔹 AKUN PASIVA
         // ==================================================
         $akunPasiva = [
             'Hutang',
@@ -50,7 +49,7 @@ class NeracaController extends Controller
         ];
 
         // ==================================================
-        // 🔹 SALDO AWAL (KONSEP MURNI — TIDAK DIPAKAI HITUNG)
+        // 🔹 SALDO AWAL (FORMALITAS)
         // ==================================================
         $saldoAwal = [];
         foreach (array_merge($akunAktiva, $akunPasiva) as $akun) {
@@ -58,7 +57,7 @@ class NeracaController extends Controller
         }
 
         // ==================================================
-        // 🔹 SALDO AKHIR PER BULAN (KUMULATIF)
+        // 🔹 HITUNG SALDO BULANAN
         // ==================================================
         $saldo = [];
 
@@ -73,9 +72,8 @@ class NeracaController extends Controller
 
             foreach ($akunAktiva as $akun) {
 
-                // ⛔ KAS TIDAK BOLEH DIHITUNG DI SINI
                 if ($akun === 'Kas') {
-                    continue;
+                    continue; // KAS TIDAK DIHITUNG DI SINI
                 }
 
                 $nilai = Kas::where('akun', $akun)
@@ -87,15 +85,13 @@ class NeracaController extends Controller
             }
 
             // ==============================================
-            // 🔹 TOTAL PASIVA (SEMUA SELAIN KAS)
+            // 🔹 TOTAL PASIVA
             // ==============================================
             $totalPasiva = 0;
 
             foreach ($akunPasiva as $akun) {
 
-                // ------------------------------------------
-                // 🔴 PENYERTAAN MODAL (DARI KAS + KETERANGAN)
-                // ------------------------------------------
+                // 🔴 PENYERTAAN MODAL DARI KAS + KETERANGAN
                 if (in_array($akun, ['Penyertaan BMT Hasanah', 'Penyertaan DF'])) {
 
                     if (!Schema::hasColumn('kas', 'keterangan')) {
@@ -113,9 +109,7 @@ class NeracaController extends Controller
                     continue;
                 }
 
-                // ------------------------------------------
                 // 🔹 PASIVA NORMAL
-                // ------------------------------------------
                 $nilai = Kas::where('akun', $akun)
                     ->where('tanggal', '<=', $akhirBulan)
                     ->sum('jumlah');
@@ -125,18 +119,9 @@ class NeracaController extends Controller
             }
 
             // ==============================================
-            // 🟢 KAS = SALDO TERSISA (RESIDUAL NERACA)
-            //
-            // KAS bulan N =
-            // TOTAL AKTIVA
-            // − TOTAL PASIVA (SELURUHNYA)
-            //
-            // ⚠️ BUKAN:
-            // - transaksi kas
-            // - saldo kepakai
-            // - sum akun kas
+            // 🟢 KAS = SALDO TERSISA (FIX FINAL)
             // ==============================================
-            $saldo['Kas'][$bulan] = $totalAktiva - $totalPasiva;
+            $saldo['Kas'][$bulan] = $totalPasiva - $totalAktiva;
         }
 
         return view('neraca.index', compact(
@@ -150,11 +135,11 @@ class NeracaController extends Controller
 
     /**
      * ======================================================
-     * 🔹 METHOD BARU (DIBIARKAN)
+     * 🔹 METHOD BARU — JANGAN DIHAPUS
      * ======================================================
      */
     public function neracaTabel(Request $request)
     {
-        // BIARKAN — TIDAK DIHAPUS
+        // BIARKAN
     }
 }
