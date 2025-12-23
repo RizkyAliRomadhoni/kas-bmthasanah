@@ -9,97 +9,109 @@ use Carbon\Carbon;
 class NeracaController extends Controller
 {
     /**
-     * ======================================================
-     * 🔹 METHOD LAMA — JANGAN DIHAPUS
-     * ======================================================
+     * ============================================
+     * NERACA TABEL — LOGIKA NERACA (BUKAN CASHFLOW)
+     * ============================================
      */
     public function index(Request $request)
     {
-        // ============================
-        // 🔹 Ambil SEMUA BULAN unik (urut)
-        // ============================
+        $tahun = $request->input('tahun', date('Y'));
+
+        /**
+         * ============================================
+         * HEADER BULAN (YYYY-MM)
+         * ============================================
+         */
         $bulanList = Kas::selectRaw("DATE_FORMAT(tanggal,'%Y-%m') as bulan")
+            ->whereYear('tanggal', $tahun)
             ->groupBy('bulan')
             ->orderBy('bulan')
-            ->pluck('bulan');
+            ->pluck('bulan')
+            ->toArray();
 
-        // ============================
-        // 🔹 DAFTAR AKUN NERACA
-        // (Kas DISIMPAN tapi BELUM DIPAKAI)
-        // ============================
+        /**
+         * ============================================
+         * AKUN AKTIVA
+         * ============================================
+         */
         $akunAktiva = [
             'Kas',
+            'Piutang',
             'Kambing',
-            'Pakan',
-            'Operasional',
-            'Perawatan',
-            'Perlengkapan',
             'Kandang',
+            'Perlengkapan',
+            'Operasional',
+            'Pakan',
+            'Upah',
+            'Perawatan',
+            'Complifit',
         ];
 
+        /**
+         * ============================================
+         * AKUN PASIVA
+         * ============================================
+         */
         $akunPasiva = [
-            'Hutang',
             'Titipan',
-            'Modal'
+            'Hutang',
+            'Penyertaan BMT Hasanah',
+            'Penyertaan DF',
         ];
 
-        // ============================
-        // 🔹 SALDO AWAL (SEMUA 0)
-        // ============================
-        $saldoAwal = [];
-        foreach (array_merge($akunAktiva, $akunPasiva) as $akun) {
-            $saldoAwal[$akun] = 0;
-        }
-
-        // ============================
-        // 🔹 HITUNG SALDO KUMULATIF
-        // ============================
+        /**
+         * ============================================
+         * MATRIX SALDO [akun][bulan]
+         * LOGIKA:
+         * saldo = SUM(jumlah) WHERE tanggal <= akhir bulan
+         * TIDAK pakai jenis_transaksi
+         * ============================================
+         */
         $saldo = [];
 
         foreach (array_merge($akunAktiva, $akunPasiva) as $akun) {
-
-            $running = $saldoAwal[$akun];
-
             foreach ($bulanList as $bulan) {
+                $akhirBulan = Carbon::createFromFormat('Y-m', $bulan)->endOfMonth();
 
-                // 🔴 KAS DIABAIKAN DULU
-                if ($akun === 'Kas') {
-                    $saldo[$akun][$bulan] = null;
-                    continue;
+                // KHUSUS PENYERTAAN → ambil dari akun Kas
+                if (in_array($akun, ['Penyertaan BMT Hasanah', 'Penyertaan DF'])) {
+                    $nilai = Kas::where('akun', 'Kas')
+                        ->where('keterangan', $akun) // jika belum ada → hasil 0
+                        ->whereDate('tanggal', '<=', $akhirBulan)
+                        ->sum('jumlah');
+                }
+                // AKUN NORMAL
+                else {
+                    $nilai = Kas::where('akun', $akun)
+                        ->whereDate('tanggal', '<=', $akhirBulan)
+                        ->sum('jumlah');
                 }
 
-                // ============================
-                // 🔹 TOTAL NILAI SAMPAI BULAN INI
-                // (TIDAK peduli Masuk / Keluar)
-                // ============================
-                $nilai = Kas::where('akun', $akun)
-                    ->whereRaw("DATE_FORMAT(tanggal,'%Y-%m') <= ?", [$bulan])
-                    ->sum('jumlah');
-
-                // ============================
-                // 🔹 SALDO KUMULATIF
-                // ============================
-                $running = $nilai;
-                $saldo[$akun][$bulan] = $running;
+                $saldo[$akun][$bulan] = $nilai;
             }
         }
 
+        /**
+         * ============================================
+         * TOTAL AKTIVA & PASIVA
+         * ============================================
+         */
+        $totalAktiva = [];
+        $totalPasiva = [];
+
+        foreach ($bulanList as $bulan) {
+            $totalAktiva[$bulan] = collect($akunAktiva)->sum(fn($a) => $saldo[$a][$bulan] ?? 0);
+            $totalPasiva[$bulan] = collect($akunPasiva)->sum(fn($a) => $saldo[$a][$bulan] ?? 0);
+        }
+
         return view('neraca.index', compact(
+            'tahun',
             'bulanList',
             'akunAktiva',
             'akunPasiva',
-            'saldoAwal',
-            'saldo'
+            'saldo',
+            'totalAktiva',
+            'totalPasiva'
         ));
-    }
-
-    /**
-     * ======================================================
-     * 🔹 METHOD BARU (DIBIARKAN)
-     * ======================================================
-     */
-    public function neracaTabel(Request $request)
-    {
-        // BIARKAN — TIDAK DIHAPUS
     }
 }
