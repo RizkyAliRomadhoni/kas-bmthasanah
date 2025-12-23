@@ -25,10 +25,11 @@ class NeracaController extends Controller
             ->pluck('bulan');
 
         // ==================================================
-        // 🔹 DAFTAR AKUN AKTIVA (KAS ADALAH RESIDUAL)
+        // 🔹 DAFTAR AKUN AKTIVA
+        // ⚠️ KAS ADALAH RESIDUAL — BUKAN AKUN TRANSAKSI
         // ==================================================
         $akunAktiva = [
-            'Kas',          // RESIDUAL (BUKAN AKUN TRANSAKSI)
+            'Kas', // RESIDUAL (DIHITUNG TERAKHIR)
             'Kambing',
             'Pakan',
             'Operasional',
@@ -49,7 +50,7 @@ class NeracaController extends Controller
         ];
 
         // ==================================================
-        // 🔹 SALDO AWAL (KONSEP MURNI)
+        // 🔹 SALDO AWAL (KONSEP MURNI — TIDAK DIPAKAI HITUNG)
         // ==================================================
         $saldoAwal = [];
         foreach (array_merge($akunAktiva, $akunPasiva) as $akun) {
@@ -57,7 +58,7 @@ class NeracaController extends Controller
         }
 
         // ==================================================
-        // 🔹 HITUNG SALDO KUMULATIF
+        // 🔹 SALDO AKHIR PER BULAN (KUMULATIF)
         // ==================================================
         $saldo = [];
 
@@ -66,12 +67,13 @@ class NeracaController extends Controller
             $akhirBulan = Carbon::createFromFormat('Y-m', $bulan)->endOfMonth();
 
             // ==============================================
-            // 🔹 HITUNG AKTIVA (KECUALI KAS)
+            // 🔹 TOTAL AKTIVA (KECUALI KAS)
             // ==============================================
             $totalAktiva = 0;
 
             foreach ($akunAktiva as $akun) {
 
+                // ⛔ KAS TIDAK BOLEH DIHITUNG DI SINI
                 if ($akun === 'Kas') {
                     continue;
                 }
@@ -85,14 +87,14 @@ class NeracaController extends Controller
             }
 
             // ==============================================
-            // 🔹 HITUNG PASIVA (KECUALI KAS)
+            // 🔹 TOTAL PASIVA (SEMUA SELAIN KAS)
             // ==============================================
             $totalPasiva = 0;
 
             foreach ($akunPasiva as $akun) {
 
                 // ------------------------------------------
-                // 🔴 PENYERTAAN MODAL (DARI KAS BERKETERANGAN)
+                // 🔴 PENYERTAAN MODAL (DARI KAS + KETERANGAN)
                 // ------------------------------------------
                 if (in_array($akun, ['Penyertaan BMT Hasanah', 'Penyertaan DF'])) {
 
@@ -123,7 +125,16 @@ class NeracaController extends Controller
             }
 
             // ==============================================
-            // 🟢 KAS = RESIDUAL NERACA (FINAL)
+            // 🟢 KAS = SALDO TERSISA (RESIDUAL NERACA)
+            //
+            // KAS bulan N =
+            // TOTAL AKTIVA
+            // − TOTAL PASIVA (SELURUHNYA)
+            //
+            // ⚠️ BUKAN:
+            // - transaksi kas
+            // - saldo kepakai
+            // - sum akun kas
             // ==============================================
             $saldo['Kas'][$bulan] = $totalAktiva - $totalPasiva;
         }

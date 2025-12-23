@@ -4,7 +4,7 @@
 
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white">
-                    <h5 class="mb-0 fw-bold">NERACA (Logika Residual Kas)</h5>
+                    <h5 class="mb-0 fw-bold">NERACA (Kas = Saldo Tersisa)</h5>
                 </div>
 
                 <div class="card-body table-responsive">
