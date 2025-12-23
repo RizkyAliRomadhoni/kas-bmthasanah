@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Kas;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Schema;
 
 class NeracaController extends Controller
 {
@@ -24,8 +25,7 @@ class NeracaController extends Controller
             ->pluck('bulan');
 
         // ============================
-        // 🔹 DAFTAR AKUN NERACA
-        // (Kas DISIMPAN tapi BELUM DIPAKAI)
+        // 🔹 DAFTAR AKUN AKTIVA
         // ============================
         $akunAktiva = [
             'Kas',
@@ -37,10 +37,16 @@ class NeracaController extends Controller
             'Kandang',
         ];
 
+        // ============================
+        // 🔹 DAFTAR AKUN PASIVA
+        // (DITAMBAH PENYERTAAN MODAL)
+        // ============================
         $akunPasiva = [
             'Hutang',
             'Titipan',
-            'Modal'
+            'Modal',
+            'Penyertaan BMT Hasanah',
+            'Penyertaan DF',
         ];
 
         // ============================
@@ -58,29 +64,45 @@ class NeracaController extends Controller
 
         foreach (array_merge($akunAktiva, $akunPasiva) as $akun) {
 
-            $running = $saldoAwal[$akun];
-
             foreach ($bulanList as $bulan) {
 
-                // 🔴 KAS DIABAIKAN DULU
+                $akhirBulan = Carbon::createFromFormat('Y-m', $bulan)->endOfMonth();
+
+                // ============================
+                // 🔹 KAS (SALDO AKUMULATIF FINAL)
+                // ============================
                 if ($akun === 'Kas') {
-                    $saldo[$akun][$bulan] = null;
+                    $saldo[$akun][$bulan] = Kas::where('akun', 'Kas')
+                        ->where('tanggal', '<=', $akhirBulan)
+                        ->sum('jumlah');
                     continue;
                 }
 
                 // ============================
-                // 🔹 TOTAL NILAI SAMPAI BULAN INI
-                // (TIDAK peduli Masuk / Keluar)
+                // 🔹 PENYERTAAN MODAL (PASIVA)
                 // ============================
-                $nilai = Kas::where('akun', $akun)
-                    ->whereRaw("DATE_FORMAT(tanggal,'%Y-%m') <= ?", [$bulan])
-                    ->sum('jumlah');
+                if (in_array($akun, ['Penyertaan BMT Hasanah', 'Penyertaan DF'])) {
+
+                    // Jika kolom keterangan belum ada → 0
+                    if (!Schema::hasColumn('kas', 'keterangan')) {
+                        $saldo[$akun][$bulan] = 0;
+                        continue;
+                    }
+
+                    $saldo[$akun][$bulan] = Kas::where('akun', 'Kas')
+                        ->where('keterangan', $akun)
+                        ->where('tanggal', '<=', $akhirBulan)
+                        ->sum('jumlah');
+
+                    continue;
+                }
 
                 // ============================
-                // 🔹 SALDO KUMULATIF
+                // 🔹 AKUN LAIN (KUMULATIF MURNI)
                 // ============================
-                $running = $nilai;
-                $saldo[$akun][$bulan] = $running;
+                $saldo[$akun][$bulan] = Kas::where('akun', $akun)
+                    ->where('tanggal', '<=', $akhirBulan)
+                    ->sum('jumlah');
             }
         }
 
