@@ -49,24 +49,21 @@ class NeracaController extends Controller
         }
 
         $saldo = [];
-        $sisaSaldo = []; // ⬅️ INI YANG BARU
+        $sisaSaldo = [];
 
         foreach ($bulanList as $bulan) {
 
             $akhirBulan = Carbon::createFromFormat('Y-m', $bulan)->endOfMonth();
 
             // ========================================
-            // 🔹 HITUNG SISA SALDO NYATA
+            // ✅ SISA SALDO NYATA (AMBIL DARI TABEL KAS)
             // ========================================
-            $totalKasMasuk = Kas::where('akun', 'Kas')
-                ->where('tanggal', '<=', $akhirBulan)
-                ->sum('jumlah');
+            $saldoAkhirBulan = Kas::where('tanggal', '<=', $akhirBulan)
+                ->orderBy('tanggal', 'desc')
+                ->orderBy('id', 'desc')
+                ->value('saldo');
 
-            $totalPemakaian = Kas::where('akun', '!=', 'Kas')
-                ->where('tanggal', '<=', $akhirBulan)
-                ->sum('jumlah');
-
-            $sisaSaldo[$bulan] = $totalKasMasuk - $totalPemakaian;
+            $sisaSaldo[$bulan] = $saldoAkhirBulan ?? 0;
 
             // ========================================
             // 🔹 AKTIVA
@@ -74,7 +71,7 @@ class NeracaController extends Controller
             foreach ($akunAktiva as $akun) {
 
                 if ($akun === 'Kas') {
-                    $saldo[$akun][$bulan] = 0; // KAS NERACA DIABAIKAN
+                    $saldo[$akun][$bulan] = 0; // KAS NERACA TIDAK DIPAKAI
                     continue;
                 }
 
@@ -115,7 +112,7 @@ class NeracaController extends Controller
             'akunPasiva',
             'saldoAwal',
             'saldo',
-            'sisaSaldo' // ⬅️ KIRIM KE VIEW
+            'sisaSaldo'
         ));
     }
 
