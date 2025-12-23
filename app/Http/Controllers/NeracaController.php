@@ -9,24 +9,19 @@ use Illuminate\Support\Facades\Schema;
 
 class NeracaController extends Controller
 {
-    /**
-     * ======================================================
-     * 🔹 METHOD LAMA — JANGAN DIHAPUS
-     * ======================================================
-     */
     public function index(Request $request)
     {
-        // ==================================================
-        // 🔹 AMBIL BULAN UNIK DARI DATA KAS
-        // ==================================================
+        // ================================
+        // 🔹 BULAN OTOMATIS
+        // ================================
         $bulanList = Kas::selectRaw("DATE_FORMAT(tanggal,'%Y-%m') as bulan")
             ->groupBy('bulan')
             ->orderBy('bulan')
             ->pluck('bulan');
 
-        // ==================================================
-        // 🔹 AKUN AKTIVA (KAS = RESIDUAL)
-        // ==================================================
+        // ================================
+        // 🔹 AKUN
+        // ================================
         $akunAktiva = [
             'Kas',
             'Kambing',
@@ -37,9 +32,6 @@ class NeracaController extends Controller
             'Kandang',
         ];
 
-        // ==================================================
-        // 🔹 AKUN PASIVA
-        // ==================================================
         $akunPasiva = [
             'Hutang',
             'Titipan',
@@ -48,50 +40,54 @@ class NeracaController extends Controller
             'Penyertaan DF',
         ];
 
-        // ==================================================
-        // 🔹 SALDO AWAL (FORMALITAS)
-        // ==================================================
+        // ================================
+        // 🔹 SALDO AWAL
+        // ================================
         $saldoAwal = [];
         foreach (array_merge($akunAktiva, $akunPasiva) as $akun) {
             $saldoAwal[$akun] = 0;
         }
 
-        // ==================================================
-        // 🔹 HITUNG SALDO BULANAN
-        // ==================================================
         $saldo = [];
+        $sisaSaldo = []; // ⬅️ INI YANG BARU
 
         foreach ($bulanList as $bulan) {
 
             $akhirBulan = Carbon::createFromFormat('Y-m', $bulan)->endOfMonth();
 
-            // ==============================================
-            // 🔹 TOTAL AKTIVA (KECUALI KAS)
-            // ==============================================
-            $totalAktiva = 0;
+            // ========================================
+            // 🔹 HITUNG SISA SALDO NYATA
+            // ========================================
+            $totalKasMasuk = Kas::where('akun', 'Kas')
+                ->where('tanggal', '<=', $akhirBulan)
+                ->sum('jumlah');
 
+            $totalPemakaian = Kas::where('akun', '!=', 'Kas')
+                ->where('tanggal', '<=', $akhirBulan)
+                ->sum('jumlah');
+
+            $sisaSaldo[$bulan] = $totalKasMasuk - $totalPemakaian;
+
+            // ========================================
+            // 🔹 AKTIVA
+            // ========================================
             foreach ($akunAktiva as $akun) {
 
                 if ($akun === 'Kas') {
-                    continue; // KAS TIDAK DIHITUNG DI SINI
+                    $saldo[$akun][$bulan] = 0; // KAS NERACA DIABAIKAN
+                    continue;
                 }
 
-                $nilai = Kas::where('akun', $akun)
+                $saldo[$akun][$bulan] = Kas::where('akun', $akun)
                     ->where('tanggal', '<=', $akhirBulan)
                     ->sum('jumlah');
-
-                $saldo[$akun][$bulan] = $nilai;
-                $totalAktiva += $nilai;
             }
 
-            // ==============================================
-            // 🔹 TOTAL PASIVA
-            // ==============================================
-            $totalPasiva = 0;
-
+            // ========================================
+            // 🔹 PASIVA
+            // ========================================
             foreach ($akunPasiva as $akun) {
 
-                // 🔴 PENYERTAAN MODAL DARI KAS + KETERANGAN
                 if (in_array($akun, ['Penyertaan BMT Hasanah', 'Penyertaan DF'])) {
 
                     if (!Schema::hasColumn('kas', 'keterangan')) {
@@ -99,29 +95,18 @@ class NeracaController extends Controller
                         continue;
                     }
 
-                    $nilai = Kas::where('akun', 'Kas')
+                    $saldo[$akun][$bulan] = Kas::where('akun', 'Kas')
                         ->where('keterangan', $akun)
                         ->where('tanggal', '<=', $akhirBulan)
                         ->sum('jumlah');
 
-                    $saldo[$akun][$bulan] = $nilai;
-                    $totalPasiva += $nilai;
                     continue;
                 }
 
-                // 🔹 PASIVA NORMAL
-                $nilai = Kas::where('akun', $akun)
+                $saldo[$akun][$bulan] = Kas::where('akun', $akun)
                     ->where('tanggal', '<=', $akhirBulan)
                     ->sum('jumlah');
-
-                $saldo[$akun][$bulan] = $nilai;
-                $totalPasiva += $nilai;
             }
-
-            // ==============================================
-            // 🟢 KAS = SALDO TERSISA (FIX FINAL)
-            // ==============================================
-            $saldo['Kas'][$bulan] = $totalPasiva - $totalAktiva;
         }
 
         return view('neraca.index', compact(
@@ -129,15 +114,11 @@ class NeracaController extends Controller
             'akunAktiva',
             'akunPasiva',
             'saldoAwal',
-            'saldo'
+            'saldo',
+            'sisaSaldo' // ⬅️ KIRIM KE VIEW
         ));
     }
 
-    /**
-     * ======================================================
-     * 🔹 METHOD BARU — JANGAN DIHAPUS
-     * ======================================================
-     */
     public function neracaTabel(Request $request)
     {
         // BIARKAN

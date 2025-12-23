@@ -4,13 +4,12 @@
 
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white">
-                    <h5 class="mb-0 fw-bold">NERACA (Kas = Saldo Tersisa)</h5>
+                    <h5 class="mb-0 fw-bold">NERACA</h5>
                 </div>
 
                 <div class="card-body table-responsive">
                     <table class="table table-bordered table-sm text-center align-middle">
 
-                        {{-- HEADER --}}
                         <thead class="table-light">
                             <tr>
                                 <th rowspan="2" class="text-start">AKUN</th>
@@ -19,14 +18,23 @@
                             </tr>
                             <tr>
                                 @foreach ($bulanList as $bulan)
-                                    <th>
-                                        {{ \Carbon\Carbon::createFromFormat('Y-m', $bulan)->translatedFormat('M Y') }}
-                                    </th>
+                                    <th>{{ \Carbon\Carbon::createFromFormat('Y-m', $bulan)->translatedFormat('M Y') }}</th>
                                 @endforeach
                             </tr>
                         </thead>
 
                         <tbody>
+
+                            {{-- ===================== --}}
+                            {{-- 🔥 SISA SALDO NYATA --}}
+                            {{-- ===================== --}}
+                            <tr class="table-success fw-bold">
+                                <td class="text-start">Sisa Saldo</td>
+                                <td>0</td>
+                                @foreach ($bulanList as $bulan)
+                                    <td>{{ number_format($sisaSaldo[$bulan] ?? 0, 0, ',', '.') }}</td>
+                                @endforeach
+                            </tr>
 
                             {{-- ===================== --}}
                             {{-- 🔹 AKTIVA --}}
@@ -39,11 +47,8 @@
                                 <tr>
                                     <td class="text-start">{{ $akun }}</td>
                                     <td>{{ number_format($saldoAwal[$akun], 0, ',', '.') }}</td>
-
                                     @foreach ($bulanList as $bulan)
-                                        <td>
-                                            {{ number_format($saldo[$akun][$bulan] ?? 0, 0, ',', '.') }}
-                                        </td>
+                                        <td>{{ number_format($saldo[$akun][$bulan] ?? 0, 0, ',', '.') }}</td>
                                     @endforeach
                                 </tr>
                             @endforeach
@@ -59,11 +64,8 @@
                                 <tr>
                                     <td class="text-start">{{ $akun }}</td>
                                     <td>{{ number_format($saldoAwal[$akun], 0, ',', '.') }}</td>
-
                                     @foreach ($bulanList as $bulan)
-                                        <td>
-                                            {{ number_format($saldo[$akun][$bulan] ?? 0, 0, ',', '.') }}
-                                        </td>
+                                        <td>{{ number_format($saldo[$akun][$bulan] ?? 0, 0, ',', '.') }}</td>
                                     @endforeach
                                 </tr>
                             @endforeach
