@@ -3,121 +3,113 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Kas;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Schema;
 
 class NeracaController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        // ================================
-        // 🔹 BULAN OTOMATIS
-        // ================================
-        $bulanList = Kas::selectRaw("DATE_FORMAT(tanggal,'%Y-%m') as bulan")
+        /**
+         * ===============================
+         * 1️⃣ BULAN LIST (DINAMIS)
+         * ===============================
+         */
+        $bulanList = DB::table('kas')
+            ->selectRaw("DATE_FORMAT(tanggal, '%Y-%m') as bulan")
             ->groupBy('bulan')
             ->orderBy('bulan')
-            ->pluck('bulan');
+            ->pluck('bulan')
+            ->toArray();
 
-        // ================================
-        // 🔹 AKUN
-        // ================================
+        /**
+         * ===============================
+         * 2️⃣ DAFTAR AKUN
+         * ===============================
+         */
         $akunAktiva = [
-            'Kas',
-            'Kambing',
-            'Pakan',
-            'Operasional',
-            'Perawatan',
-            'Perlengkapan',
-            'Kandang',
+            'Piutang',
+            'Inventaris',
+            'Aset Lainnya'
         ];
 
         $akunPasiva = [
-            'Hutang',
-            'Titipan',
-            'Modal',
+            'Hutang Usaha',
+            'Hutang Lainnya',
             'Penyertaan BMT Hasanah',
-            'Penyertaan DF',
+            'Penyertaan DF'
         ];
 
-        // ================================
-        // 🔹 SALDO AWAL
-        // ================================
-        $saldoAwal = [];
-        foreach (array_merge($akunAktiva, $akunPasiva) as $akun) {
-            $saldoAwal[$akun] = 0;
+        /**
+         * ===============================
+         * 3️⃣ SALDO PER AKUN PER BULAN
+         * (TANPA jenis_transaksi)
+         * ===============================
+         */
+        $saldo = [];
+
+        $dataSaldo = DB::table('kas')
+            ->selectRaw("
+                akun,
+                DATE_FORMAT(tanggal, '%Y-%m') as bulan,
+                SUM(nominal) as total
+            ")
+            ->groupBy('akun', 'bulan')
+            ->get();
+
+        foreach ($dataSaldo as $row) {
+            $saldo[$row->akun][$row->bulan] = $row->total;
         }
 
-        $saldo = [];
+        /**
+         * ===============================
+         * 4️⃣ SALDO AWAL (SEBELUM BULAN PERTAMA)
+         * ===============================
+         */
+        $saldoAwal = [];
+        if (!empty($bulanList)) {
+            $bulanPertama = Carbon::createFromFormat('Y-m', $bulanList[0])->startOfMonth();
+
+            $dataSaldoAwal = DB::table('kas')
+                ->selectRaw("akun, SUM(nominal) as total")
+                ->where('tanggal', '<', $bulanPertama)
+                ->groupBy('akun')
+                ->get();
+
+            foreach ($dataSaldoAwal as $row) {
+                $saldoAwal[$row->akun] = $row->total;
+            }
+        }
+
+        /**
+         * ===============================
+         * 5️⃣ SISA SALDO KAS (INFORMASI)
+         * ===============================
+         */
         $sisaSaldo = [];
+        $runningSaldo = 0;
 
-        foreach ($bulanList as $bulan) {
+        $kasPerBulan = DB::table('kas')
+            ->selectRaw("
+                DATE_FORMAT(tanggal, '%Y-%m') as bulan,
+                SUM(nominal) as total
+            ")
+            ->groupBy('bulan')
+            ->orderBy('bulan')
+            ->get();
 
-            $akhirBulan = Carbon::createFromFormat('Y-m', $bulan)->endOfMonth();
-
-            // ========================================
-            // ✅ SISA SALDO NYATA (AMBIL DARI TABEL KAS)
-            // ========================================
-            $saldoAkhirBulan = Kas::where('tanggal', '<=', $akhirBulan)
-                ->orderBy('tanggal', 'desc')
-                ->orderBy('id', 'desc')
-                ->value('saldo');
-
-            $sisaSaldo[$bulan] = $saldoAkhirBulan ?? 0;
-
-            // ========================================
-            // 🔹 AKTIVA
-            // ========================================
-            foreach ($akunAktiva as $akun) {
-
-                if ($akun === 'Kas') {
-                    $saldo[$akun][$bulan] = 0; // KAS NERACA TIDAK DIPAKAI
-                    continue;
-                }
-
-                $saldo[$akun][$bulan] = Kas::where('akun', $akun)
-                    ->where('tanggal', '<=', $akhirBulan)
-                    ->sum('jumlah');
-            }
-
-            // ========================================
-            // 🔹 PASIVA
-            // ========================================
-            foreach ($akunPasiva as $akun) {
-
-                if (in_array($akun, ['Penyertaan BMT Hasanah', 'Penyertaan DF'])) {
-
-                    if (!Schema::hasColumn('kas', 'keterangan')) {
-                        $saldo[$akun][$bulan] = 0;
-                        continue;
-                    }
-
-                    $saldo[$akun][$bulan] = Kas::where('akun', 'Kas')
-                        ->where('keterangan', $akun)
-                        ->where('tanggal', '<=', $akhirBulan)
-                        ->sum('jumlah');
-
-                    continue;
-                }
-
-                $saldo[$akun][$bulan] = Kas::where('akun', $akun)
-                    ->where('tanggal', '<=', $akhirBulan)
-                    ->sum('jumlah');
-            }
+        foreach ($kasPerBulan as $row) {
+            $runningSaldo += $row->total;
+            $sisaSaldo[$row->bulan] = $runningSaldo;
         }
 
         return view('neraca.index', compact(
             'bulanList',
             'akunAktiva',
             'akunPasiva',
-            'saldoAwal',
             'saldo',
+            'saldoAwal',
             'sisaSaldo'
         ));
-    }
-
-    public function neracaTabel(Request $request)
-    {
-        // BIARKAN
     }
 }
