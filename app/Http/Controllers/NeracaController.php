@@ -52,7 +52,7 @@ class NeracaController extends Controller
             ->selectRaw("
                 akun,
                 DATE_FORMAT(tanggal, '%Y-%m') as bulan,
-                SUM(nominal) as total
+                SUM(jumlah) as total
             ")
             ->groupBy('akun', 'bulan')
             ->get();
@@ -71,7 +71,7 @@ class NeracaController extends Controller
             $bulanPertama = Carbon::createFromFormat('Y-m', $bulanList[0])->startOfMonth();
 
             $dataSaldoAwal = DB::table('kas')
-                ->selectRaw("akun, SUM(nominal) as total")
+                ->selectRaw("akun, SUM(jumlah) as total")
                 ->where('tanggal', '<', $bulanPertama)
                 ->groupBy('akun')
                 ->get();
@@ -92,7 +92,7 @@ class NeracaController extends Controller
         $kasPerBulan = DB::table('kas')
             ->selectRaw("
                 DATE_FORMAT(tanggal, '%Y-%m') as bulan,
-                SUM(nominal) as total
+                SUM(jumlah) as total
             ")
             ->groupBy('bulan')
             ->orderBy('bulan')
