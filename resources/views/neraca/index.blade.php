@@ -1,170 +1,191 @@
 <x-app-layout>
-<main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
-<div class="container-fluid py-4">
+    <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
+        <div class="container-fluid py-4">
 
-<div class="card shadow-sm border-0">
-<div class="card-header bg-white">
-<h5 class="mb-0 fw-bold">NERACA</h5>
-</div>
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0 fw-bold">NERACA</h5>
+                </div>
 
-<div class="card-body table-responsive">
-<table class="table table-bordered table-sm text-center align-middle">
+                <div class="card-body table-responsive">
+                    <table class="table table-bordered table-sm text-center align-middle">
 
-<thead class="table-light">
-<tr>
-<th rowspan="2" class="text-start">AKUN</th>
-<th rowspan="2">Saldo Awal</th>
-<th colspan="{{ count($bulanList) }}">Saldo Akhir per Bulan</th>
-</tr>
-<tr>
-@foreach ($bulanList as $bulan)
-<th>{{ \Carbon\Carbon::createFromFormat('Y-m', $bulan)->translatedFormat('M Y') }}</th>
-@endforeach
-</tr>
-</thead>
+                        <thead class="table-light">
+                            <tr>
+                                <th rowspan="2" class="text-start">AKUN</th>
+                                <th rowspan="2">Saldo Awal</th>
+                                <th colspan="{{ count($bulanList) }}">Saldo Akhir per Bulan</th>
+                            </tr>
+                            <tr>
+                                @foreach ($bulanList as $bulan)
+                                    <th>{{ \Carbon\Carbon::createFromFormat('Y-m', $bulan)->translatedFormat('M Y') }}</th>
+                                @endforeach
+                            </tr>
+                        </thead>
 
-<tbody>
+                        <tbody>
 
-{{-- ===================== --}}
-{{-- 🔥 SISA SALDO --}}
-{{-- ===================== --}}
-<tr class="table-success fw-bold">
-<td class="text-start">Sisa Saldo</td>
-<td>0</td>
-@foreach ($bulanList as $bulan)
-<td>{{ number_format($sisaSaldo[$bulan] ?? 0,0,',','.') }}</td>
-@endforeach
-</tr>
+                            {{-- ===================== --}}
+                            {{-- 🔥 SISA SALDO (INFO) --}}
+                            {{-- ===================== --}}
+                            <tr class="table-success fw-bold">
+                                <td class="text-start">Sisa Saldo</td>
+                                <td>0</td>
+                                @foreach ($bulanList as $bulan)
+                                    <td>{{ number_format($sisaSaldo[$bulan] ?? 0, 0, ',', '.') }}</td>
+                                @endforeach
+                            </tr>
 
-{{-- ===================== --}}
-{{-- 🔹 AKTIVA --}}
-{{-- ===================== --}}
-<tr class="table-secondary fw-bold">
-<td colspan="{{ 2 + count($bulanList) }}" class="text-start">AKTIVA</td>
-</tr>
+                            {{-- ===================== --}}
+                            {{-- 🔹 AKTIVA --}}
+                            {{-- ===================== --}}
+                            <tr class="table-secondary fw-bold">
+                                <td colspan="{{ 2 + count($bulanList) }}" class="text-start">AKTIVA</td>
+                            </tr>
 
-@php
-$totalAktiva = [];
-@endphp
+                            @php
+                                $totalAktivaAwal = 0;
+                                $totalAktiva = [];
+                            @endphp
 
-@foreach ($akunAktiva as $akun)
-<tr>
-<td class="text-start">{{ $akun }}</td>
-<td>{{ number_format($saldoAwal[$akun],0,',','.') }}</td>
-@foreach ($bulanList as $bulan)
-@php
-$nilai = $saldo[$akun][$bulan] ?? 0;
-$totalAktiva[$bulan] = ($totalAktiva[$bulan] ?? 0) + $nilai;
-@endphp
-<td>{{ number_format($nilai,0,',','.') }}</td>
-@endforeach
-</tr>
-@endforeach
+                            @foreach ($akunAktiva as $akun)
+                                <tr>
+                                    <td class="text-start">{{ $akun }}</td>
+                                    <td>
+                                        {{ number_format($saldoAwal[$akun] ?? 0, 0, ',', '.') }}
+                                        @php $totalAktivaAwal += $saldoAwal[$akun] ?? 0; @endphp
+                                    </td>
 
-<tr class="fw-bold table-light">
-<td class="text-start">TOTAL ASET</td>
-<td>0</td>
-@foreach ($bulanList as $bulan)
-<td>{{ number_format($totalAktiva[$bulan] ?? 0,0,',','.') }}</td>
-@endforeach
-</tr>
+                                    @foreach ($bulanList as $bulan)
+                                        @php
+                                            $nilai = $saldo[$akun][$bulan] ?? 0;
+                                            $totalAktiva[$bulan] = ($totalAktiva[$bulan] ?? 0) + $nilai;
+                                        @endphp
+                                        <td>{{ number_format($nilai, 0, ',', '.') }}</td>
+                                    @endforeach
+                                </tr>
+                            @endforeach
 
-{{-- ===================== --}}
-{{-- 🔹 PASIVA --}}
-{{-- ===================== --}}
-<tr class="table-secondary fw-bold">
-<td colspan="{{ 2 + count($bulanList) }}" class="text-start">PASIVA</td>
-</tr>
+                            {{-- TOTAL ASET --}}
+                            <tr class="fw-bold table-light">
+                                <td class="text-start">TOTAL ASET</td>
+                                <td>{{ number_format($totalAktivaAwal, 0, ',', '.') }}</td>
+                                @foreach ($bulanList as $bulan)
+                                    <td>{{ number_format($totalAktiva[$bulan] ?? 0, 0, ',', '.') }}</td>
+                                @endforeach
+                            </tr>
 
-@php
-$totalKewajiban = [];
-@endphp
+                            {{-- ===================== --}}
+                            {{-- 🔹 PASIVA --}}
+                            {{-- ===================== --}}
+                            <tr class="table-secondary fw-bold">
+                                <td colspan="{{ 2 + count($bulanList) }}" class="text-start">PASIVA</td>
+                            </tr>
 
-@foreach ($akunPasiva as $akun)
-<tr>
-<td class="text-start">{{ $akun }}</td>
-<td>{{ number_format($saldoAwal[$akun],0,',','.') }}</td>
-@foreach ($bulanList as $bulan)
-@php
-$nilai = $saldo[$akun][$bulan] ?? 0;
-$totalKewajiban[$bulan] = ($totalKewajiban[$bulan] ?? 0) + $nilai;
-@endphp
-<td>{{ number_format($nilai,0,',','.') }}</td>
-@endforeach
-</tr>
-@endforeach
+                            @php
+                                $totalKewajibanAwal = 0;
+                                $totalKewajiban = [];
+                            @endphp
 
-<tr class="fw-bold table-light">
-<td class="text-start">TOTAL KEWAJIBAN</td>
-<td>0</td>
-@foreach ($bulanList as $bulan)
-<td>{{ number_format($totalKewajiban[$bulan] ?? 0,0,',','.') }}</td>
-@endforeach
-</tr>
+                            @foreach ($akunPasiva as $akun)
+                                <tr>
+                                    <td class="text-start">{{ $akun }}</td>
+                                    <td>
+                                        {{ number_format($saldoAwal[$akun] ?? 0, 0, ',', '.') }}
+                                        @php $totalKewajibanAwal += $saldoAwal[$akun] ?? 0; @endphp
+                                    </td>
 
-{{-- ===================== --}}
-{{-- 🔹 MODAL (LABA EXCEL) --}}
-{{-- ===================== --}}
-<tr class="table-secondary fw-bold">
-<td colspan="{{ 2 + count($bulanList) }}" class="text-start">MODAL</td>
-</tr>
+                                    @foreach ($bulanList as $bulan)
+                                        @php
+                                            $nilai = $saldo[$akun][$bulan] ?? 0;
+                                            $totalKewajiban[$bulan] = ($totalKewajiban[$bulan] ?? 0) + $nilai;
+                                        @endphp
+                                        <td>{{ number_format($nilai, 0, ',', '.') }}</td>
+                                    @endforeach
+                                </tr>
+                            @endforeach
 
-@php
-$labaKumulatif = [];
-$prevSaldo = null;
-@endphp
+                            {{-- TOTAL KEWAJIBAN --}}
+                            <tr class="fw-bold table-light">
+                                <td class="text-start">TOTAL KEWAJIBAN</td>
+                                <td>{{ number_format($totalKewajibanAwal, 0, ',', '.') }}</td>
+                                @foreach ($bulanList as $bulan)
+                                    <td>{{ number_format($totalKewajiban[$bulan] ?? 0, 0, ',', '.') }}</td>
+                                @endforeach
+                            </tr>
 
-<tr>
-<td class="text-start">Laba Rugi Tahun Berjalan</td>
-<td>0</td>
-@foreach ($bulanList as $bulan)
-@php
-$kas = $sisaSaldo[$bulan] ?? 0;
-$laba = $prevSaldo === null ? $kas : ($kas - $prevSaldo);
-$labaKumulatif[$bulan] = ($labaKumulatif[array_key_last($labaKumulatif)] ?? 0) + $laba;
-$prevSaldo = $kas;
-@endphp
-<td>{{ number_format($labaKumulatif[$bulan],0,',','.') }}</td>
-@endforeach
-</tr>
+                            {{-- ===================== --}}
+                            {{-- 🔹 MODAL --}}
+                            {{-- ===================== --}}
+                            @php
+                                $modalAwal = 200000000;
+                                $laba = [];
+                                $totalModal = [];
+                                $totalPasiva = [];
+                            @endphp
 
-<tr class="fw-bold table-light">
-<td class="text-start">TOTAL MODAL</td>
-<td>0</td>
-@foreach ($bulanList as $bulan)
-<td>{{ number_format($labaKumulatif[$bulan] ?? 0,0,',','.') }}</td>
-@endforeach
-</tr>
+                            <tr class="table-secondary fw-bold">
+                                <td colspan="{{ 2 + count($bulanList) }}" class="text-start">MODAL</td>
+                            </tr>
 
-<tr class="fw-bold table-warning">
-<td class="text-start">TOTAL PASIVA</td>
-<td>0</td>
-@foreach ($bulanList as $bulan)
-<td>{{ number_format(($totalKewajiban[$bulan] ?? 0) + ($labaKumulatif[$bulan] ?? 0),0,',','.') }}</td>
-@endforeach
-</tr>
+                            {{-- LABA RUGI --}}
+                            <tr>
+                                <td class="text-start">Laba Rugi Tahun Berjalan</td>
+                                <td>-</td>
+                                @foreach ($bulanList as $bulan)
+                                    @php
+                                        $laba[$bulan] =
+                                            ($totalAktiva[$bulan] ?? 0)
+                                            - ($totalKewajiban[$bulan] ?? 0)
+                                            - $modalAwal;
+                                        $totalModal[$bulan] = $laba[$bulan];
+                                        $totalPasiva[$bulan] = ($totalKewajiban[$bulan] ?? 0) + $totalModal[$bulan];
+                                    @endphp
+                                    <td>{{ number_format($laba[$bulan], 0, ',', '.') }}</td>
+                                @endforeach
+                            </tr>
 
-<tr class="fw-bold table-danger">
-<td class="text-start">AKTIVA - PASIVA</td>
-<td>0</td>
-@foreach ($bulanList as $bulan)
-<td>{{ number_format(($totalAktiva[$bulan] ?? 0) - (($totalKewajiban[$bulan] ?? 0)+($labaKumulatif[$bulan] ?? 0)),0,',','.') }}</td>
-@endforeach
-</tr>
+                            {{-- TOTAL MODAL --}}
+                            <tr class="fw-bold table-light">
+                                <td class="text-start">TOTAL MODAL</td>
+                                <td>-</td>
+                                @foreach ($bulanList as $bulan)
+                                    <td>{{ number_format($totalModal[$bulan] ?? 0, 0, ',', '.') }}</td>
+                                @endforeach
+                            </tr>
 
-<tr class="fw-bold table-info">
-<td class="text-start">Kas (Informasi Saldo)</td>
-<td>0</td>
-@foreach ($bulanList as $bulan)
-<td>{{ number_format($sisaSaldo[$bulan] ?? 0,0,',','.') }}</td>
-@endforeach
-</tr>
+                            {{-- TOTAL PASIVA --}}
+                            <tr class="fw-bold table-warning">
+                                <td class="text-start">TOTAL PASIVA</td>
+                                <td>{{ number_format($totalAktivaAwal, 0, ',', '.') }}</td>
+                                @foreach ($bulanList as $bulan)
+                                    <td>{{ number_format($totalPasiva[$bulan] ?? 0, 0, ',', '.') }}</td>
+                                @endforeach
+                            </tr>
 
-</tbody>
-</table>
-</div>
-</div>
+                            {{-- VALIDASI --}}
+                            <tr class="fw-bold table-danger">
+                                <td class="text-start">AKTIVA - PASIVA</td>
+                                <td>0</td>
+                                @foreach ($bulanList as $bulan)
+                                    <td>{{ number_format(($totalAktiva[$bulan] ?? 0) - ($totalPasiva[$bulan] ?? 0), 0, ',', '.') }}</td>
+                                @endforeach
+                            </tr>
 
-</div>
-</main>
+                            {{-- KAS INFO --}}
+                            <tr class="fw-bold table-info">
+                                <td class="text-start">Kas (Informasi Saldo)</td>
+                                <td>0</td>
+                                @foreach ($bulanList as $bulan)
+                                    <td>{{ number_format($sisaSaldo[$bulan] ?? 0, 0, ',', '.') }}</td>
+                                @endforeach
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
 </x-app-layout>
