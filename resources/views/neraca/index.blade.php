@@ -187,6 +187,15 @@
         Laporan Laba Rugi
     </a>
 </div>
+<a href="{{ route('neraca.penjualan.index') }}"
+   class="btn btn-sm btn-primary">
+   Kelola Penjualan
+</a>
+
+<a href="{{ route('neraca.rincian-kambing.index') }}"
+   class="btn btn-sm btn-secondary">
+   Rincian Kambing
+</a>
 
                         </tbody>
                     </table>
