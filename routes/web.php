@@ -13,6 +13,7 @@ use App\Http\Controllers\AsetController;
 use App\Http\Controllers\KambingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FarmController;
+use App\Http\Controllers\LabaRugiController;
 
 
 // =====================================================================
@@ -155,6 +156,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('farm/{id}/feed', [FarmController::class,'addFeed'])->name('farm.addFeed');
     
 });
+
+// routes/web.php
+Route::get('/neraca/laba-rugi', [App\Http\Controllers\LabaRugiController::class, 'index'])
+    ->name('neraca.laba-rugi');
 
 
 
