@@ -14,6 +14,9 @@ use App\Http\Controllers\KambingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FarmController;
 use App\Http\Controllers\LabaRugiController;
+use App\Http\Controllers\PenjualanController;
+use App\Http\Controllers\RincianKambingController;
+
 
 
 // =====================================================================
@@ -163,3 +166,34 @@ Route::get('/neraca/laba-rugi', [App\Http\Controllers\LabaRugiController::class,
 
 
 
+/*
+|--------------------------------------------------------------------------
+| NERACA - PENJUALAN
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth'])->group(function () {
+
+    // =========================
+    // KELOLA PENJUALAN
+    // =========================
+    Route::get('/neraca/penjualan', [PenjualanController::class, 'index'])
+        ->name('neraca.penjualan.index');
+
+    Route::post('/neraca/penjualan/store', [PenjualanController::class, 'store'])
+        ->name('neraca.penjualan.store');
+
+    // =========================
+    // RINCIAN KAMBING
+    // =========================
+    Route::get('/neraca/rincian-kambing', [RincianKambingController::class, 'index'])
+        ->name('neraca.rincian-kambing.index');
+
+    // HPP Kambing
+    Route::post('/neraca/rincian-kambing/hpp/store', [RincianKambingController::class, 'storeHpp'])
+        ->name('neraca.rincian-kambing.hpp.store');
+
+    // Kambing Mati
+    Route::post('/neraca/rincian-kambing/mati/store', [RincianKambingController::class, 'storeMati'])
+        ->name('neraca.rincian-kambing.mati.store');
+
+});
