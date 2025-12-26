@@ -180,6 +180,13 @@
                                     <td>{{ number_format($sisaSaldo[$bulan] ?? 0, 0, ',', '.') }}</td>
                                 @endforeach
                             </tr>
+<div class="d-flex justify-content-end mb-3">
+    <a href="{{ route('neraca.laba-rugi') }}" 
+       class="btn btn-sm btn-outline-primary">
+        <i class="fas fa-chart-line me-1"></i>
+        Laporan Laba Rugi
+    </a>
+</div>
 
                         </tbody>
                     </table>
