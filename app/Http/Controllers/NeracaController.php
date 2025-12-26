@@ -12,7 +12,7 @@ class NeracaController extends Controller
     public function index(Request $request)
     {
         // ================================
-        // BULAN OTOMATIS
+        // 🔹 BULAN OTOMATIS
         // ================================
         $bulanList = Kas::selectRaw("DATE_FORMAT(tanggal,'%Y-%m') as bulan")
             ->groupBy('bulan')
@@ -20,7 +20,7 @@ class NeracaController extends Controller
             ->pluck('bulan');
 
         // ================================
-        // AKUN
+        // 🔹 AKUN
         // ================================
         $akunAktiva = [
             'Kas',
@@ -37,11 +37,10 @@ class NeracaController extends Controller
             'Titipan',
             'Penyertaan BMT Hasanah',
             'Penyertaan DF',
-            'Modal',
         ];
 
         // ================================
-        // SALDO AWAL (DUMMY SESUAI EXCEL)
+        // 🔹 SALDO AWAL
         // ================================
         $saldoAwal = [];
         foreach (array_merge($akunAktiva, $akunPasiva) as $akun) {
@@ -56,22 +55,24 @@ class NeracaController extends Controller
             $akhirBulan = Carbon::createFromFormat('Y-m', $bulan)->endOfMonth();
 
             // ================================
-            // SISA SALDO NYATA (INFORMASI)
+            // 🔹 KAS INFORMASI (SALDO NYATA)
             // ================================
-            $saldoAkhir = Kas::where('tanggal', '<=', $akhirBulan)
-                ->orderBy('tanggal', 'desc')
-                ->orderBy('id', 'desc')
-                ->value('saldo');
-
-            $sisaSaldo[$bulan] = $saldoAkhir ?? 0;
+            if (Schema::hasColumn('kas', 'saldo')) {
+                $sisaSaldo[$bulan] = Kas::where('tanggal', '<=', $akhirBulan)
+                    ->orderBy('tanggal', 'desc')
+                    ->orderBy('id', 'desc')
+                    ->value('saldo') ?? 0;
+            } else {
+                $sisaSaldo[$bulan] = 0;
+            }
 
             // ================================
-            // AKTIVA (KUMULATIF)
+            // 🔹 AKTIVA (KUMULATIF)
             // ================================
             foreach ($akunAktiva as $akun) {
 
                 if ($akun === 'Kas') {
-                    $saldo[$akun][$bulan] = 0; // Kas tidak dipakai hitung neraca
+                    $saldo[$akun][$bulan] = 0; // kas neraca tidak dipakai
                     continue;
                 }
 
@@ -81,7 +82,7 @@ class NeracaController extends Controller
             }
 
             // ================================
-            // PASIVA (KUMULATIF)
+            // 🔹 PASIVA (KUMULATIF)
             // ================================
             foreach ($akunPasiva as $akun) {
 
@@ -114,10 +115,5 @@ class NeracaController extends Controller
             'saldo',
             'sisaSaldo'
         ));
-    }
-
-    public function neracaTabel()
-    {
-        // BIARKAN SESUAI PERMINTAAN
     }
 }
