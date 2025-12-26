@@ -35,6 +35,7 @@ class NeracaController extends Controller
         $akunPasiva = [
             'Hutang',
             'Titipan',
+            'Modal',
             'Penyertaan BMT Hasanah',
             'Penyertaan DF',
         ];
@@ -55,24 +56,22 @@ class NeracaController extends Controller
             $akhirBulan = Carbon::createFromFormat('Y-m', $bulan)->endOfMonth();
 
             // ================================
-            // 🔹 KAS INFORMASI (SALDO NYATA)
+            // 🔥 SISA SALDO NYATA (KAS)
             // ================================
-            if (Schema::hasColumn('kas', 'saldo')) {
-                $sisaSaldo[$bulan] = Kas::where('tanggal', '<=', $akhirBulan)
-                    ->orderBy('tanggal', 'desc')
-                    ->orderBy('id', 'desc')
-                    ->value('saldo') ?? 0;
-            } else {
-                $sisaSaldo[$bulan] = 0;
-            }
+            $saldoAkhirBulan = Kas::where('tanggal', '<=', $akhirBulan)
+                ->orderBy('tanggal', 'desc')
+                ->orderBy('id', 'desc')
+                ->value('saldo');
+
+            $sisaSaldo[$bulan] = $saldoAkhirBulan ?? 0;
 
             // ================================
-            // 🔹 AKTIVA (KUMULATIF)
+            // 🔹 AKTIVA
             // ================================
             foreach ($akunAktiva as $akun) {
 
                 if ($akun === 'Kas') {
-                    $saldo[$akun][$bulan] = 0; // kas neraca tidak dipakai
+                    $saldo[$akun][$bulan] = 0;
                     continue;
                 }
 
@@ -82,7 +81,7 @@ class NeracaController extends Controller
             }
 
             // ================================
-            // 🔹 PASIVA (KUMULATIF)
+            // 🔹 PASIVA
             // ================================
             foreach ($akunPasiva as $akun) {
 
@@ -115,5 +114,10 @@ class NeracaController extends Controller
             'saldo',
             'sisaSaldo'
         ));
+    }
+
+    public function neracaTabel(Request $request)
+    {
+        // JANGAN DIHAPUS
     }
 }

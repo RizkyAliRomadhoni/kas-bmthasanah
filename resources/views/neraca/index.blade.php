@@ -25,16 +25,20 @@
 
 <tbody>
 
-{{-- 🔹 KAS INFORMASI --}}
-<tr class="table-info fw-bold">
-<td class="text-start">Kas (Informasi Saldo)</td>
+{{-- ===================== --}}
+{{-- 🔥 SISA SALDO --}}
+{{-- ===================== --}}
+<tr class="table-success fw-bold">
+<td class="text-start">Sisa Saldo</td>
 <td>0</td>
 @foreach ($bulanList as $bulan)
 <td>{{ number_format($sisaSaldo[$bulan] ?? 0,0,',','.') }}</td>
 @endforeach
 </tr>
 
+{{-- ===================== --}}
 {{-- 🔹 AKTIVA --}}
+{{-- ===================== --}}
 <tr class="table-secondary fw-bold">
 <td colspan="{{ 2 + count($bulanList) }}" class="text-start">AKTIVA</td>
 </tr>
@@ -46,7 +50,7 @@ $totalAktiva = [];
 @foreach ($akunAktiva as $akun)
 <tr>
 <td class="text-start">{{ $akun }}</td>
-<td>0</td>
+<td>{{ number_format($saldoAwal[$akun],0,',','.') }}</td>
 @foreach ($bulanList as $bulan)
 @php
 $nilai = $saldo[$akun][$bulan] ?? 0;
@@ -65,7 +69,9 @@ $totalAktiva[$bulan] = ($totalAktiva[$bulan] ?? 0) + $nilai;
 @endforeach
 </tr>
 
+{{-- ===================== --}}
 {{-- 🔹 PASIVA --}}
+{{-- ===================== --}}
 <tr class="table-secondary fw-bold">
 <td colspan="{{ 2 + count($bulanList) }}" class="text-start">PASIVA</td>
 </tr>
@@ -77,7 +83,7 @@ $totalKewajiban = [];
 @foreach ($akunPasiva as $akun)
 <tr>
 <td class="text-start">{{ $akun }}</td>
-<td>0</td>
+<td>{{ number_format($saldoAwal[$akun],0,',','.') }}</td>
 @foreach ($bulanList as $bulan)
 @php
 $nilai = $saldo[$akun][$bulan] ?? 0;
@@ -96,19 +102,29 @@ $totalKewajiban[$bulan] = ($totalKewajiban[$bulan] ?? 0) + $nilai;
 @endforeach
 </tr>
 
-{{-- 🔹 MODAL --}}
+{{-- ===================== --}}
+{{-- 🔹 MODAL (LABA EXCEL) --}}
+{{-- ===================== --}}
 <tr class="table-secondary fw-bold">
 <td colspan="{{ 2 + count($bulanList) }}" class="text-start">MODAL</td>
 </tr>
+
+@php
+$labaKumulatif = [];
+$prevSaldo = null;
+@endphp
 
 <tr>
 <td class="text-start">Laba Rugi Tahun Berjalan</td>
 <td>0</td>
 @foreach ($bulanList as $bulan)
 @php
-$laba = ($totalAktiva[$bulan] ?? 0) - ($totalKewajiban[$bulan] ?? 0);
+$kas = $sisaSaldo[$bulan] ?? 0;
+$laba = $prevSaldo === null ? $kas : ($kas - $prevSaldo);
+$labaKumulatif[$bulan] = ($labaKumulatif[array_key_last($labaKumulatif)] ?? 0) + $laba;
+$prevSaldo = $kas;
 @endphp
-<td>{{ number_format($laba,0,',','.') }}</td>
+<td>{{ number_format($labaKumulatif[$bulan],0,',','.') }}</td>
 @endforeach
 </tr>
 
@@ -116,7 +132,7 @@ $laba = ($totalAktiva[$bulan] ?? 0) - ($totalKewajiban[$bulan] ?? 0);
 <td class="text-start">TOTAL MODAL</td>
 <td>0</td>
 @foreach ($bulanList as $bulan)
-<td>{{ number_format(($totalAktiva[$bulan] ?? 0) - ($totalKewajiban[$bulan] ?? 0),0,',','.') }}</td>
+<td>{{ number_format($labaKumulatif[$bulan] ?? 0,0,',','.') }}</td>
 @endforeach
 </tr>
 
@@ -124,7 +140,7 @@ $laba = ($totalAktiva[$bulan] ?? 0) - ($totalKewajiban[$bulan] ?? 0);
 <td class="text-start">TOTAL PASIVA</td>
 <td>0</td>
 @foreach ($bulanList as $bulan)
-<td>{{ number_format(($totalKewajiban[$bulan] ?? 0) + (($totalAktiva[$bulan] ?? 0) - ($totalKewajiban[$bulan] ?? 0)),0,',','.') }}</td>
+<td>{{ number_format(($totalKewajiban[$bulan] ?? 0) + ($labaKumulatif[$bulan] ?? 0),0,',','.') }}</td>
 @endforeach
 </tr>
 
@@ -132,7 +148,15 @@ $laba = ($totalAktiva[$bulan] ?? 0) - ($totalKewajiban[$bulan] ?? 0);
 <td class="text-start">AKTIVA - PASIVA</td>
 <td>0</td>
 @foreach ($bulanList as $bulan)
+<td>{{ number_format(($totalAktiva[$bulan] ?? 0) - (($totalKewajiban[$bulan] ?? 0)+($labaKumulatif[$bulan] ?? 0)),0,',','.') }}</td>
+@endforeach
+</tr>
+
+<tr class="fw-bold table-info">
+<td class="text-start">Kas (Informasi Saldo)</td>
 <td>0</td>
+@foreach ($bulanList as $bulan)
+<td>{{ number_format($sisaSaldo[$bulan] ?? 0,0,',','.') }}</td>
 @endforeach
 </tr>
 
