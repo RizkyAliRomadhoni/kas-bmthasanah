@@ -15,7 +15,7 @@ class PakanController extends Controller
                     ->orderBy('tanggal', 'desc')
                     ->get();
 
-        return view('akun.pakan.index', compact('data'));
+        return view('pakan.index', compact('data'));
     }
 
     public function storeOrUpdate(Request $request)
