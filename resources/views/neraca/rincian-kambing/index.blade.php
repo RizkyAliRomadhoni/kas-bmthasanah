@@ -1,4 +1,6 @@
 <x-app-layout>
+    <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
+
 <div class="p-6">
 
 <h2 class="font-bold text-lg">Harga Kambing (HPP)</h2>
@@ -43,4 +45,5 @@
 </table>
 
 </div>
+</main>
 </x-app-layout>
