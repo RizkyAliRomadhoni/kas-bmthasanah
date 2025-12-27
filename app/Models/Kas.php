@@ -39,4 +39,10 @@ public function perlengkapanDetail()
     return $this->hasOne(PerlengkapanDetail::class, 'kas_id');
 }
 
+// Tambahkan fungsi ini di dalam class Kas Anda (copy-paste di bawah relasi lainnya)
+public function operasionalDetail()
+{
+    return $this->hasOne(OperasionalDetail::class, 'kas_id');
+}
+
 }

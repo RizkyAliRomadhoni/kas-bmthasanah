@@ -221,3 +221,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/akun/perlengkapan', [App\Http\Controllers\PerlengkapanController::class, 'index'])->name('perlengkapan.index');
     Route::post('/akun/perlengkapan/update', [App\Http\Controllers\PerlengkapanController::class, 'storeOrUpdate'])->name('perlengkapan.update');
 });
+
+use App\Http\Controllers\OperasionalController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/akun/operasional', [OperasionalController::class, 'index'])->name('operasional.index');
+    Route::post('/akun/operasional/update', [OperasionalController::class, 'storeOrUpdate'])->name('operasional.update');
+});

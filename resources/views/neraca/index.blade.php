@@ -19,11 +19,15 @@
                     <a href="{{ route('neraca.penjualan.index') }}" class="btn btn-sm btn-white shadow-sm mb-0">
                         <i class="fas fa-shopping-cart me-1 text-primary"></i> Penjualan
                     </a>
+
+                    <a href="{{ route('operasional.index') }}" class="btn btn-sm btn-white shadow-sm mb-0">
+                     <i class="fas fa-cogs me-1 text-warning"></i> Operasional
+                    </a>
                     
                     <a href="{{ route('perlengkapan.index') }}" class="btn btn-sm btn-white shadow-sm mb-0">
                      <i class="fas fa-box me-1 text-primary"></i> Perlengkapan
                     </a>
-                    
+
                     <a href="{{ route('neraca.rincian-kambing.index') }}" class="btn btn-sm btn-white shadow-sm mb-0">
                         <i class="fas fa-horse me-1 text-success"></i> Rincian Kambing
                     </a>
