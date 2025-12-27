@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Kas;
+use App\Models\RincianKambing;
+use App\Models\KambingMati;
+use App\Models\Penjualan;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Schema;
 
@@ -12,7 +15,7 @@ class NeracaController extends Controller
     public function index(Request $request)
     {
         // ================================
-        // 🔹 BULAN OTOMATIS
+        // 🔹 1. DAFTAR BULAN (OTOMATIS)
         // ================================
         $bulanList = Kas::selectRaw("DATE_FORMAT(tanggal,'%Y-%m') as bulan")
             ->groupBy('bulan')
@@ -20,11 +23,11 @@ class NeracaController extends Controller
             ->pluck('bulan');
 
         // ================================
-        // 🔹 AKUN
+        // 🔹 2. PENGATURAN AKUN
         // ================================
         $akunAktiva = [
             'Kas',
-            'Kambing',
+            'Kambing', // Ini nanti diisi dari data RincianKambing
             'Pakan',
             'Operasional',
             'Perawatan',
@@ -40,9 +43,7 @@ class NeracaController extends Controller
             'Penyertaan DF',
         ];
 
-        // ================================
-        // 🔹 SALDO AWAL
-        // ================================
+        // Saldo Awal Default
         $saldoAwal = [];
         foreach (array_merge($akunAktiva, $akunPasiva) as $akun) {
             $saldoAwal[$akun] = 0;
@@ -50,14 +51,15 @@ class NeracaController extends Controller
 
         $saldo = [];
         $sisaSaldo = [];
+        $totalHppPerBulan = [];
 
+        // ================================
+        // 🔹 3. LOOPING PER BULAN
+        // ================================
         foreach ($bulanList as $bulan) {
-
             $akhirBulan = Carbon::createFromFormat('Y-m', $bulan)->endOfMonth();
 
-            // ================================
-            // 🔥 SISA SALDO NYATA (KAS)
-            // ================================
+            // --- A. INFO KAS NYATA ---
             $saldoAkhirBulan = Kas::where('tanggal', '<=', $akhirBulan)
                 ->orderBy('tanggal', 'desc')
                 ->orderBy('id', 'desc')
@@ -65,13 +67,21 @@ class NeracaController extends Controller
 
             $sisaSaldo[$bulan] = $saldoAkhirBulan ?? 0;
 
-            // ================================
-            // 🔹 AKTIVA
-            // ================================
-            foreach ($akunAktiva as $akun) {
+            // --- B. AMBIL DATA DARI MODEL LAIN (Rincian Kambing / Stok) ---
+            // Kita anggap total_hpp sebagai nilai Aset Kambing
+            $totalHppPerBulan[$bulan] = RincianKambing::where('created_at', '<=', $akhirBulan)
+                ->sum('total_hpp');
 
+            // --- C. PROSES AKTIVA ---
+            foreach ($akunAktiva as $akun) {
                 if ($akun === 'Kas') {
-                    $saldo[$akun][$bulan] = 0;
+                    $saldo[$akun][$bulan] = 0; // Tidak dihitung di baris ini karena ada di "Kas Info"
+                    continue;
+                }
+
+                if ($akun === 'Kambing') {
+                    // Isi saldo akun Kambing dari data RincianKambing (HPP)
+                    $saldo[$akun][$bulan] = $totalHppPerBulan[$bulan];
                     continue;
                 }
 
@@ -80,23 +90,14 @@ class NeracaController extends Controller
                     ->sum('jumlah');
             }
 
-            // ================================
-            // 🔹 PASIVA
-            // ================================
+            // --- D. PROSES PASIVA ---
             foreach ($akunPasiva as $akun) {
-
+                // Akun Khusus Penyertaan (berdasarkan keterangan)
                 if (in_array($akun, ['Penyertaan BMT Hasanah', 'Penyertaan DF'])) {
-
-                    if (!Schema::hasColumn('kas', 'keterangan')) {
-                        $saldo[$akun][$bulan] = 0;
-                        continue;
-                    }
-
                     $saldo[$akun][$bulan] = Kas::where('akun', 'Kas')
-                        ->where('keterangan', $akun)
+                        ->where('keterangan', 'LIKE', '%' . $akun . '%')
                         ->where('tanggal', '<=', $akhirBulan)
                         ->sum('jumlah');
-
                     continue;
                 }
 
@@ -106,18 +107,22 @@ class NeracaController extends Controller
             }
         }
 
+        // ================================
+        // 🔹 4. KIRIM DATA KE VIEW
+        // ================================
         return view('neraca.index', compact(
             'bulanList',
             'akunAktiva',
             'akunPasiva',
             'saldoAwal',
             'saldo',
-            'sisaSaldo'
+            'sisaSaldo',
+            'totalHppPerBulan'
         ));
     }
 
     public function neracaTabel(Request $request)
     {
-        // JANGAN DIHAPUS
+        // Fungsi placeholder jika dibutuhkan di masa depan
     }
 }
