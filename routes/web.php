@@ -254,5 +254,6 @@ use App\Http\Controllers\KambingAkunController;
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/akun/kambing', [KambingAkunController::class, 'index'])->name('kambing-akun.index');
-    Route::post('/akun/kambing/update', [KambingAkunController::class, 'storeOrUpdate'])->name('kambing-akun.update');
+    Route::post('/akun/kambing/store', [KambingAkunController::class, 'storeDetail'])->name('kambing-akun.storeDetail');
+    Route::get('/akun/kambing/delete/{id}', [KambingAkunController::class, 'destroyDetail'])->name('kambing-akun.destroy');
 });

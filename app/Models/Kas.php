@@ -63,10 +63,10 @@ public function upahDetail()
     return $this->hasOne(UpahDetail::class, 'kas_id');
 }
 
-// Tambahkan relasi ini di dalam class Kas
-public function kambingDetail()
+// Ganti relasi kambingDetail menjadi hasMany
+public function kambingDetails()
 {
-    return $this->hasOne(KambingDetail::class, 'kas_id');
+    return $this->hasMany(KambingDetail::class, 'kas_id');
 }
 
 }

@@ -10,11 +10,12 @@ return new class extends Migration
     {
         Schema::create('kambing_details', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('kas_id')->unique(); 
-            $table->string('jenis')->nullable(); // Jenis (Boer, Merino, Jawa, dll)
-            $table->integer('qty')->default(0);  // Jumlah ekor
-            $table->decimal('berat_badan', 8, 2)->default(0); // Berat Badan (BB)
-            $table->string('status')->default('Kandang'); // Kandang / Terjual / Mati
+            // Hilangkan ->unique() agar satu kas_id bisa punya banyak baris kambing
+            $table->unsignedBigInteger('kas_id'); 
+            $table->string('jenis')->nullable();
+            $table->decimal('harga_beli', 15, 2)->default(0); // Harga per ekor
+            $table->decimal('berat_badan', 8, 2)->default(0);
+            $table->string('status')->default('Kandang');
             $table->timestamps();
 
             $table->foreign('kas_id')->references('id')->on('kas')->onDelete('cascade');
