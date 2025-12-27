@@ -242,3 +242,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/akun/piutang', [PiutangController::class, 'index'])->name('piutang.index');
     Route::post('/akun/piutang/update', [PiutangController::class, 'storeOrUpdate'])->name('piutang.update');
 });
+
+use App\Http\Controllers\UpahController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/akun/upah', [UpahController::class, 'index'])->name('upah.index');
+    Route::post('/akun/upah/update', [UpahController::class, 'storeOrUpdate'])->name('upah.update');
+});

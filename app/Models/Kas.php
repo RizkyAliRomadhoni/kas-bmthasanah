@@ -57,4 +57,10 @@ public function piutangDetail()
     return $this->hasOne(PiutangDetail::class, 'kas_id');
 }
 
+// Tambahkan fungsi ini di dalam class Kas Anda (di bawah relasi piutang/hutang)
+public function upahDetail()
+{
+    return $this->hasOne(UpahDetail::class, 'kas_id');
+}
+
 }
