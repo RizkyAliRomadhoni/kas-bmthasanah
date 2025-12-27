@@ -10,6 +10,11 @@
                     <a href="{{ route('pakan.index') }}" class="btn btn-sm btn-white shadow-sm mb-0">
                         <i class="fas fa-utensils me-1 text-warning"></i> Kelola Pakan
                     </a>
+
+                    <!-- Tambahkan ini di deretan tombol Penjualan, Pakan, dll -->
+                    <a href="{{ route('kandang.index') }}" class="btn btn-sm btn-white shadow-sm mb-0">
+                      <i class="fas fa-tools me-1 text-info"></i> Kandang
+                        </a>
                     
                     <a href="{{ route('neraca.penjualan.index') }}" class="btn btn-sm btn-white shadow-sm mb-0">
                         <i class="fas fa-shopping-cart me-1 text-primary"></i> Penjualan

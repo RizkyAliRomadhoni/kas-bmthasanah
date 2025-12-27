@@ -205,3 +205,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/akun/pakan', [PakanController::class, 'index'])->name('pakan.index');
     Route::post('/akun/pakan/update', [PakanController::class, 'storeOrUpdate'])->name('pakan.update');
 });
+
+
+use App\Http\Controllers\KandangController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/akun/kandang', [App\Http\Controllers\KandangController::class, 'index'])->name('kandang.index');
+    Route::post('/akun/kandang/update', [App\Http\Controllers\KandangController::class, 'storeOrUpdate'])->name('kandang.update');
+});

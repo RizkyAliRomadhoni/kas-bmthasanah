@@ -26,4 +26,10 @@ class Kas extends Model
     {
         return $this->hasOne(PakanDetail::class, 'kas_id');
     }
+
+    // Tambahkan fungsi ini di dalam class Kas yang sudah ada
+public function kandangDetail()
+{
+    return $this->hasOne(KandangDetail::class, 'kas_id');
+}
 }
