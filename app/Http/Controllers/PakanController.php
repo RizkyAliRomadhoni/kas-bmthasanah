@@ -40,7 +40,7 @@ class PakanController extends Controller
             return ($item->pakanDetail->qty_kg ?? 0) * ($item->pakanDetail->harga_jual_kg ?? 0);
         });
 
-        return view('akun.pakan.index', compact(
+        return view('neraca.pakan.index', compact(
             'data', 
             'listBulan', 
             'bulanTerpilih', 
