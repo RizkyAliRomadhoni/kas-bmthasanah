@@ -32,4 +32,11 @@ public function kandangDetail()
 {
     return $this->hasOne(KandangDetail::class, 'kas_id');
 }
+
+// Tambahkan fungsi ini di dalam class Kas Anda
+public function perlengkapanDetail()
+{
+    return $this->hasOne(PerlengkapanDetail::class, 'kas_id');
+}
+
 }

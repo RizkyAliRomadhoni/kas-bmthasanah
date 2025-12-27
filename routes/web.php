@@ -213,3 +213,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/akun/kandang', [App\Http\Controllers\KandangController::class, 'index'])->name('kandang.index');
     Route::post('/akun/kandang/update', [App\Http\Controllers\KandangController::class, 'storeOrUpdate'])->name('kandang.update');
 });
+
+
+use App\Http\Controllers\PerlengkapanController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/akun/perlengkapan', [App\Http\Controllers\PerlengkapanController::class, 'index'])->name('perlengkapan.index');
+    Route::post('/akun/perlengkapan/update', [App\Http\Controllers\PerlengkapanController::class, 'storeOrUpdate'])->name('perlengkapan.update');
+});
