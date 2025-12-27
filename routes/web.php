@@ -197,3 +197,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/neraca/rincian-kambing/mati/store', [RincianKambingController::class, 'storeMati'])
         ->name('neraca.rincian-kambing.mati.store');
 });
+
+
+use App\Http\Controllers\PakanController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/akun/pakan', [PakanController::class, 'index'])->name('pakan.index');
+    Route::post('/akun/pakan/update', [PakanController::class, 'storeOrUpdate'])->name('pakan.update');
+});

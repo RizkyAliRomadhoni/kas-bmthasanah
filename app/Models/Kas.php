@@ -16,8 +16,14 @@ class Kas extends Model
         'keterangan',
         'jenis_transaksi',
         'jumlah',
+        'akun',
         'saldo',
-        'akun', // Tambahkan kolom ini
-        'user_input',
+        'user_input'
     ];
+
+    // Relasi ke detail pakan
+    public function pakanDetail()
+    {
+        return $this->hasOne(PakanDetail::class, 'kas_id');
+    }
 }
