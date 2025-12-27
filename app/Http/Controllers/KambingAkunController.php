@@ -27,7 +27,7 @@ class KambingAkunController extends Controller
         $rekapStok = KambingDetail::selectRaw('jenis, SUM(CASE WHEN status = "Kandang" THEN 1 ELSE 0 END) as total')
             ->groupBy('jenis')->pluck('total', 'jenis');
 
-        return view('akun.kambing.index', compact('data', 'listBulan', 'bulanTerpilih', 'rekapStok'));
+        return view('neraca.kambing.index', compact('data', 'listBulan', 'bulanTerpilih', 'rekapStok'));
     }
 
     // Fungsi untuk menambah "Anak" kambing ke satu transaksi Kas
