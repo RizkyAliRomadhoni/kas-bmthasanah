@@ -29,7 +29,7 @@ class KandangController extends Controller
         // Hitung total harga
         $totalHarga = $data->sum('jumlah');
 
-        return view('akun.kandang.index', compact('data', 'listBulan', 'bulanTerpilih', 'totalHarga'));
+        return view('neraca.kandang.index', compact('data', 'listBulan', 'bulanTerpilih', 'totalHarga'));
     }
 
     public function storeOrUpdate(Request $request)
