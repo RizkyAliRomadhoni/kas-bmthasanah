@@ -176,10 +176,13 @@ Route::middleware(['auth'])->group(function () {
     // =========================
     // KELOLA PENJUALAN
     // =========================
+    // Menampilkan halaman (GET)
     Route::get('/neraca/penjualan', [PenjualanController::class, 'index'])
         ->name('neraca.penjualan.index');
 
-    Route::post('/neraca/penjualan/store', [PenjualanController::class, 'store'])
+    // Menyimpan data (POST) 
+    // Saya samakan URL-nya menjadi /neraca/penjualan agar lebih rapi
+    Route::post('/neraca/penjualan', [PenjualanController::class, 'store'])
         ->name('neraca.penjualan.store');
 
     // =========================
@@ -188,12 +191,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/neraca/rincian-kambing', [RincianKambingController::class, 'index'])
         ->name('neraca.rincian-kambing.index');
 
-    // HPP Kambing
     Route::post('/neraca/rincian-kambing/hpp/store', [RincianKambingController::class, 'storeHpp'])
         ->name('neraca.rincian-kambing.hpp.store');
 
-    // Kambing Mati
     Route::post('/neraca/rincian-kambing/mati/store', [RincianKambingController::class, 'storeMati'])
         ->name('neraca.rincian-kambing.mati.store');
-
 });
