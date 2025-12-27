@@ -249,3 +249,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/akun/upah', [UpahController::class, 'index'])->name('upah.index');
     Route::post('/akun/upah/update', [UpahController::class, 'storeOrUpdate'])->name('upah.update');
 });
+
+use App\Http\Controllers\KambingAkunController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/akun/kambing', [KambingAkunController::class, 'index'])->name('kambing-akun.index');
+    Route::post('/akun/kambing/update', [KambingAkunController::class, 'storeOrUpdate'])->name('kambing-akun.update');
+});

@@ -63,4 +63,10 @@ public function upahDetail()
     return $this->hasOne(UpahDetail::class, 'kas_id');
 }
 
+// Tambahkan relasi ini di dalam class Kas
+public function kambingDetail()
+{
+    return $this->hasOne(KambingDetail::class, 'kas_id');
+}
+
 }
