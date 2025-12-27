@@ -51,4 +51,10 @@ public function hutangDetail()
     return $this->hasOne(HutangDetail::class, 'kas_id');
 }
 
+// Tambahkan fungsi ini di dalam class Kas Anda
+public function piutangDetail()
+{
+    return $this->hasOne(PiutangDetail::class, 'kas_id');
+}
+
 }

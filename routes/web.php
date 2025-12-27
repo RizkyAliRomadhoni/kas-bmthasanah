@@ -235,3 +235,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/akun/hutang', [HutangController::class, 'index'])->name('hutang.index');
     Route::post('/akun/hutang/update', [HutangController::class, 'storeOrUpdate'])->name('hutang.update');
 });
+
+use App\Http\Controllers\PiutangController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/akun/piutang', [PiutangController::class, 'index'])->name('piutang.index');
+    Route::post('/akun/piutang/update', [PiutangController::class, 'storeOrUpdate'])->name('piutang.update');
+});
