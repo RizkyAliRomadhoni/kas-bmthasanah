@@ -20,6 +20,10 @@
                         <i class="fas fa-shopping-cart me-1 text-primary"></i> Penjualan
                     </a>
 
+                    <a href="{{ route('hutang.index') }}" class="btn btn-sm btn-white shadow-sm mb-0">
+                     <i class="fas fa-hand-holding-usd me-1 text-danger"></i> Hutang
+                        </a>
+
                     <a href="{{ route('operasional.index') }}" class="btn btn-sm btn-white shadow-sm mb-0">
                      <i class="fas fa-cogs me-1 text-warning"></i> Operasional
                     </a>

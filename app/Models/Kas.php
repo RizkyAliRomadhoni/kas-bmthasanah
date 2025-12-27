@@ -45,4 +45,10 @@ public function operasionalDetail()
     return $this->hasOne(OperasionalDetail::class, 'kas_id');
 }
 
+// Tambahkan fungsi ini di dalam class Kas Anda
+public function hutangDetail()
+{
+    return $this->hasOne(HutangDetail::class, 'kas_id');
+}
+
 }

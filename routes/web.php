@@ -228,3 +228,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/akun/operasional', [OperasionalController::class, 'index'])->name('operasional.index');
     Route::post('/akun/operasional/update', [OperasionalController::class, 'storeOrUpdate'])->name('operasional.update');
 });
+
+use App\Http\Controllers\HutangController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/akun/hutang', [HutangController::class, 'index'])->name('hutang.index');
+    Route::post('/akun/hutang/update', [HutangController::class, 'storeOrUpdate'])->name('hutang.update');
+});
