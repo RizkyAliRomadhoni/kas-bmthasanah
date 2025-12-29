@@ -34,9 +34,9 @@
                     <a href="{{ route('upah.index') }}" class="btn-nav shadow-sm">
                         <i class="fas fa-user-tie text-secondary"></i> Upah
                     </a>
-                    <a href="{{ route('rincian-kambing.index') }}" class="btn-nav shadow-sm">
-                        <i class="fas fa-utensils text-warning"></i> Rincian Kambing
-                    </a>
+                    <a href="{{ route('neraca.rincian-kambing.index') }}" class="btn-nav shadow-sm">
+    <i class="fas fa-horse text-success"></i> Rincian Kambing
+</a>
                     
                     <!-- KELOMPOK KEUANGAN -->
                     <div class="vr mx-2 d-none d-md-block" style="height: 30px; align-self: center; border-left: 1px solid #ddd;"></div>
