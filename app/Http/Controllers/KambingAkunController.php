@@ -5,25 +5,44 @@ namespace App\Http\Controllers;
 use App\Models\Kas;
 use App\Models\KambingDetail;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class KambingAkunController extends Controller
 {
     public function index(Request $request)
     {
-        // Ambil data Kas akun 'Kambing' beserta rinciannya
+        // 1. Ambil daftar bulan untuk filter
+        $listBulan = Kas::where('akun', 'Kambing')
+            ->selectRaw("DATE_FORMAT(tanggal, '%Y-%m') as bulan")
+            ->groupBy('bulan')->orderBy('bulan', 'desc')->get();
+
+        $bulanTerpilih = $request->get('bulan', Carbon::now()->format('Y-m'));
+
+        // 2. Query utama data Kas
         $query = Kas::with('kambingDetails')->where('akun', 'Kambing');
-
-        if ($request->bulan) {
-            $query->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$request->bulan]);
+        if ($bulanTerpilih) {
+            $query->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulanTerpilih]);
         }
-
         $data = $query->orderBy('tanggal', 'desc')->get();
 
-        // Rekap stok untuk box informasi kanan
-        $rekapStok = KambingDetail::selectRaw('jenis, COUNT(*) as total')
-                                    ->groupBy('jenis')->pluck('total', 'jenis');
+        // 3. Rekap Statistik (Untuk Stats Cards)
+        $totalPengeluaranBulanIni = $data->sum('jumlah');
+        $totalEkorBulanIni = KambingDetail::whereHas('kas', function($q) use ($bulanTerpilih) {
+            $q->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulanTerpilih]);
+        })->count();
 
-        return view('neraca.kambing.index', compact('data', 'rekapStok'));
+        // 4. Rekap per Jenis (Global/Selamanya untuk stok kandang)
+        $rekapStok = KambingDetail::selectRaw('jenis, COUNT(*) as total')
+            ->groupBy('jenis')->orderBy('total', 'desc')->get();
+
+        return view('neraca.kambing.index', compact(
+            'data', 
+            'listBulan', 
+            'bulanTerpilih', 
+            'totalPengeluaranBulanIni', 
+            'totalEkorBulanIni', 
+            'rekapStok'
+        ));
     }
 
     public function storeDetail(Request $request)
@@ -31,24 +50,16 @@ class KambingAkunController extends Controller
         $request->validate([
             'kas_id' => 'required',
             'jenis' => 'required',
-            'harga_satuan' => 'required|numeric',
-            'berat_badan' => 'nullable|numeric'
+            'harga_satuan' => 'required|numeric'
         ]);
 
-        // Simpan ke database
-        KambingDetail::create([
-            'kas_id' => $request->kas_id,
-            'jenis' => $request->jenis,
-            'harga_satuan' => $request->harga_satuan,
-            'berat_badan' => $request->berat_badan ?? 0,
-        ]);
-
-        return back()->with('success', 'Rincian berhasil ditambahkan');
+        KambingDetail::create($request->all());
+        return back()->with('success', 'Rincian kambing ditambahkan.');
     }
 
     public function destroyDetail($id)
     {
         KambingDetail::destroy($id);
-        return back()->with('success', 'Rincian dihapus');
+        return back()->with('success', 'Rincian berhasil dihapus.');
     }
 }
