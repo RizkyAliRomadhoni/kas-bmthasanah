@@ -249,4 +249,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/neraca/laba-rugi', [LabaRugiController::class, 'index'])->name('neraca.laba-rugi');
 });
 
+use App\Http\Controllers\RincianKambingController;
 
+Route::middleware(['auth'])->group(function () {
+    Route::get('/neraca/rincian-kambing', [RincianKambingController::class, 'index'])->name('neraca.rincian-kambing.index');
+    Route::post('/neraca/rincian-kambing/store-hpp', [RincianKambingController::class, 'storeHpp'])->name('rincian-kambing.storeHpp');
+    Route::post('/neraca/rincian-kambing/store-mati', [RincianKambingController::class, 'storeMati'])->name('rincian-kambing.storeMati');
+    Route::get('/neraca/rincian-kambing/del-hpp/{id}', [RincianKambingController::class, 'destroyHpp'])->name('rincian-kambing.deleteHpp');
+    Route::get('/neraca/rincian-kambing/del-mati/{id}', [RincianKambingController::class, 'destroyMati'])->name('rincian-kambing.deleteMati');
+});
