@@ -6,21 +6,21 @@
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h5 class="fw-bold mb-0">LAPORAN LABA RUGI</h5>
-                        <a href="{{ route('neraca.index') }}" class="btn btn-sm btn-outline-secondary">Kembali</a>
+                        <a href="{{ route('neraca.index') }}" class="btn btn-sm btn-outline-secondary">Kembali ke Neraca</a>
                     </div>
 
                     <div class="table-responsive">
-                        <table class="table table-bordered align-middle">
+                        <table class="table table-bordered align-middle mb-0">
                             <thead class="bg-gray-100 text-center">
                                 <tr>
-                                    <th class="text-start ps-4 py-3" style="width: 350px;">AKUN</th>
+                                    <th class="text-start ps-4 py-3" style="min-width: 300px;">AKUN</th>
                                     @foreach($bulanList as $bulan)
                                     <th class="text-xs">{{ \Carbon\Carbon::parse($bulan)->translatedFormat('M-y') }}</th>
                                     @endforeach
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- PENDAPATAN -->
+                                <!-- SECTION PENDAPATAN -->
                                 <tr class="fw-bold bg-light">
                                     <td class="ps-3 py-2 text-xs" colspan="{{ 1 + count($bulanList) }}">PENDAPATAN</td>
                                 </tr>
@@ -55,38 +55,38 @@
                                     @endforeach
                                 </tr>
 
-                                <!-- BIAYA -->
+                                <!-- SECTION BIAYA -->
                                 <tr class="fw-bold bg-light">
                                     <td class="ps-3 py-2 text-xs" colspan="{{ 1 + count($bulanList) }}">BIAYA</td>
                                 </tr>
                                 <tr>
                                     <td class="ps-5 text-xs">BEBAN UPAH</td>
                                     @foreach($bulanList as $bulan)
-                                    <td class="text-end pe-4 text-xs">-</td> <!-- Kosong sesuai instruksi -->
+                                    <td class="text-end pe-4 text-xs">-</td>
                                     @endforeach
                                 </tr>
                                 <tr>
                                     <td class="ps-5 text-xs">BEBAN KERUGIAN PENJUALAN KAMBING</td>
                                     @foreach($bulanList as $bulan)
-                                    <td class="text-end pe-4 text-xs">{{ number_format($labaRugiData[$bulan]['rugi_jual_kambing'], 0, ',', '.') }}</td>
+                                    <td class="text-end pe-4 text-xs text-danger">{{ number_format($labaRugiData[$bulan]['rugi_jual_kambing'], 0, ',', '.') }}</td>
                                     @endforeach
                                 </tr>
                                 <tr>
-                                    <td class="ps-5 text-xs text-danger">BEBAN KERUGIAN KAMBING MATI</td>
+                                    <td class="ps-5 text-xs text-danger font-weight-bold">BEBAN KERUGIAN KAMBING MATI</td>
                                     @foreach($bulanList as $bulan)
                                     <td class="text-end pe-4 text-xs text-danger">{{ number_format($labaRugiData[$bulan]['beban_mati'], 0, ',', '.') }}</td>
                                     @endforeach
                                 </tr>
-                                <tr class="fw-bold">
+                                <tr class="fw-bold text-danger">
                                     <td class="ps-3 py-2 text-xs">TOTAL BIAYA</td>
                                     @foreach($bulanList as $bulan)
                                     <td class="text-end pe-4 text-xs border-top">Rp {{ number_format($labaRugiData[$bulan]['total_biaya'], 0, ',', '.') }}</td>
                                     @endforeach
                                 </tr>
 
-                                <!-- LABA RUGI BERSIH -->
+                                <!-- LABA RUGI AKHIR -->
                                 <tr class="fw-bold bg-gray-100">
-                                    <td class="ps-3 py-3 text-sm">LABA RUGI</td>
+                                    <td class="ps-3 py-3 text-sm">LABA RUGI BERSIH</td>
                                     @foreach($bulanList as $bulan)
                                     @php $net = $labaRugiData[$bulan]['net_laba_rugi']; @endphp
                                     <td class="text-end pe-4 py-3 text-sm {{ $net < 0 ? 'text-danger' : 'text-success' }}">

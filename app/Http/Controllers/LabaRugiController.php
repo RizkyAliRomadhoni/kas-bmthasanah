@@ -6,75 +6,75 @@ use App\Models\Kas;
 use App\Models\Penjualan;
 use App\Models\KambingMati;
 use App\Models\PakanDetail;
-use App\Models\HppKambing;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class LabaRugiController extends Controller
 {
     public function index()
     {
-        // 1. Ambil daftar bulan unik dari tabel Kas sebagai acuan periode laporan
-        $bulanList = Kas::selectRaw("DATE_FORMAT(tanggal, '%Y-%m') as bulan")
-            ->groupBy('bulan')
-            ->orderBy('bulan', 'asc')
-            ->pluck('bulan');
+        // 1. AMBIL SEMUA BULAN DARI KAS DAN PENJUALAN (AGAR OTOMATIS TERUPDATE)
+        $bulanKas = Kas::selectRaw("DATE_FORMAT(tanggal, '%Y-%m') as bulan")->pluck('bulan')->toArray();
+        $bulanJual = Penjualan::selectRaw("DATE_FORMAT(tanggal, '%Y-%m') as bulan")->pluck('bulan')->toArray();
+        $bulanMati = KambingMati::selectRaw("DATE_FORMAT(tanggal, '%Y-%m') as bulan")->pluck('bulan')->toArray();
+
+        // Gabungkan semua bulan, hilangkan duplikat, dan urutkan
+        $bulanList = collect(array_merge($bulanKas, $bulanJual, $bulanMati))
+            ->unique()
+            ->sort()
+            ->values();
 
         $labaRugiData = [];
 
         foreach ($bulanList as $bulan) {
-            // ==============================================================
-            // 🔹 A. PENDAPATAN (REVENUE)
-            // ==============================================================
+            // --- A. PENDAPATAN ---
 
-            // 1. Laba Penjualan Kambing
-            // Menghitung keuntungan per transaksi penjualan (Harga Jual - HPP)
+            // 1. Laba Penjualan Kambing (Hanya ambil selisih positif: Jual - HPP)
             $penjualan = Penjualan::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])->get();
-            $labaJualKambing = $penjualan->sum(fn($q) => max(0, $q->harga_jual - $q->hpp));
             
-            // 2. Laba Penjualan Pakan
-            // Diambil dari modul Kelola Pakan (Selisih Harga Jual/kg dan Harga Beli/kg dikali Qty)
+            $labaJualKambing = 0;
+            $rugiJualKambing = 0;
+
+            foreach ($penjualan as $jual) {
+                $selisih = $jual->harga_jual - $jual->hpp;
+                if ($selisih > 0) {
+                    $labaJualKambing += $selisih;
+                } else {
+                    $rugiJualKambing += abs($selisih); // Masuk ke beban biaya nanti
+                }
+            }
+
+            // 2. Laba Penjualan Pakan (Selisih margin di modul pakan)
             $labaJualPakan = PakanDetail::whereHas('kas', function($q) use ($bulan) {
                 $q->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan]);
             })->get()->sum(fn($q) => ($q->harga_jual_kg - $q->harga_kg) * $q->qty_kg);
 
-            // 3. Laba Basil Simpanan (Bagi Hasil)
-            // Otomatis mengambil dari Kas yang keterangannya mengandung kata 'Basil'
+            // 3. Laba Basil Simpanan (Dari Kas Keterangan "Basil")
             $labaBasil = Kas::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])
                 ->where('keterangan', 'LIKE', '%Basil%')
                 ->where('jenis_transaksi', 'Masuk')
                 ->sum('jumlah');
 
-            // 4. Laba Penyesuaian Harga
-            // Diambil dari akun khusus 'Penyesuaian' di tabel Kas jika Anda menggunakannya
+            // 4. Penyesuaian Harga (Jika ada akun khusus penyesuaian)
             $labaPenyesuaian = Kas::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])
                 ->where('akun', 'Penyesuaian')
                 ->sum('jumlah');
 
             $totalPendapatan = $labaJualKambing + $labaJualPakan + $labaBasil + $labaPenyesuaian;
 
-            // ==============================================================
-            // 🔹 B. BIAYA / KERUGIAN (EXPENSES)
-            // ==============================================================
+            // --- B. BIAYA / KERUGIAN ---
 
-            // 1. Beban Kerugian Penjualan Kambing
-            // Terjadi jika Harga Jual lebih rendah dari HPP (Kambing dijual rugi)
-            $rugiJualKambing = $penjualan->sum(fn($q) => max(0, $q->hpp - $q->harga_jual));
-
-            // 2. Beban Kerugian Kambing Mati
-            // Diambil langsung dari tabel modul Rincian Kambing Mati yang diinput manual
+            // 1. Beban Kambing Mati
             $bebanMati = KambingMati::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])
                 ->sum('harga');
 
-            // Total Biaya yang diakui di Laba Rugi
+            // Total Biaya = Rugi Jual + Kambing Mati
             $totalBiaya = $rugiJualKambing + $bebanMati;
 
-            // ==============================================================
-            // 🔹 C. LABA RUGI BERSIH (NET PROFIT)
-            // ==============================================================
+            // --- C. LABA RUGI BERSIH ---
             $netLabaRugi = $totalPendapatan - $totalBiaya;
 
-            // Simpan hasil kalkulasi ke dalam array berdasarkan bulan
+            // Simpan ke array
             $labaRugiData[$bulan] = [
                 'laba_jual_kambing' => $labaJualKambing,
                 'laba_jual_pakan'   => $labaJualPakan,
