@@ -164,6 +164,11 @@ Route::get('/neraca/laba-rugi', [App\Http\Controllers\LabaRugiController::class,
     ->name('neraca.laba-rugi');
 
 
+Route::middleware(['auth'])->group(function () {
+    Route::get('/neraca/laba-rugi', [LabaRugiController::class, 'index'])->name('neraca.laba-rugi');
+    // Tambahkan ini:
+    Route::get('/neraca/laba-rugi/refresh', [LabaRugiController::class, 'refresh'])->name('neraca.laba-rugi.refresh');
+});
 
 /*
 |--------------------------------------------------------------------------
