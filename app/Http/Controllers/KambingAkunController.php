@@ -11,27 +11,34 @@ class KambingAkunController extends Controller
 {
     public function index(Request $request)
     {
-        // 1. Ambil daftar bulan untuk filter
+        // 1. Ambil semua daftar bulan untuk dropdown filter
         $listBulan = Kas::where('akun', 'Kambing')
             ->selectRaw("DATE_FORMAT(tanggal, '%Y-%m') as bulan")
             ->groupBy('bulan')->orderBy('bulan', 'desc')->get();
 
-        $bulanTerpilih = $request->get('bulan', Carbon::now()->format('Y-m'));
+        // 2. Tangkap filter bulan (Jika tidak ada, biarkan null untuk menampilkan semua)
+        $bulanTerpilih = $request->get('bulan');
 
-        // 2. Query utama data Kas
+        // 3. Query Utama
         $query = Kas::with('kambingDetails')->where('akun', 'Kambing');
+        
+        // Logika: Jika bulanTerpilih ada isinya, filter. Jika kosong, tampilkan semua.
         if ($bulanTerpilih) {
             $query->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulanTerpilih]);
         }
+        
         $data = $query->orderBy('tanggal', 'desc')->get();
 
-        // 3. Rekap Statistik (Untuk Stats Cards)
-        $totalPengeluaranBulanIni = $data->sum('jumlah');
-        $totalEkorBulanIni = KambingDetail::whereHas('kas', function($q) use ($bulanTerpilih) {
-            $q->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulanTerpilih]);
-        })->count();
+        // 4. Rekap Statistik Dinamis
+        $totalPengeluaran = $data->sum('jumlah');
+        
+        // Menghitung jumlah ekor berdasarkan data yang tampil di tabel
+        $totalEkorTerdata = 0;
+        foreach($data as $k) {
+            $totalEkorTerdata += $k->kambingDetails->count();
+        }
 
-        // 4. Rekap per Jenis (Global/Selamanya untuk stok kandang)
+        // 5. Rekap per Jenis (Stok Kandang Aktif)
         $rekapStok = KambingDetail::selectRaw('jenis, COUNT(*) as total')
             ->groupBy('jenis')->orderBy('total', 'desc')->get();
 
@@ -39,8 +46,8 @@ class KambingAkunController extends Controller
             'data', 
             'listBulan', 
             'bulanTerpilih', 
-            'totalPengeluaranBulanIni', 
-            'totalEkorBulanIni', 
+            'totalPengeluaran', 
+            'totalEkorTerdata', 
             'rekapStok'
         ));
     }
