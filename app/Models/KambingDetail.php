@@ -10,7 +10,13 @@ class KambingDetail extends Model
     use HasFactory;
 
     protected $table = 'kambing_details';
-    protected $fillable = ['kas_id', 'jenis', 'qty', 'berat_badan', 'status'];
+
+    protected $fillable = [
+        'kas_id',
+        'jenis',
+        'harga_satuan',
+        'berat_badan'
+    ];
 
     public function kas()
     {

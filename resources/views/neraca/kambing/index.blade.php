@@ -1,48 +1,53 @@
 <x-app-layout>
     <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
         <div class="container-fluid py-4">
-            
             <div class="row">
                 <div class="col-lg-9">
                     <h5 class="fw-bold mb-4 text-uppercase">Input Rincian Kambing per Transaksi</h5>
 
                     @forelse($data as $kas)
                     <div class="card shadow-sm border-0 mb-4">
-                        <!-- HEADER TRANSAKSI KAS -->
+                        <!-- HEADER KAS -->
                         <div class="card-header bg-gray-100 d-flex justify-content-between align-items-center py-2">
                             <div>
-                                <span class="badge bg-primary me-2">{{ \Carbon\Carbon::parse($kas->tanggal)->format('d/m/Y') }}</span>
-                                <span class="text-sm font-weight-bold text-dark">{{ strtoupper($kas->keterangan) }}</span>
+                                <span class="badge bg-secondary me-2">{{ \Carbon\Carbon::parse($kas->tanggal)->format('d/m/Y') }}</span>
+                                <span class="text-sm font-weight-bold">{{ strtoupper($kas->keterangan) }}</span>
                             </div>
-                            <span class="text-sm font-weight-bold">Total Kas: Rp {{ number_format($kas->jumlah, 0, ',', '.') }}</span>
+                            <span class="text-sm font-weight-bold text-dark">Total Kas: Rp {{ number_format($kas->jumlah, 0, ',', '.') }}</span>
                         </div>
 
-                        <!-- TABEL RINCIAN (MUNCUL DI BAWAH KAS) -->
+                        <!-- TABEL RINCIAN -->
                         <div class="card-body p-0">
-                            <table class="table table-sm align-items-center mb-0">
-                                <thead class="bg-light text-xxs font-weight-bolder opacity-7">
+                            <table class="table align-items-center mb-0">
+                                <thead class="bg-light text-xxs font-weight-bolder opacity-7 text-uppercase">
                                     <tr>
-                                        <th class="ps-4">JENIS KAMBING</th>
-                                        <th class="text-center">HARGA SATUAN (Rp)</th>
+                                        <th class="ps-4">Jenis Kambing</th>
+                                        <th class="text-center">Harga Satuan (Rp)</th>
                                         <th class="text-center">BB (Kg)</th>
-                                        <th class="text-center">AKSI</th>
+                                        <th class="text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($kas->kambingDetails as $detail)
                                     <tr>
-                                        <td class="ps-4 text-xs font-weight-bold">{{ $detail->jenis }}</td>
-                                        <td class="text-center text-xs">Rp {{ number_format($detail->harga_satuan, 0, ',', '.') }}</td>
-                                        <td class="text-center text-xs">{{ $detail->berat_badan }} Kg</td>
+                                        <td class="ps-4">
+                                            <p class="text-xs font-weight-bold mb-0">{{ $detail->jenis }}</p>
+                                        </td>
+                                        <td class="text-center">
+                                            <p class="text-xs font-weight-bold mb-0">Rp {{ number_format($detail->harga_satuan, 0, ',', '.') }}</p>
+                                        </td>
+                                        <td class="text-center">
+                                            <p class="text-xs mb-0">{{ number_format($detail->berat_badan, 2) }} Kg</p>
+                                        </td>
                                         <td class="text-center">
                                             <a href="{{ route('kambing-akun.destroy', $detail->id) }}" class="btn btn-link text-danger p-0 m-0" onclick="return confirm('Hapus rincian ini?')">
                                                 <i class="fas fa-trash"></i>
-                                            </td>
+                                            </a>
                                         </td>
                                     </tr>
                                     @endforeach
 
-                                    <!-- FORM INPUT RINCIAN BARU -->
+                                    <!-- FORM INPUT (MUNCUL PALING BAWAH DI TABEL) -->
                                     <tr class="bg-gray-50">
                                         <form action="{{ route('kambing-akun.storeDetail') }}" method="POST">
                                             @csrf
@@ -67,50 +72,60 @@
                             </table>
                         </div>
 
-                        <!-- FOOTER KARDUS (INFO VALIDASI HARGA) -->
-                        <div class="card-footer py-2 bg-gray-100 d-flex justify-content-end align-items-center gap-4">
+                        <!-- FOOTER VALIDASI (LOGIKA SELISIH) -->
+                        <div class="card-footer py-2 bg-gray-50 d-flex justify-content-end align-items-center gap-4 border-top">
                             @php
+                                // Menghitung total rincian yang sudah diinput untuk Kas ini
                                 $totalTerinput = $kas->kambingDetails->sum('harga_satuan');
                                 $selisih = $kas->jumlah - $totalTerinput;
                             @endphp
-                            <span class="text-xxs font-weight-bold">TERINPUT: Rp {{ number_format($totalTerinput, 0, ',', '.') }}</span>
-                            <span class="text-xxs font-weight-bold @if($selisih != 0) text-danger @else text-success @endif">
-                                SELISIH: Rp {{ number_format($selisih, 0, ',', '.') }}
-                                @if($selisih == 0) <i class="fas fa-check-circle ms-1"></i> @endif
+                            
+                            <span class="text-xxs font-weight-bold text-uppercase">Terinput: 
+                                <span class="text-dark">Rp {{ number_format($totalTerinput, 0, ',', '.') }}</span>
+                            </span>
+
+                            <span class="text-xxs font-weight-bold text-uppercase">Selisih: 
+                                <span class="{{ $selisih == 0 ? 'text-success' : 'text-danger' }}">
+                                    Rp {{ number_format($selisih, 0, ',', '.') }}
+                                    @if($selisih == 0)
+                                        <i class="fas fa-check-circle ms-1"></i>
+                                    @endif
+                                </span>
                             </span>
                         </div>
                     </div>
                     @empty
                     <div class="card card-body text-center text-xs py-5">
-                        Belum ada transaksi kambing di buku Kas.
+                        Data transaksi kambing tidak ditemukan.
                     </div>
                     @endforelse
                 </div>
 
-                <!-- STOCK KANDANG (BOX KANAN) -->
+                <!-- BOX STOCK (KANAN) -->
                 <div class="col-lg-3">
                     <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
                         <div class="card-header bg-primary text-white pb-0">
-                            <h6 class="text-white">STOCK KANDANG</h6>
+                            <h6 class="text-white text-sm">STOCK KANDANG</h6>
                         </div>
                         <div class="card-body p-3">
                             <table class="table table-sm mb-0">
-                                @foreach($rekapStok as $jenis => $total)
+                                @forelse($rekapStok as $jenis => $total)
                                 <tr>
-                                    <td class="text-xs">{{ strtoupper($jenis) }}</td>
-                                    <td class="text-xs text-end font-weight-bold">{{ $total }}</td>
+                                    <td class="text-xs text-uppercase">{{ $jenis }}</td>
+                                    <td class="text-xs text-end font-weight-bold">{{ $total }} Ekor</td>
                                 </tr>
-                                @endforeach
+                                @empty
+                                <tr><td colspan="2" class="text-center text-xxs">Kosong</td></tr>
+                                @endforelse
                                 <tr class="border-top fw-bold">
                                     <td class="text-xs">TOTAL POPULASI</td>
-                                    <td class="text-xs text-end">{{ $rekapStok->sum() }}</td>
+                                    <td class="text-xs text-end">{{ $rekapStok->sum() }} Ekor</td>
                                 </tr>
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
-
         </div>
     </main>
 </x-app-layout>
