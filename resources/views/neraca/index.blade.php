@@ -3,49 +3,32 @@
         <div class="container-fluid py-4">
 
             <!-- HEADER & ACTION BUTTONS -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="fw-bold mb-0 text-uppercase">Laporan Neraca Keuangan</h5>
-                <div class="d-flex gap-2">
-                    <!-- TOMBOL BARU: KELOLA PAKAN -->
-                    <a href="{{ route('pakan.index') }}" class="btn btn-sm btn-white shadow-sm mb-0">
-                        <i class="fas fa-utensils me-1 text-warning"></i> Kelola Pakan
-                    </a>
+            <div class="row align-items-center mb-4">
+                <div class="col-md-6">
+                    <h5 class="fw-bold mb-0 text-uppercase text-primary">Laporan Neraca Keuangan</h5>
+                    <p class="text-sm text-secondary mb-0">Ringkasan posisi keuangan aset dan kewajiban</p>
+                </div>
+                <div class="col-md-6 d-flex justify-content-md-end gap-2 mt-3 mt-md-0">
+                    <!-- DROPDOWN KELOLA AKUN -->
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-white dropdown-toggle shadow-sm mb-0" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-list me-1 text-primary"></i> Kelola Akun
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0" aria-labelledby="dropdownMenuButton">
+                            <li><a class="dropdown-item" href="{{ route('kambing-akun.index') }}"><i class="fas fa-sheep me-2 text-dark"></i>Stok Kambing</a></li>
+                            <li><a class="dropdown-item" href="{{ route('pakan.index') }}"><i class="fas fa-utensils me-2 text-warning"></i>Pakan</a></li>
+                            <li><a class="dropdown-item" href="{{ route('kandang.index') }}"><i class="fas fa-tools me-2 text-info"></i>Kandang</a></li>
+                            <li><a class="dropdown-item" href="{{ route('upah.index') }}"><i class="fas fa-user-tie me-2 text-dark"></i>Upah</a></li>
+                            <li><a class="dropdown-item" href="{{ route('perlengkapan.index') }}"><i class="fas fa-box me-2 text-primary"></i>Perlengkapan</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ route('piutang.index') }}"><i class="fas fa-file-invoice-dollar me-2 text-success"></i>Piutang</a></li>
+                            <li><a class="dropdown-item" href="{{ route('hutang.index') }}"><i class="fas fa-hand-holding-usd me-2 text-danger"></i>Hutang</a></li>
+                            <li><a class="dropdown-item" href="{{ route('operasional.index') }}"><i class="fas fa-cogs me-2 text-secondary"></i>Operasional</a></li>
+                        </ul>
+                    </div>
 
-                    <!-- Tambahkan ini di deretan tombol Penjualan, Pakan, dll -->
-                    <a href="{{ route('kandang.index') }}" class="btn btn-sm btn-white shadow-sm mb-0">
-                      <i class="fas fa-tools me-1 text-info"></i> Kandang
-                        </a>
-                    
                     <a href="{{ route('neraca.penjualan.index') }}" class="btn btn-sm btn-white shadow-sm mb-0">
                         <i class="fas fa-shopping-cart me-1 text-primary"></i> Penjualan
-                    </a>
-
-                    <a href="{{ route('kambing-akun.index') }}" class="btn btn-sm btn-white shadow-sm mb-0">
-                      <i class="fas fa-sheep me-1 text-dark"></i> Stok Kambing
-                    </a>
-
-                    <a href="{{ route('piutang.index') }}" class="btn btn-sm btn-white shadow-sm mb-0">
-                     <i class="fas fa-file-invoice-dollar me-1 text-warning"></i> Piutang
-                    </a>
-
-                    <a href="{{ route('upah.index') }}" class="btn btn-sm btn-white shadow-sm mb-0">
-                     <i class="fas fa-user-tie me-1 text-dark"></i> Upah
-                    </a>
-
-                    <a href="{{ route('hutang.index') }}" class="btn btn-sm btn-white shadow-sm mb-0">
-                     <i class="fas fa-hand-holding-usd me-1 text-danger"></i> Hutang
-                        </a>
-
-                    <a href="{{ route('operasional.index') }}" class="btn btn-sm btn-white shadow-sm mb-0">
-                     <i class="fas fa-cogs me-1 text-warning"></i> Operasional
-                    </a>
-                    
-                    <a href="{{ route('perlengkapan.index') }}" class="btn btn-sm btn-white shadow-sm mb-0">
-                     <i class="fas fa-box me-1 text-primary"></i> Perlengkapan
-                    </a>
-
-                    <a href="{{ route('neraca.rincian-kambing.index') }}" class="btn btn-sm btn-white shadow-sm mb-0">
-                        <i class="fas fa-horse me-1 text-success"></i> Rincian Kambing
                     </a>
                     
                     <a href="{{ route('neraca.laba-rugi') }}" class="btn btn-sm btn-primary shadow-sm mb-0">
@@ -54,13 +37,13 @@
                 </div>
             </div>
 
-            <div class="card shadow-sm border-0">
-                <div class="card-body table-responsive">
+            <div class="card shadow-sm border-0 border-radius-xl">
+                <div class="card-body table-responsive p-0">
                     <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-gray-100">
-                            <tr class="text-secondary">
-                                <th class="text-start ps-4 text-xxs font-weight-bolder opacity-7">KATEGORI & AKUN</th>
-                                <th class="text-xxs font-weight-bolder opacity-7">SALDO AWAL</th>
+                        <thead>
+                            <tr class="bg-gray-100 text-secondary">
+                                <th class="text-start ps-4 text-xxs font-weight-bolder opacity-7 py-3">KATEGORI & AKUN</th>
+                                <th class="text-center text-xxs font-weight-bolder opacity-7">SALDO AWAL</th>
                                 @foreach ($bulanList as $bulan)
                                     <th class="text-center text-xxs font-weight-bolder opacity-7">
                                         {{ \Carbon\Carbon::createFromFormat('Y-m', $bulan)->translatedFormat('M Y') }}
@@ -73,21 +56,25 @@
                             {{-- ===================== --}}
                             {{-- 🔹 AKTIVA (ASET)      --}}
                             {{-- ===================== --}}
-                            <tr class="bg-light">
-                                <td colspan="{{ 2 + count($bulanList) }}" class="text-start ps-4 fw-bold text-primary text-sm">
-                                    <i class="fas fa-plus-circle me-2"></i> AKTIVA (ASET)
+                            <tr class="bg-light-primary">
+                                <td colspan="{{ 2 + count($bulanList) }}" class="text-start ps-4 fw-bold text-primary text-xs py-2">
+                                    <i class="fas fa-shield-alt me-2"></i> AKTIVA (ASET)
                                 </td>
                             </tr>
 
                             @foreach ($akunAktiva as $akun)
                                 <tr>
-                                    <td class="text-start ps-5 text-sm">{{ $akun }}</td>
-                                    <td class="text-muted text-xs">
+                                    <td class="text-start ps-5 text-sm font-weight-bold text-dark">
+                                        {{ $akun == 'Perlengkapan' ? 'Perlengkapan (Complifit)' : $akun }}
+                                    </td>
+                                    <td class="text-center text-muted text-xs">
                                         {{ number_format($saldoAwal[$akun] ?? 0, 0, ',', '.') }}
                                     </td>
                                     @foreach ($bulanList as $bulan)
                                         <td class="text-center text-sm">
-                                            {{ number_format($saldo[$akun][$bulan] ?? 0, 0, ',', '.') }}
+                                            <span class="{{ ($saldo[$akun][$bulan] ?? 0) < 0 ? 'text-danger' : '' }}">
+                                                {{ number_format($saldo[$akun][$bulan] ?? 0, 0, ',', '.') }}
+                                            </span>
                                         </td>
                                     @endforeach
                                 </tr>
@@ -96,7 +83,7 @@
                             {{-- TOTAL AKTIVA --}}
                             <tr class="fw-bold bg-gray-50">
                                 <td class="text-start ps-4 text-sm">TOTAL AKTIVA</td>
-                                <td class="text-sm">{{ number_format(array_sum($saldoAwal), 0, ',', '.') }}</td>
+                                <td class="text-center text-sm">{{ number_format(array_sum($saldoAwal), 0, ',', '.') }}</td>
                                 @foreach ($bulanList as $bulan)
                                     <td class="text-center text-sm text-primary">
                                         @php
@@ -113,16 +100,16 @@
                             {{-- ===================== --}}
                             {{-- 🔹 PASIVA (KEWAJIBAN) --}}
                             {{-- ===================== --}}
-                            <tr class="bg-light">
-                                <td colspan="{{ 2 + count($bulanList) }}" class="text-start ps-4 fw-bold text-danger text-sm">
-                                    <i class="fas fa-minus-circle me-2"></i> PASIVA (KEWAJIBAN & MODAL)
+                            <tr class="bg-light-danger">
+                                <td colspan="{{ 2 + count($bulanList) }}" class="text-start ps-4 fw-bold text-danger text-xs py-2">
+                                    <i class="fas fa-hand-holding-usd me-2"></i> PASIVA (KEWAJIBAN & MODAL)
                                 </td>
                             </tr>
 
                             @foreach ($akunPasiva as $akun)
                                 <tr>
-                                    <td class="text-start ps-5 text-sm">{{ $akun }}</td>
-                                    <td class="text-muted text-xs">
+                                    <td class="text-start ps-5 text-sm font-weight-bold text-dark">{{ $akun }}</td>
+                                    <td class="text-center text-muted text-xs">
                                         {{ number_format($saldoAwal[$akun] ?? 0, 0, ',', '.') }}
                                     </td>
                                     @foreach ($bulanList as $bulan)
@@ -136,7 +123,7 @@
                             {{-- MODAL TETAP --}}
                             <tr class="bg-gray-50 italic">
                                 <td class="text-start ps-5 text-sm">Modal Awal</td>
-                                <td class="text-muted text-xs">200.000.000</td>
+                                <td class="text-center text-muted text-xs">200.000.000</td>
                                 @foreach ($bulanList as $bulan)
                                     <td class="text-center text-sm">200.000.000</td>
                                 @endforeach
@@ -145,7 +132,7 @@
                             {{-- LABA RUGI (BALANCING) --}}
                             <tr>
                                 <td class="text-start ps-5 text-sm">Laba Rugi Tahun Berjalan</td>
-                                <td class="text-muted text-xs">-</td>
+                                <td class="text-center text-muted text-xs">-</td>
                                 @foreach ($bulanList as $bulan)
                                     <td class="text-center text-success fw-bold text-sm">
                                         @php
@@ -165,24 +152,24 @@
                             {{-- TOTAL PASIVA --}}
                             <tr class="fw-bold bg-warning-light">
                                 <td class="text-start ps-4 text-sm">TOTAL PASIVA</td>
-                                <td class="text-sm">-</td>
+                                <td class="text-center text-sm">-</td>
                                 @foreach ($bulanList as $bulan)
                                     <td class="text-center text-sm">
-                                        @php
-                                            // Total Pasiva harus sama dengan Total Aktiva agar Balance
-                                            echo number_format($totalAktivaBulan, 0, ',', '.');
-                                        @endphp
+                                        {{-- Total Pasiva disamakan dengan Aktiva agar Balance --}}
+                                        {{ number_format($totalAktivaBulan, 0, ',', '.') }}
                                     </td>
                                 @endforeach
                             </tr>
 
                             {{-- VALIDASI --}}
-                            <tr class="fw-bold bg-gray-100">
+                            <tr class="fw-bold bg-white">
                                 <td class="text-start ps-4 text-xxs">STATUS NERACA</td>
                                 <td></td>
                                 @foreach ($bulanList as $bulan)
                                     <td class="text-center text-xxs text-success">
-                                        <i class="fas fa-check-circle me-1"></i> BALANCE
+                                        <span class="badge badge-sm bg-gradient-success">
+                                            <i class="fas fa-check me-1"></i> BALANCE
+                                        </span>
                                     </td>
                                 @endforeach
                             </tr>
@@ -193,17 +180,17 @@
 
             <!-- KAS INFO CARD -->
             <div class="row mt-4">
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="card card-body border-0 shadow-sm p-3">
                         <div class="d-flex align-items-center">
                             <div class="icon icon-shape bg-gradient-primary shadow text-center border-radius-md">
-                                <i class="fas fa-wallet opacity-10"></i>
+                                <i class="fas fa-coins opacity-10"></i>
                             </div>
                             <div class="ms-3">
-                                <p class="text-xs mb-0 text-capitalize font-weight-bold">Saldo Kas Terakhir</p>
-                                <h6 class="font-weight-bolder mb-0">
+                                <p class="text-xs mb-0 text-capitalize font-weight-bold">Kas Real-Time</p>
+                                <h5 class="font-weight-bolder mb-0">
                                     Rp {{ number_format(end($sisaSaldo) ?: 0, 0, ',', '.') }}
-                                </h6>
+                                </h5>
                             </div>
                         </div>
                     </div>
@@ -215,9 +202,13 @@
 </x-app-layout>
 
 <style>
+    .bg-light-primary { background-color: #f5f8ff; }
+    .bg-light-danger { background-color: #fff5f5; }
     .bg-gray-50 { background-color: #f8f9fa; }
-    .bg-warning-light { background-color: #fff9e6; }
+    .bg-warning-light { background-color: #fffcf0; }
     .italic { font-style: italic; }
     .text-xxs { font-size: 0.65rem !important; }
     .btn-white { background-color: white; color: #344767; }
+    .table-hover tbody tr:hover { background-color: #fbfbfb; }
+    .dropdown-item { font-size: 0.85rem; }
 </style>

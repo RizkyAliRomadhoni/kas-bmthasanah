@@ -15,7 +15,7 @@ class NeracaController extends Controller
     public function index(Request $request)
     {
         // ================================
-        // 🔹 1. DAFTAR BULAN (OTOMATIS)
+        // 🔹 1. DAFTAR BULAN (OTOMATIS DARI DATA KAS)
         // ================================
         $bulanList = Kas::selectRaw("DATE_FORMAT(tanggal,'%Y-%m') as bulan")
             ->groupBy('bulan')
@@ -23,16 +23,17 @@ class NeracaController extends Controller
             ->pluck('bulan');
 
         // ================================
-        // 🔹 2. PENGATURAN AKUN
+        // 🔹 2. PENGATURAN AKUN (AKTIVA & PASIVA)
         // ================================
         $akunAktiva = [
             'Kas',
-            'Kambing', // Ini nanti diisi dari data RincianKambing
+            'Kambing',
             'Pakan',
+            'Perlengkapan',
+            'Upah',         // Tambahan Baru
+            'Kandang',
             'Operasional',
             'Perawatan',
-            'Perlengkapan',
-            'Kandang',
         ];
 
         $akunPasiva = [
@@ -43,7 +44,7 @@ class NeracaController extends Controller
             'Penyertaan DF',
         ];
 
-        // Saldo Awal Default
+        // Inisialisasi Saldo Awal (Jika ada saldo sebelum sistem berjalan, isi di sini)
         $saldoAwal = [];
         foreach (array_merge($akunAktiva, $akunPasiva) as $akun) {
             $saldoAwal[$akun] = 0;
@@ -54,12 +55,12 @@ class NeracaController extends Controller
         $totalHppPerBulan = [];
 
         // ================================
-        // 🔹 3. LOOPING PER BULAN
+        // 🔹 3. LOOPING PER BULAN (UNTUK MENGHITUNG SALDO AKUMULATIF)
         // ================================
         foreach ($bulanList as $bulan) {
             $akhirBulan = Carbon::createFromFormat('Y-m', $bulan)->endOfMonth();
 
-            // --- A. INFO KAS NYATA ---
+            // --- A. INFO KAS NYATA (DARI SALDO TERAKHIR DI TABEL KAS) ---
             $saldoAkhirBulan = Kas::where('tanggal', '<=', $akhirBulan)
                 ->orderBy('tanggal', 'desc')
                 ->orderBy('id', 'desc')
@@ -67,32 +68,35 @@ class NeracaController extends Controller
 
             $sisaSaldo[$bulan] = $saldoAkhirBulan ?? 0;
 
-            // --- B. AMBIL DATA DARI MODEL LAIN (Rincian Kambing / Stok) ---
-            // Kita anggap total_hpp sebagai nilai Aset Kambing
+            // --- B. AMBIL NILAI ASET KAMBING (DARI TABEL RINCIAN KAMBING) ---
+            // Mengasumsikan total_hpp di RincianKambing adalah nilai aset ternak
             $totalHppPerBulan[$bulan] = RincianKambing::where('created_at', '<=', $akhirBulan)
                 ->sum('total_hpp');
 
-            // --- C. PROSES AKTIVA ---
+            // --- C. PROSES AKTIVA (ASET) ---
             foreach ($akunAktiva as $akun) {
+                // Spesifik untuk akun Kas, ambil dari saldo akhir riil
                 if ($akun === 'Kas') {
-                    $saldo[$akun][$bulan] = 0; // Tidak dihitung di baris ini karena ada di "Kas Info"
+                    $saldo[$akun][$bulan] = $sisaSaldo[$bulan];
                     continue;
                 }
 
+                // Spesifik untuk akun Kambing, ambil dari rincian HPP
                 if ($akun === 'Kambing') {
-                    // Isi saldo akun Kambing dari data RincianKambing (HPP)
                     $saldo[$akun][$bulan] = $totalHppPerBulan[$bulan];
                     continue;
                 }
 
+                // Untuk akun lainnya, hitung akumulasi pengeluaran dari tabel Kas
+                // Dalam akuntansi, pengeluaran aset (pembelian pakan/perlengkapan) menambah nilai Aktiva
                 $saldo[$akun][$bulan] = Kas::where('akun', $akun)
                     ->where('tanggal', '<=', $akhirBulan)
                     ->sum('jumlah');
             }
 
-            // --- D. PROSES PASIVA ---
+            // --- D. PROSES PASIVA (KEWAJIBAN & MODAL) ---
             foreach ($akunPasiva as $akun) {
-                // Akun Khusus Penyertaan (berdasarkan keterangan)
+                // Logika khusus untuk Akun Penyertaan (berdasarkan keterangan di Kas)
                 if (in_array($akun, ['Penyertaan BMT Hasanah', 'Penyertaan DF'])) {
                     $saldo[$akun][$bulan] = Kas::where('akun', 'Kas')
                         ->where('keterangan', 'LIKE', '%' . $akun . '%')
@@ -101,6 +105,7 @@ class NeracaController extends Controller
                     continue;
                 }
 
+                // Akumulasi saldo untuk Hutang, Titipan, dll
                 $saldo[$akun][$bulan] = Kas::where('akun', $akun)
                     ->where('tanggal', '<=', $akhirBulan)
                     ->sum('jumlah');
@@ -123,6 +128,6 @@ class NeracaController extends Controller
 
     public function neracaTabel(Request $request)
     {
-        // Fungsi placeholder jika dibutuhkan di masa depan
+        // Fungsi placeholder jika Anda membutuhkan export data di masa depan
     }
 }
