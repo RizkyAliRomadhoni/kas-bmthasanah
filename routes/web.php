@@ -15,7 +15,6 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FarmController;
 use App\Http\Controllers\LabaRugiController;
 use App\Http\Controllers\PenjualanController;
-use App\Http\Controllers\RincianKambingController;
 
 
 
@@ -184,20 +183,7 @@ Route::middleware(['auth'])->group(function () {
     // Saya samakan URL-nya menjadi /neraca/penjualan agar lebih rapi
     Route::post('/neraca/penjualan', [PenjualanController::class, 'store'])
         ->name('neraca.penjualan.store');
-
-    // =========================
-    // RINCIAN KAMBING
-    // =========================
-    Route::get('/neraca/rincian-kambing', [RincianKambingController::class, 'index'])
-        ->name('neraca.rincian-kambing.index');
-
-    Route::post('/neraca/rincian-kambing/hpp/store', [RincianKambingController::class, 'storeHpp'])
-        ->name('neraca.rincian-kambing.hpp.store');
-
-    Route::post('/neraca/rincian-kambing/mati/store', [RincianKambingController::class, 'storeMati'])
-        ->name('neraca.rincian-kambing.mati.store');
 });
-
 
 use App\Http\Controllers\PakanController;
 
@@ -264,10 +250,3 @@ Route::middleware(['auth'])->group(function () {
 });
 
 
-Route::middleware(['auth'])->group(function () {
-    Route::get('/neraca/rincian-kambing', [RincianKambingController::class, 'index'])->name('neraca.rincian-kambing.index');
-    Route::post('/neraca/rincian-kambing/store-hpp', [RincianKambingController::class, 'storeHpp'])->name('rincian-kambing.storeHpp');
-    Route::post('/neraca/rincian-kambing/store-mati', [RincianKambingController::class, 'storeMati'])->name('rincian-kambing.storeMati');
-    Route::get('/neraca/rincian-kambing/delete-hpp/{id}', [RincianKambingController::class, 'destroyHpp'])->name('rincian-kambing.deleteHpp');
-    Route::get('/neraca/rincian-kambing/delete-mati/{id}', [RincianKambingController::class, 'destroyMati'])->name('rincian-kambing.deleteMati');
-});
