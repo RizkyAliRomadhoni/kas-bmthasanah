@@ -23,7 +23,7 @@ class KambingAkunController extends Controller
         $rekapStok = KambingDetail::selectRaw('jenis, COUNT(*) as total')
                                     ->groupBy('jenis')->pluck('total', 'jenis');
 
-        return view('akun.kambing.index', compact('data', 'rekapStok'));
+        return view('neraca.kambing.index', compact('data', 'rekapStok'));
     }
 
     public function storeDetail(Request $request)
