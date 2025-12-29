@@ -35,7 +35,7 @@
                         <i class="fas fa-user-tie text-secondary"></i> Upah
                     </a>
                     <a href="{{ route('rincian-kambing.index') }}" class="btn-nav shadow-sm">
-                        <i class="fas fa-utensils text-warning"></i> Pakan
+                        <i class="fas fa-utensils text-warning"></i> Rincian Kambing
                     </a>
                     
                     <!-- KELOMPOK KEUANGAN -->

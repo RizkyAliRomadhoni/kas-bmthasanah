@@ -2,48 +2,43 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\RincianKambing;
+use App\Models\HppKambing;
 use App\Models\KambingMati;
+use Illuminate\Http\Request;
 
 class RincianKambingController extends Controller
 {
     public function index()
     {
-        $hpp = RincianKambing::all();
-        $mati = KambingMati::all();
+        $dataHpp = HppKambing::orderBy('created_at', 'desc')->get();
+        $dataMati = KambingMati::orderBy('tanggal', 'desc')->get();
 
-        $totalHpp = $hpp->sum('total_hpp');
-        $totalMati = $mati->sum('harga');
-
-        return view('neraca.rincian-kambing.index', compact(
-            'hpp',
-            'mati',
-            'totalHpp',
-            'totalMati'
-        ));
+        return view('neraca.rincian-kambing.index', compact('dataHpp', 'dataMati'));
     }
 
     public function storeHpp(Request $request)
     {
         $jumlah = $request->qty * $request->harga_satuan;
-        $total = $jumlah + $request->ongkir;
+        $total_hpp = $jumlah + $request->ongkir;
 
-        RincianKambing::create([
+        HppKambing::create([
             'jenis' => $request->jenis,
             'qty' => $request->qty,
             'harga_satuan' => $request->harga_satuan,
             'jumlah' => $jumlah,
             'ongkir' => $request->ongkir,
-            'total_hpp' => $total,
+            'total_hpp' => $total_hpp,
         ]);
 
-        return back();
+        return back()->with('success', 'Data HPP Berhasil Disimpan');
     }
 
     public function storeMati(Request $request)
     {
         KambingMati::create($request->all());
-        return back();
+        return back()->with('success', 'Data Kematian Berhasil Disimpan');
     }
+
+    public function destroyHpp($id) { HppKambing::destroy($id); return back(); }
+    public function destroyMati($id) { KambingMati::destroy($id); return back(); }
 }
