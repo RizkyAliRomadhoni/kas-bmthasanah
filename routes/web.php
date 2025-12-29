@@ -257,3 +257,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/akun/kambing/store', [KambingAkunController::class, 'storeDetail'])->name('kambing-akun.storeDetail');
     Route::get('/akun/kambing/delete/{id}', [KambingAkunController::class, 'destroyDetail'])->name('kambing-akun.destroy');
 });
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/neraca/laba-rugi', [LabaRugiController::class, 'index'])->name('neraca.laba-rugi');
+});

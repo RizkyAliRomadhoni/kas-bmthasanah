@@ -2,129 +2,78 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Kas;
+use App\Models\Penjualan;
+use App\Models\KambingMati;
+use App\Models\PakanDetail;
+use Illuminate\Http\Request;
 use Carbon\Carbon;
 
 class LabaRugiController extends Controller
 {
-    /**
-     * ============================
-     * 🔹 DETAIL LABA RUGI (HALAMAN SENDIRI)
-     * ============================
-     */
     public function index()
     {
-        $bulanList = Kas::selectRaw("DATE_FORMAT(tanggal,'%Y-%m') as bulan")
+        // 1. Ambil daftar bulan unik dari tabel Kas
+        $bulanList = Kas::selectRaw("DATE_FORMAT(tanggal, '%Y-%m') as bulan")
             ->groupBy('bulan')
-            ->orderBy('bulan')
+            ->orderBy('bulan', 'asc')
             ->pluck('bulan');
 
-        $data = [];
+        $labaRugiData = [];
 
         foreach ($bulanList as $bulan) {
+            // --- A. PENDAPATAN ---
 
-            // =====================
-            // 🔹 PENDAPATAN
-            // =====================
-            $penjualan = Kas::where('akun', 'penjualan')
-                ->whereRaw("DATE_FORMAT(tanggal,'%Y-%m')=?", [$bulan])
+            // 1. Laba Penjualan Kambing (Harga Jual - HPP)
+            $penjualan = Penjualan::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])->get();
+            $labaJualKambing = $penjualan->sum(fn($q) => max(0, $q->harga_jual - $q->hpp));
+            
+            // Logika kerugian jika HPP > Harga Jual
+            $rugiJualKambing = $penjualan->sum(fn($q) => max(0, $q->hpp - $q->harga_jual));
+
+            // 2. Laba Penjualan Pakan (Selisih Harga Jual - Harga Beli * Qty)
+            $labaJualPakan = PakanDetail::whereHas('kas', function($q) use ($bulan) {
+                $q->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan]);
+            })->get()->sum(fn($q) => ($q->harga_jual_kg - $q->harga_kg) * $q->qty_kg);
+
+            // 3. Laba Basil Simpanan (Dari Kas yang Keterangannya mengandung kata 'Basil')
+            $labaBasil = Kas::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])
+                ->where('keterangan', 'LIKE', '%Basil%')
                 ->sum('jumlah');
 
-            $pakan = Kas::where('akun', 'pakan')
-                ->whereRaw("DATE_FORMAT(tanggal,'%Y-%m')=?", [$bulan])
+            // 4. Laba Penyesuaian Harga (Bisa diambil dari Kas akun 'Penyesuaian')
+            $labaPenyesuaian = Kas::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])
+                ->where('akun', 'Penyesuaian')
                 ->sum('jumlah');
 
-            $penyesuaianHarga = Kas::where('keterangan', 'LIKE', '%PENYESUAIAN HARGA%')
-                ->whereRaw("DATE_FORMAT(tanggal,'%Y-%m')=?", [$bulan])
-                ->sum('jumlah');
+            $totalPendapatan = $labaJualKambing + $labaJualPakan + $labaBasil + $labaPenyesuaian;
 
-            $basil = Kas::where('akun', 'basil')
-                ->whereRaw("DATE_FORMAT(tanggal,'%Y-%m')=?", [$bulan])
-                ->sum('jumlah');
+            // --- B. BIAYA ---
 
-            $totalPendapatan =
-                $penjualan +
-                $pakan +
-                $penyesuaianHarga +
-                $basil;
+            // 1. Beban Kambing Mati (Dari tabel KambingMati)
+            $bebanMati = KambingMati::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])
+                ->sum('harga');
 
-            // =====================
-            // 🔹 BIAYA
-            // =====================
-            $upah = Kas::where('akun', 'upah')
-                ->whereRaw("DATE_FORMAT(tanggal,'%Y-%m')=?", [$bulan])
-                ->sum('jumlah');
+            // Total Biaya (Hanya Kerugian Jual dan Kambing Mati)
+            $totalBiaya = $rugiJualKambing + $bebanMati;
 
-            $kerugianPenjualan = Kas::where('keterangan', 'LIKE', '%KERUGIAN PENJUALAN%')
-                ->whereRaw("DATE_FORMAT(tanggal,'%Y-%m')=?", [$bulan])
-                ->sum('jumlah');
+            // --- C. LABA RUGI BERSIH ---
+            $netLabaRugi = $totalPendapatan - $totalBiaya;
 
-            $kerugianMati = Kas::where('keterangan', 'LIKE', '%KERUGIAN KAMBING MATI%')
-                ->whereRaw("DATE_FORMAT(tanggal,'%Y-%m')=?", [$bulan])
-                ->sum('jumlah');
-
-            $totalBiaya =
-                $upah +
-                $kerugianPenjualan +
-                $kerugianMati;
-
-            // =====================
-            // 🔹 LABA RUGI
-            // =====================
-            $labaRugi = $totalPendapatan - $totalBiaya;
-
-            $data[$bulan] = [
-                'penjualan' => $penjualan,
-                'pakan' => $pakan,
-                'penyesuaian_harga' => $penyesuaianHarga,
-                'basil' => $basil,
+            // Simpan ke array
+            $labaRugiData[$bulan] = [
+                'laba_jual_kambing' => $labaJualKambing,
+                'laba_jual_pakan' => $labaJualPakan,
+                'laba_penyesuaian' => $labaPenyesuaian,
+                'laba_basil' => $labaBasil,
                 'total_pendapatan' => $totalPendapatan,
-
-                'upah' => $upah,
-                'kerugian_penjualan' => $kerugianPenjualan,
-                'kerugian_mati' => $kerugianMati,
+                'rugi_jual_kambing' => $rugiJualKambing,
+                'beban_mati' => $bebanMati,
                 'total_biaya' => $totalBiaya,
-
-                'laba_rugi' => $labaRugi,
+                'net_laba_rugi' => $netLabaRugi,
             ];
         }
 
-        return view('neraca.laba-rugi', compact('bulanList', 'data'));
-    }
-
-    /**
-     * ============================
-     * 🔹 HASIL LABA RUGI (UNTUK NERACA)
-     * ============================
-     */
-    public static function hasilPerBulan()
-    {
-        $bulanList = Kas::selectRaw("DATE_FORMAT(tanggal,'%Y-%m') as bulan")
-            ->groupBy('bulan')
-            ->pluck('bulan');
-
-        $hasil = [];
-
-        foreach ($bulanList as $bulan) {
-
-            $pendapatan =
-                Kas::where('akun', 'penjualan')->whereRaw("DATE_FORMAT(tanggal,'%Y-%m')=?",[$bulan])->sum('jumlah')
-              + Kas::where('akun', 'pakan')->whereRaw("DATE_FORMAT(tanggal,'%Y-%m')=?",[$bulan])->sum('jumlah')
-              + Kas::where('akun', 'basil')->whereRaw("DATE_FORMAT(tanggal,'%Y-%m')=?",[$bulan])->sum('jumlah')
-              + Kas::where('keterangan','LIKE','%PENYESUAIAN HARGA%')
-                    ->whereRaw("DATE_FORMAT(tanggal,'%Y-%m')=?",[$bulan])->sum('jumlah');
-
-            $biaya =
-                Kas::where('akun', 'upah')->whereRaw("DATE_FORMAT(tanggal,'%Y-%m')=?",[$bulan])->sum('jumlah')
-              + Kas::where('keterangan','LIKE','%KERUGIAN PENJUALAN%')
-                    ->whereRaw("DATE_FORMAT(tanggal,'%Y-%m')=?",[$bulan])->sum('jumlah')
-              + Kas::where('keterangan','LIKE','%KERUGIAN KAMBING MATI%')
-                    ->whereRaw("DATE_FORMAT(tanggal,'%Y-%m')=?",[$bulan])->sum('jumlah');
-
-            $hasil[$bulan] = $pendapatan - $biaya;
-        }
-
-        return $hasil;
+        return view('neraca.laba-rugi.index', compact('bulanList', 'labaRugiData'));
     }
 }
