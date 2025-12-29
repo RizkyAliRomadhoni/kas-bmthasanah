@@ -34,6 +34,9 @@
                     <a href="{{ route('upah.index') }}" class="btn-nav shadow-sm">
                         <i class="fas fa-user-tie text-secondary"></i> Upah
                     </a>
+                    <a href="{{ route('rincian-kambing.index') }}" class="btn-nav shadow-sm">
+                        <i class="fas fa-utensils text-warning"></i> Pakan
+                    </a>
                     
                     <!-- KELOMPOK KEUANGAN -->
                     <div class="vr mx-2 d-none d-md-block" style="height: 30px; align-self: center; border-left: 1px solid #ddd;"></div>
