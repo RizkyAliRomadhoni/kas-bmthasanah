@@ -9,14 +9,12 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
 
 class KasController extends Controller
 {
     /**
-     * ================================
-     * INDEX — TAMPIL DATA SAJA
-     * (SALDO TIDAK DIHITUNG ULANG)
-     * ================================
+     * INDEX — TAMPIL DATA DENGAN FILTER & RINGKASAN
      */
     public function index(Request $request)
     {
@@ -36,17 +34,18 @@ class KasController extends Controller
             $query->where('akun', $request->akun);
         }
 
-        // DATA HANYA UNTUK DITAMPILKAN
+        // TAMPILAN: Urutkan Terbaru di Atas (Desc) untuk kenyamanan user
         $kas = $query->orderBy('tanggal', 'desc')->orderBy('id', 'desc')->get();
 
-        // SALDO GLOBAL TERAKHIR (TANPA FILTER)
-        $saldo = Kas::orderBy('id', 'desc')->value('saldo') ?? 0;
+        // SALDO GLOBAL TERAKHIR (Berdasarkan kronologi terbaru)
+        $lastEntry = Kas::orderBy('tanggal', 'desc')->orderBy('id', 'desc')->first();
+        $saldo = $lastEntry ? $lastEntry->saldo : 0;
 
-        // KAS KAMBING (TIDAK DIUBAH)
+        // KAS KAMBING (Fungsi Asli Anda)
         $kasKambingMasuk = KasKambing::where('jenis', 'pemasukan')->sum('jumlah');
         $kasKambingKeluar = KasKambing::where('jenis', 'pengeluaran')->sum('jumlah');
 
-        // FILE AKUN
+        // FILE AKUN JSON (Fungsi Asli Anda)
         $akunFile = storage_path('app/akun.json');
         if (!File::exists($akunFile)) {
             File::put($akunFile, json_encode(['Modal','Utang','Piutang','Kambing','Tabungan','Lainnya']));
@@ -56,17 +55,13 @@ class KasController extends Controller
         // RINGKASAN SESUAI FILTER
         $totalMasuk = (clone $query)->where('jenis_transaksi', 'Masuk')->sum('jumlah');
         $totalKeluar = (clone $query)->where('jenis_transaksi', 'Keluar')->sum('jumlah');
-        $saldoRingkasan = $totalMasuk - $totalKeluar;
+        
+        // Saldo Ringkasan mengambil saldo baris teratas dari hasil filter
+        $saldoRingkasan = $kas->first() ? $kas->first()->saldo : $saldo;
 
         return view('kas.index', compact(
-            'kas',
-            'saldo',
-            'kasKambingMasuk',
-            'kasKambingKeluar',
-            'akunList',
-            'totalMasuk',
-            'totalKeluar',
-            'saldoRingkasan'
+            'kas', 'saldo', 'kasKambingMasuk', 'kasKambingKeluar', 
+            'akunList', 'totalMasuk', 'totalKeluar', 'saldoRingkasan'
         ));
     }
 
@@ -77,12 +72,11 @@ class KasController extends Controller
             File::put($akunFile, json_encode(['Modal','Utang','Piutang','Kambing','Tabungan','Lainnya']));
         }
         $akunList = json_decode(File::get($akunFile), true);
-
         return view('kas.create', compact('akunList'));
     }
 
     /**
-     * SIMPAN TRANSAKSI BARU
+     * SIMPAN & HITUNG ULANG
      */
     public function store(Request $request)
     {
@@ -96,9 +90,6 @@ class KasController extends Controller
         ]);
 
         $akunFile = storage_path('app/akun.json');
-        if (!File::exists($akunFile)) {
-            File::put($akunFile, json_encode(['Modal','Utang','Piutang','Kambing','Tabungan','Lainnya']));
-        }
         $akunList = json_decode(File::get($akunFile), true);
 
         if ($request->filled('akun_baru')) {
@@ -111,20 +102,17 @@ class KasController extends Controller
             $akun = $request->akun;
         }
 
-        $lastSaldo = Kas::orderBy('id', 'desc')->value('saldo') ?? 0;
-        $saldoBaru = $request->jenis_transaksi === 'Masuk'
-            ? $lastSaldo + $request->jumlah
-            : $lastSaldo - $request->jumlah;
-
         Kas::create([
             'tanggal' => $request->tanggal,
             'keterangan' => $request->keterangan,
             'jenis_transaksi' => $request->jenis_transaksi,
             'jumlah' => $request->jumlah,
             'akun' => $akun,
-            'saldo' => $saldoBaru,
+            'saldo' => 0, 
             'user_input' => Auth::user()->name ?? 'System',
         ]);
+
+        $this->recalculateSaldo();
 
         return redirect()->route('kas.index')->with('success', 'Data berhasil ditambahkan.');
     }
@@ -134,7 +122,6 @@ class KasController extends Controller
         $kas = Kas::findOrFail($id);
         $akunFile = storage_path('app/akun.json');
         $akunList = json_decode(File::get($akunFile), true);
-
         return view('kas.edit', compact('kas', 'akunList'));
     }
 
@@ -149,34 +136,9 @@ class KasController extends Controller
         ]);
 
         $kas = Kas::findOrFail($id);
+        $kas->update($request->all());
 
-        $saldoSebelumnya = Kas::where('id', '<', $kas->id)
-                                ->orderBy('id', 'desc')
-                                ->value('saldo') ?? 0;
-
-        $saldoBaru = $request->jenis_transaksi === 'Masuk'
-            ? $saldoSebelumnya + $request->jumlah
-            : $saldoSebelumnya - $request->jumlah;
-
-        $kas->update([
-            'tanggal' => $request->tanggal,
-            'keterangan' => $request->keterangan,
-            'jenis_transaksi' => $request->jenis_transaksi,
-            'jumlah' => $request->jumlah,
-            'akun' => $request->akun,
-            'saldo' => $saldoBaru,
-        ]);
-
-        $saldoTemp = $saldoBaru;
-        $after = Kas::where('id', '>', $kas->id)->orderBy('id')->get();
-
-        foreach ($after as $item) {
-            $saldoTemp = $item->jenis_transaksi === 'Masuk'
-                ? $saldoTemp + $item->jumlah
-                : $saldoTemp - $item->jumlah;
-
-            $item->update(['saldo' => $saldoTemp]);
-        }
+        $this->recalculateSaldo();
 
         return redirect()->route('kas.index')->with('success', 'Data berhasil diperbarui.');
     }
@@ -184,45 +146,77 @@ class KasController extends Controller
     public function destroy($id)
     {
         $kas = Kas::findOrFail($id);
-
-        $saldoSebelumnya = Kas::where('id', '<', $kas->id)
-                              ->orderBy('id', 'desc')
-                              ->value('saldo') ?? 0;
-
         $kas->delete();
 
-        $saldoTemp = $saldoSebelumnya;
-        $after = Kas::where('id', '>', $id)->orderBy('id')->get();
-
-        foreach ($after as $item) {
-            $saldoTemp = $item->jenis_transaksi === 'Masuk'
-                ? $saldoTemp + $item->jumlah
-                : $saldoTemp - $item->jumlah;
-
-            $item->update(['saldo' => $saldoTemp]);
-        }
+        $this->recalculateSaldo();
 
         return redirect()->route('kas.index')->with('success', 'Data berhasil dihapus.');
     }
 
     /**
-     * HITUNG ULANG SALDO DARI AWAL
+     * FUNGSI RECALCULATE — INI MESINNYA
      */
+    private function recalculateSaldo()
+    {
+        DB::transaction(function () {
+            $kasList = Kas::orderBy('tanggal', 'asc')->orderBy('id', 'asc')->get();
+            $tempSaldo = 0;
+
+            foreach ($kasList as $item) {
+                $tempSaldo = $item->jenis_transaksi === 'Masuk' 
+                    ? $tempSaldo + $item->jumlah 
+                    : $tempSaldo - $item->jumlah;
+                
+                DB::table('kas')->where('id', $item->id)->update(['saldo' => $tempSaldo]);
+            }
+        });
+    }
+
     public function resetSaldo()
     {
-        $kasList = Kas::orderBy('id')->get();
-        $saldo = 0;
+        $this->recalculateSaldo();
+        return redirect()->route('kas.index')->with('success', 'Saldo berhasil dihitung ulang dari nol.');
+    }
 
-        foreach ($kasList as $kas) {
-            $saldo = $kas->jenis_transaksi === 'Masuk'
-                ? $saldo + $kas->jumlah
-                : $saldo - $kas->jumlah;
+    /**
+     * KELOLA AKUN (FUNGSI ASLI ANDA)
+     */
+    public function kelolaAkun(Request $request)
+    {
+        $akunFile = storage_path('app/akun.json');
+        if (!File::exists($akunFile)) {
+            File::put($akunFile, json_encode(['Modal','Utang','Piutang','Kambing','Tabungan','Lainnya'], JSON_PRETTY_PRINT));
+        }
+        $akunList = json_decode(File::get($akunFile), true);
 
-            $kas->update(['saldo' => $saldo]);
+        if ($request->filled('tambah_akun')) {
+            $akunBaru = trim($request->tambah_akun);
+            if (!in_array($akunBaru, $akunList)) {
+                $akunList[] = $akunBaru;
+                File::put($akunFile, json_encode($akunList, JSON_PRETTY_PRINT));
+            }
+            return back()->with('success', 'Akun berhasil ditambahkan');
         }
 
-        return redirect()->route('kas.index')
-            ->with('success', 'Saldo berhasil dihitung ulang.');
+        if ($request->filled('hapus_akun')) {
+            $akun = $request->hapus_akun;
+            if (Kas::where('akun', $akun)->exists()) {
+                return back()->with('error', 'Akun tidak bisa dihapus karena sudah digunakan transaksi');
+            }
+            $akunList = array_values(array_filter($akunList, function ($item) use ($akun) { return $item !== $akun; }));
+            File::put($akunFile, json_encode($akunList, JSON_PRETTY_PRINT));
+            return back()->with('success', 'Akun berhasil dihapus');
+        }
+
+        if ($request->filled('akun_lama') && $request->filled('akun_baru')) {
+            $akunLama = $request->akun_lama;
+            $akunBaru = trim($request->akun_baru);
+            foreach ($akunList as &$item) { if ($item === $akunLama) $item = $akunBaru; }
+            File::put($akunFile, json_encode($akunList, JSON_PRETTY_PRINT));
+            Kas::where('akun', $akunLama)->update(['akun' => $akunBaru]);
+            return back()->with('success', 'Nama akun diperbarui');
+        }
+        return back();
     }
 
     /**
@@ -231,24 +225,17 @@ class KasController extends Controller
     public function exportPdf(Request $request)
     {
         $query = Kas::query();
-
         if ($request->filled('bulan')) {
-            try {
-                $bulan = Carbon::parse($request->bulan);
-                $query->whereMonth('tanggal', $bulan->month)
-                      ->whereYear('tanggal', $bulan->year);
-            } catch (\Exception $e) {}
+            $bulan = Carbon::parse($request->bulan);
+            $query->whereMonth('tanggal', $bulan->month)->whereYear('tanggal', $bulan->year);
         }
-
         if ($request->filled('akun')) {
             $query->where('akun', $request->akun);
         }
 
-        $kas = $query->orderBy('tanggal', 'asc')->get();
-
+        $kas = $query->orderBy('tanggal', 'asc')->orderBy('id', 'asc')->get();
         $totalMasuk = (clone $query)->where('jenis_transaksi', 'Masuk')->sum('jumlah');
         $totalKeluar = (clone $query)->where('jenis_transaksi', 'Keluar')->sum('jumlah');
-        $saldoRingkasan = $totalMasuk - $totalKeluar;
 
         $pdf = Pdf::loadView('kas.export-pdf', [
             'kas' => $kas,
@@ -256,80 +243,14 @@ class KasController extends Controller
             'akun' => $request->akun,
             'totalMasuk' => $totalMasuk,
             'totalKeluar' => $totalKeluar,
-            'saldoRingkasan' => $saldoRingkasan
+            'saldoRingkasan' => $totalMasuk - $totalKeluar
         ]);
 
         return $pdf->download('laporan-kas.pdf');
     }
 
-    public function show($id)
-    {
+    public function show($id) {
         $kas = Kas::findOrFail($id);
         return view('kas.show', compact('kas'));
-    }
-
-    /**
-     * KELOLA AKUN
-     */
-    public function kelolaAkun(Request $request)
-    {
-        $akunFile = storage_path('app/akun.json');
-
-        if (!File::exists($akunFile)) {
-            File::put($akunFile, json_encode([
-                'Modal','Utang','Piutang','Kambing','Tabungan','Lainnya'
-            ], JSON_PRETTY_PRINT));
-        }
-
-        $akunList = json_decode(File::get($akunFile), true);
-
-        if ($request->filled('tambah_akun')) {
-            $akunBaru = trim($request->tambah_akun);
-
-            if (!in_array($akunBaru, $akunList)) {
-                $akunList[] = $akunBaru;
-                File::put($akunFile, json_encode($akunList, JSON_PRETTY_PRINT));
-            }
-
-            return back()->with('success', 'Akun berhasil ditambahkan');
-        }
-
-        if ($request->filled('hapus_akun')) {
-            $akun = $request->hapus_akun;
-
-            $dipakai = Kas::where('akun', $akun)->exists();
-            if ($dipakai) {
-                return back()->with('error', 'Akun tidak bisa dihapus karena sudah digunakan transaksi');
-            }
-
-            $akunList = array_values(array_filter($akunList, function ($item) use ($akun) {
-                return $item !== $akun;
-            }));
-
-            File::put($akunFile, json_encode($akunList, JSON_PRETTY_PRINT));
-
-            return back()->with('success', 'Akun berhasil dihapus');
-        }
-
-        if ($request->filled('akun_lama') && $request->filled('akun_baru')) {
-            $akunLama = $request->akun_lama;
-            $akunBaru = trim($request->akun_baru);
-
-            foreach ($akunList as &$item) {
-                if ($item === $akunLama) {
-                    $item = $akunBaru;
-                }
-            }
-
-            File::put($akunFile, json_encode($akunList, JSON_PRETTY_PRINT));
-
-            Kas::where('akun', $akunLama)->update([
-                'akun' => $akunBaru
-            ]);
-
-            return back()->with('success', 'Nama akun berhasil diperbarui');
-        }
-
-        return back();
     }
 }
