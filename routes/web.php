@@ -174,6 +174,9 @@ Route::get('/neraca/laba-rugi', [LabaRugiController::class, 'index'])->name('ner
 Route::get('/neraca/laba-rugi/refresh', [LabaRugiController::class, 'refresh'])->name('neraca.laba-rugi.refresh');
 Route::post('/neraca/laba-rugi/store-manual', [LabaRugiController::class, 'storeManual'])->name('neraca.laba-rugi.store-manual');
 
+Route::get('/laba-rugi', [LabaRugiController::class, 'index'])->name('neraca.laba-rugi');
+Route::post('/laba-rugi/save', [LabaRugiController::class, 'storeManual'])->name('neraca.laba-rugi.save');
+
 /*
 |--------------------------------------------------------------------------
 | NERACA - PENJUALAN
