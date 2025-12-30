@@ -15,7 +15,7 @@
                 </div>
             </div>
 
-            <!-- NAVIGASI TOMBOL KELOLA AKUN (SUB-MENU) -->
+            <!-- NAVIGASI TOMBOL KELOLA AKUN -->
             <div class="card shadow-none border-0 bg-transparent mb-4">
                 <div class="d-flex flex-wrap gap-2">
                     <a href="{{ route('kambing-akun.index') }}" class="btn-nav"><i class="fas fa-sheep text-dark"></i> Stok Kambing</a>
@@ -53,25 +53,15 @@
                                 {{-- SEKSI AKTIVA --}}
                                 <tr class="bg-light-primary">
                                     <td colspan="{{ 2 + count($bulanList) }}" class="ps-4 py-2">
-                                        <span class="text-xs fw-bold text-primary text-uppercase">
-                                            <i class="fas fa-plus-circle me-1"></i> Aktiva (Aset)
-                                        </span>
+                                        <span class="text-xs fw-bold text-primary text-uppercase">Aktiva (Aset)</span>
                                     </td>
                                 </tr>
                                 @foreach ($akunAktiva as $akun)
                                     <tr>
-                                        <td class="ps-5 py-2">
-                                            <span class="text-sm font-weight-bold text-dark">
-                                                {{ $akun == 'Perlengkapan' ? 'Perlengkapan (Complifit)' : $akun }}
-                                            </span>
-                                        </td>
-                                        <td class="text-center text-muted text-xs">
-                                            {{ number_format($saldoAwal[$akun] ?? 0, 0, ',', '.') }}
-                                        </td>
+                                        <td class="ps-5 py-2 text-sm font-weight-bold text-dark">{{ $akun }}</td>
+                                        <td class="text-center text-muted text-xs">0</td>
                                         @foreach ($bulanList as $bulan)
-                                            <td class="text-center text-sm font-weight-bold">
-                                                {{ number_format($saldo[$akun][$bulan] ?? 0, 0, ',', '.') }}
-                                            </td>
+                                            <td class="text-center text-sm font-weight-bold">{{ number_format($saldo[$akun][$bulan] ?? 0, 0, ',', '.') }}</td>
                                         @endforeach
                                     </tr>
                                 @endforeach
@@ -93,9 +83,7 @@
                                 {{-- SEKSI PASIVA --}}
                                 <tr class="bg-light-danger">
                                     <td colspan="{{ 2 + count($bulanList) }}" class="ps-4 py-2">
-                                        <span class="text-xs fw-bold text-danger text-uppercase">
-                                            <i class="fas fa-minus-circle me-1"></i> Pasiva (Kewajiban & Modal)
-                                        </span>
+                                        <span class="text-xs fw-bold text-danger text-uppercase">Pasiva</span>
                                     </td>
                                 </tr>
                                 @foreach ($akunPasiva as $akun)
@@ -103,9 +91,7 @@
                                         <td class="ps-5 py-2 text-sm font-weight-bold text-dark">{{ $akun }}</td>
                                         <td class="text-center text-muted text-xs">0</td>
                                         @foreach ($bulanList as $bulan)
-                                            <td class="text-center text-sm">
-                                                {{ number_format($saldo[$akun][$bulan] ?? 0, 0, ',', '.') }}
-                                            </td>
+                                            <td class="text-center text-sm">{{ number_format($saldo[$akun][$bulan] ?? 0, 0, ',', '.') }}</td>
                                         @endforeach
                                     </tr>
                                 @endforeach
@@ -136,9 +122,9 @@
                                     @foreach ($bulanList as $bulan)
                                         <td class="text-center text-sm font-weight-bolder">
                                             @php
-                                                $totalKewajibanBulan = 0;
-                                                foreach($akunPasiva as $p) { $totalKewajibanBulan += $saldo[$p][$bulan] ?? 0; }
-                                                $totalPasivaBulan = $totalKewajibanBulan + 200000000 + ($labaRugiKumulatif[$bulan] ?? 0);
+                                                $totalPasivaHutang = 0;
+                                                foreach($akunPasiva as $p) { $totalPasivaHutang += $saldo[$p][$bulan] ?? 0; }
+                                                $totalPasivaBulan = $totalPasivaHutang + 200000000 + ($labaRugiKumulatif[$bulan] ?? 0);
                                             @endphp
                                             {{ number_format($totalPasivaBulan, 0, ',', '.') }}
                                         </td>
@@ -153,13 +139,13 @@
                                             $ta = 0; foreach($akunAktiva as $a) { $ta += $saldo[$a][$bulan] ?? 0; }
                                             $tp = 0; foreach($akunPasiva as $p) { $tp += $saldo[$p][$bulan] ?? 0; }
                                             $tp += 200000000 + ($labaRugiKumulatif[$bulan] ?? 0);
-                                            $diff = abs($ta - $tp);
+                                            $isBalance = abs($ta - $tp) < 100;
                                         @endphp
                                         <td class="text-center">
-                                            @if($diff < 100)
+                                            @if($isBalance)
                                                 <span class="badge badge-sm bg-gradient-success text-xxs">BALANCE</span>
                                             @else
-                                                <span class="badge badge-sm bg-gradient-danger text-xxs">SELISIH Rp {{ number_format($diff, 0, ',', '.') }}</span>
+                                                <span class="badge badge-sm bg-gradient-danger text-xxs">SELISIH Rp {{ number_format(abs($ta - $tp), 0, ',', '.') }}</span>
                                             @endif
                                         </td>
                                     @endforeach
@@ -169,26 +155,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- RINGKASAN SALDO KAS -->
-            <div class="row mt-4">
-                <div class="col-md-4 col-12">
-                    <div class="card card-body border-0 shadow-sm p-3">
-                        <div class="d-flex align-items-center">
-                            <div class="icon icon-shape bg-gradient-primary shadow text-center border-radius-md" style="width: 45px; height: 45px;">
-                                <i class="fas fa-coins text-white" style="font-size: 1.2rem; line-height: 45px;"></i>
-                            </div>
-                            <div class="ms-3">
-                                <p class="text-xs mb-0 text-secondary font-weight-bold">Kas Tunai Saat Ini</p>
-                                <h5 class="font-weight-bolder mb-0">
-                                    Rp {{ number_format(collect($sisaSaldo)->last() ?: 0, 0, ',', '.') }}
-                                </h5>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </main>
 </x-app-layout>
