@@ -270,3 +270,25 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/neraca/rincian-kambing/del-hpp/{id}', [RincianKambingController::class, 'destroyHpp'])->name('rincian-kambing.deleteHpp');
     Route::get('/neraca/rincian-kambing/del-mati/{id}', [RincianKambingController::class, 'destroyMati'])->name('rincian-kambing.deleteMati');
 });
+
+
+use App\Http\Controllers\KambingRincianHppController;
+
+// ... route lain ...
+
+// ==============================================================
+// 🔹 MODUL: RINCIAN HPP & STOK BULANAN (KAMBING RINCIAN HPP)
+// ==============================================================
+Route::middleware(['auth'])->group(function () {
+    
+    // 1. Menampilkan halaman utama tabel (seperti tampilan Excel)
+    Route::get('/rincian-hpp-stok', [KambingRincianHppController::class, 'index'])->name('rincian-hpp.index');
+    
+    // 2. Menambah baris supplier baru (melalui Modal)
+    Route::post('/rincian-hpp-stok/store', [KambingRincianHppController::class, 'store'])->name('rincian-hpp.store');
+    
+    // 3. Update data per sel (Harga/Qty) otomatis via AJAX/Fetch
+    Route::post('/rincian-hpp-stok/update-cell', [KambingRincianHppController::class, 'simpanCell'])->name('rincian-hpp.update');
+
+});
+
