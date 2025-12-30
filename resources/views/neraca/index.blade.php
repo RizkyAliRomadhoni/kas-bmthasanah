@@ -19,6 +19,7 @@
             <div class="card shadow-none border-0 bg-transparent mb-4">
                 <div class="d-flex flex-wrap gap-2">
                     <a href="{{ route('kambing-akun.index') }}" class="btn-nav"><i class="fas fa-sheep text-dark"></i> Stok Kambing</a>
+                     <a href="{{ route('kambing-rincian-hpp.index') }}" class="btn-nav"><i class="fas fa-sheep text-dark"></i> Kelola Kambing</a>
                     <a href="{{ route('pakan.index') }}" class="btn-nav"><i class="fas fa-utensils text-warning"></i> Pakan</a>
                     <a href="{{ route('kandang.index') }}" class="btn-nav"><i class="fas fa-tools text-info"></i> Kandang</a>
                     <a href="{{ route('perlengkapan.index') }}" class="btn-nav"><i class="fas fa-box text-primary"></i> Perlengkapan</a>
