@@ -1,4 +1,5 @@
 <x-app-layout>
+    <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
     <style>
         /* Modern & Minimalist Table Styling */
         .table-hpp th {
@@ -285,4 +286,5 @@
             });
         }
     </script>
+    </main>
 </x-app-layout>
