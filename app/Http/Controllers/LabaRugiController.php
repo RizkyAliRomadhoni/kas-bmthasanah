@@ -13,17 +13,20 @@ class LabaRugiController extends Controller
 {
     public function index()
     {
+        // 1. Ambil list bulan unik dari transaksi
         $bulanList = collect(array_merge(
             Kas::selectRaw("DATE_FORMAT(tanggal, '%Y-%m') as bulan")->pluck('bulan')->toArray(),
             Penjualan::selectRaw("DATE_FORMAT(tanggal, '%Y-%m') as bulan")->pluck('bulan')->toArray(),
             KambingMati::selectRaw("DATE_FORMAT(tanggal, '%Y-%m') as bulan")->pluck('bulan')->toArray()
         ))->unique()->sort()->values();
 
+        // 2. Ambil semua data manual
         $manualData = LabaRugiManual::all()->groupBy('bulan');
+
         $labaRugiData = [];
 
         foreach ($bulanList as $bulan) {
-            // --- DATA OTOMATIS DARI SISTEM ---
+            // --- HITUNG OTOMATIS (SISTEM) ---
             $penjualan = Penjualan::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])->get();
             $labaKambingOto = 0; $rugiJualOto = 0;
             foreach ($penjualan as $jual) {
@@ -35,9 +38,9 @@ class LabaRugiController extends Controller
             $labaLainOto = Kas::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])
                         ->where(fn($q) => $q->where('keterangan', 'LIKE', '%Basil%')->orWhere('akun', 'Penyesuaian'))
                         ->where('jenis_transaksi', 'Masuk')->sum('jumlah');
-            $bebanMatiOto = KambingMati::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])->sum('harga');
+            $bebanMatiOto = KambingMati::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])->sum('harga') + $rugiJualOto;
 
-            // --- CEK APAKAH ADA DATA MANUAL (JIKA ADA PAKAI MANUAL, JIKA TIDAK PAKAI OTOMATIS) ---
+            // --- LOGIKA OVERRIDE (MANUAL) ---
             $getVal = function($kat, $oto) use ($manualData, $bulan) {
                 $manual = $manualData->has($bulan) ? $manualData[$bulan]->where('kategori', $kat)->first() : null;
                 return $manual ? $manual->nilai : $oto;
@@ -48,7 +51,7 @@ class LabaRugiController extends Controller
             $labaLain    = $getVal('laba_lain', $labaLainOto);
             $bebanUpah   = $getVal('beban_upah', 0);
             $biayaLain   = $getVal('biaya_lain', 0);
-            $bebanMati   = $getVal('beban_mati', $bebanMatiOto + $rugiJualOto);
+            $bebanMati   = $getVal('beban_mati', $bebanMatiOto);
 
             $totalPnd = $labaKambing + $labaPakan + $labaLain;
             $totalBiaya = $bebanUpah + $biayaLain + $bebanMati;
@@ -57,7 +60,7 @@ class LabaRugiController extends Controller
                 'laba_kambing' => $labaKambing,
                 'laba_pakan'   => $labaPakan,
                 'laba_lain'    => $labaLain,
-                'beban_upah'   => $bebanUpah,
+                'beban_upah'   => $beban_upah,
                 'biaya_lain'   => $biayaLain,
                 'beban_mati'   => $bebanMati,
                 'total_pnd'    => $totalPnd,
@@ -69,17 +72,19 @@ class LabaRugiController extends Controller
         return view('neraca.laba-rugi.index', compact('bulanList', 'labaRugiData'));
     }
 
-    public function storeManual(Request $request) {
-        if ($request->has('manual')) {
-            foreach ($request->manual as $bulan => $kategoriData) {
-                foreach ($kategoriData as $kategori => $nilai) {
-                    LabaRugiManual::updateOrCreate(
-                        ['bulan' => $bulan, 'kategori' => $kategori],
-                        ['nilai' => $nilai ?? 0]
-                    );
-                }
-            }
-        }
-        return back()->with('success', 'Semua laporan berhasil diperbarui!');
+    public function storeManual(Request $request)
+    {
+        $request->validate([
+            'bulan' => 'required',
+            'kategori' => 'required',
+            'nilai' => 'required|numeric'
+        ]);
+
+        LabaRugiManual::updateOrCreate(
+            ['bulan' => $request->bulan, 'kategori' => $request->kategori],
+            ['nilai' => $request->nilai]
+        );
+
+        return back()->with('success', 'Data Laporan Berhasil Diperbarui!');
     }
 }
