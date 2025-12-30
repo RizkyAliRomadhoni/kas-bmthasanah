@@ -15,26 +15,16 @@ class NeracaController extends Controller
 {
     public function index(Request $request)
     {
-        // ==============================================================
-        // 🔹 1. DAFTAR BULAN OTOMATIS (SANGAT AKURAT)
-        // ==============================================================
-        // Mengambil semua bulan unik dari 4 tabel sekaligus agar November pasti muncul
+        // 🔹 1. DAFTAR BULAN OTOMATIS (SISTEM + MANUAL)
         $bulanKas = Kas::selectRaw("DATE_FORMAT(tanggal,'%Y-%m') as bulan")->pluck('bulan');
         $bulanJual = Penjualan::selectRaw("DATE_FORMAT(tanggal,'%Y-%m') as bulan")->pluck('bulan');
         $bulanMati = KambingMati::selectRaw("DATE_FORMAT(tanggal,'%Y-%m') as bulan")->pluck('bulan');
-        $bulanManual = LabaRugiManual::pluck('bulan'); // Ambil dari input manual juga
+        $bulanManual = LabaRugiManual::pluck('bulan'); 
 
-        $bulanList = collect($bulanKas)
-            ->merge($bulanJual)
-            ->merge($bulanMati)
-            ->merge($bulanManual)
-            ->unique()
-            ->sort()
-            ->values();
+        $bulanList = collect($bulanKas)->merge($bulanJual)->merge($bulanMati)->merge($bulanManual)
+            ->unique()->sort()->values();
 
-        // ==============================================================
         // 🔹 2. PENGATURAN AKUN
-        // ==============================================================
         $akunAktiva = ['Kas', 'Kambing', 'Piutang', 'Pakan', 'Perlengkapan', 'Upah', 'Kandang', 'Operasional'];
         $akunPasiva = ['Hutang', 'Titipan', 'Penyertaan BMT Hasanah', 'Penyertaan DF'];
 
@@ -47,17 +37,13 @@ class NeracaController extends Controller
         $labaRugiKumulatif = []; 
         $totalLabaBerjalan = 0;   
 
-        // ==============================================================
         // 🔹 3. LOOPING PER BULAN
-        // ==============================================================
         foreach ($bulanList as $bulan) {
             $akhirBulan = Carbon::createFromFormat('Y-m', $bulan)->endOfMonth();
 
             // --- A. KAS TUNAI ---
             $sisaSaldo[$bulan] = Kas::where('tanggal', '<=', $akhirBulan)
-                ->orderBy('tanggal', 'desc')
-                ->orderBy('id', 'desc')
-                ->value('saldo') ?? 0;
+                ->orderBy('tanggal', 'desc')->orderBy('id', 'desc')->value('saldo') ?? 0;
 
             // --- B. AKTIVA ---
             foreach ($akunAktiva as $akun) {
@@ -88,7 +74,6 @@ class NeracaController extends Controller
             }
 
             // --- D. LABA RUGI (AKUMULASI) ---
-            // Data Otomatis Sistem (Sesuai kolom database Anda)
             $oto_laba_kambing = Penjualan::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])->sum('laba');
             $oto_beban_mati = KambingMati::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])->sum('harga');
             $oto_laba_pakan = PakanDetail::whereHas('kas', fn($q) => $q->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan]))
@@ -98,14 +83,13 @@ class NeracaController extends Controller
             $oto_adj = Kas::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])
                                 ->where('akun', 'Penyesuaian')->where('jenis_transaksi', 'Masuk')->sum('jumlah');
 
-            // Logika Manual Override
             $getM = function($kat, $oto) use ($manualLR, $bulan) {
                 $m = $manualLR->has($bulan) ? $manualLR[$bulan]->where('kategori', $kat)->first() : null;
                 return ($m && $m->nilai != 0) ? $m->nilai : $oto;
             };
 
             $l_kambing = $getM('laba_kambing', $oto_laba_kambing);
-            $l_pakan   = $getM('laba_pakan', $oto_laba_pakan); // Fixed Typo here
+            $l_pakan   = $getM('laba_pakan', $oto_laba_pakan);
             $l_basil   = $getM('laba_basil', $oto_basil);
             $l_adj     = $getM('laba_penyesuaian', $oto_adj);
             $b_upah    = $getM('beban_upah', 0);

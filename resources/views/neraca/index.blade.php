@@ -2,11 +2,11 @@
     <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
         <div class="container-fluid py-4">
 
-            <!-- HEADER -->
+            <!-- HEADER UTAMA -->
             <div class="row align-items-center mb-3">
                 <div class="col-md-6 col-12">
-                    <h5 class="fw-bold mb-0 text-uppercase text-primary tracking-tight">Laporan Neraca Keuangan</h5>
-                    <p class="text-xs text-secondary mb-0">Hasanah Farm • Periode Aktif s/d {{ now()->translatedFormat('F Y') }}</p>
+                    <h5 class="fw-bold mb-0 text-uppercase text-primary">Laporan Neraca Keuangan</h5>
+                    <p class="text-xs text-secondary mb-0">Hasanah Farm • Rekapitulasi Posisi Keuangan</p>
                 </div>
                 <div class="col-md-6 col-12 d-flex justify-content-md-end justify-content-center mt-3 mt-md-0">
                     <a href="{{ route('neraca.laba-rugi') }}" class="btn btn-sm btn-primary shadow-sm mb-0 px-4">
@@ -15,7 +15,24 @@
                 </div>
             </div>
 
-            <!-- TABEL NERACA UTAMA -->
+            <!-- NAVIGASI TOMBOL KELOLA AKUN (YANG SEMPAT HILANG) -->
+            <div class="card shadow-none border-0 bg-transparent mb-4">
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ route('kambing-akun.index') }}" class="btn-nav"><i class="fas fa-sheep text-dark"></i> Stok Kambing</a>
+                    <a href="{{ route('pakan.index') }}" class="btn-nav"><i class="fas fa-utensils text-warning"></i> Pakan</a>
+                    <a href="{{ route('kandang.index') }}" class="btn-nav"><i class="fas fa-tools text-info"></i> Kandang</a>
+                    <a href="{{ route('perlengkapan.index') }}" class="btn-nav"><i class="fas fa-box text-primary"></i> Perlengkapan</a>
+                    <a href="{{ route('upah.index') }}" class="btn-nav"><i class="fas fa-user-tie text-secondary"></i> Upah</a>
+                    <a href="{{ route('operasional.index') }}" class="btn-nav"><i class="fas fa-cogs text-secondary"></i> Operasional</a>
+                    <div class="vr mx-1 d-none d-md-block" style="height: 30px; align-self: center; opacity: 0.2;"></div>
+                    <a href="{{ route('neraca.penjualan.index') }}" class="btn-nav"><i class="fas fa-shopping-cart text-primary"></i> Penjualan</a>
+                    <a href="{{ route('neraca.rincian-kambing.index') }}" class="btn-nav"><i class="fas fa-horse-head text-success"></i> Rincian (HPP & Mati)</a>
+                    <a href="{{ route('piutang.index') }}" class="btn-nav"><i class="fas fa-file-invoice-dollar text-warning"></i> Piutang</a>
+                    <a href="{{ route('hutang.index') }}" class="btn-nav"><i class="fas fa-hand-holding-usd text-danger"></i> Hutang</a>
+                </div>
+            </div>
+
+            <!-- TABEL NERACA -->
             <div class="card shadow-sm border-0 border-radius-xl overflow-hidden">
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -33,8 +50,12 @@
                             </thead>
 
                             <tbody>
-                                {{-- AKTIVA --}}
-                                <tr class="bg-light-primary"><td colspan="{{ 2 + count($bulanList) }}" class="ps-4 py-2"><span class="text-xs fw-bold text-primary text-uppercase">Aktiva (Aset)</span></td></tr>
+                                {{-- SEKSI AKTIVA --}}
+                                <tr class="bg-light-primary">
+                                    <td colspan="{{ 2 + count($bulanList) }}" class="ps-4 py-2">
+                                        <span class="text-xs fw-bold text-primary text-uppercase">Aktiva (Aset)</span>
+                                    </td>
+                                </tr>
                                 @foreach ($akunAktiva as $akun)
                                     <tr>
                                         <td class="ps-5 py-2 text-sm font-weight-bold text-dark">{{ $akun }}</td>
@@ -56,8 +77,12 @@
                                     @endforeach
                                 </tr>
 
-                                {{-- PASIVA --}}
-                                <tr class="bg-light-danger"><td colspan="{{ 2 + count($bulanList) }}" class="ps-4 py-2"><span class="text-xs fw-bold text-danger text-uppercase">Pasiva</span></td></tr>
+                                {{-- SEKSI PASIVA --}}
+                                <tr class="bg-light-danger">
+                                    <td colspan="{{ 2 + count($bulanList) }}" class="ps-4 py-2">
+                                        <span class="text-xs fw-bold text-danger text-uppercase">Pasiva</span>
+                                    </td>
+                                </tr>
                                 @foreach ($akunPasiva as $akun)
                                     <tr>
                                         <td class="ps-5 py-2 text-sm font-weight-bold text-dark">{{ $akun }}</td>
@@ -76,7 +101,7 @@
                                     @endforeach
                                 </tr>
 
-                                {{-- LABA RUGI TAHUN BERJALAN (AKUMULASI) --}}
+                                {{-- LABA RUGI AKUMULASI --}}
                                 <tr>
                                     <td class="ps-5 text-sm py-2 font-weight-bold">Laba Rugi Tahun Berjalan</td>
                                     <td class="text-center text-muted text-xs">-</td>
@@ -131,6 +156,13 @@
 </x-app-layout>
 
 <style>
+    .btn-nav {
+        background-color: white; color: #344767; font-size: 0.7rem; font-weight: 700;
+        padding: 7px 12px; border-radius: 6px; border: 1px solid #e9ecef;
+        text-decoration: none !important; display: inline-flex; align-items: center;
+        transition: all 0.2s ease; text-transform: uppercase;
+    }
+    .btn-nav:hover { background-color: #f8f9fa; border-color: #5e72e4; color: #5e72e4 !important; }
     .bg-light-primary { background-color: #f0f5ff !important; }
     .bg-light-danger { background-color: #fff8f8 !important; }
     .bg-gray-100 { background-color: #f8f9fa !important; }
