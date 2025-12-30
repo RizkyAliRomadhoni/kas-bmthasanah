@@ -33,7 +33,7 @@ class KambingRincianHppController extends Controller
                         ->groupBy('klaster')
                         ->get();
 
-        return view('kambing-rincian-hpp.index', compact('stok', 'bulanList', 'summaryJenis', 'summaryKlaster'));
+        return view('neraca.kambing-rincian-hpp.index', compact('stok', 'bulanList', 'summaryJenis', 'summaryKlaster'));
     }
 
     /**
