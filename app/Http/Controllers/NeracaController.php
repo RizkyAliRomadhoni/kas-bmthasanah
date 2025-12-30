@@ -8,7 +8,6 @@ use App\Models\HppKambing;
 use App\Models\KambingMati;
 use App\Models\Penjualan;
 use App\Models\PakanDetail;
-use App\Models\LabaRugiManual; // 🔹 Tambahkan ini
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Schema;
 
@@ -16,84 +15,121 @@ class NeracaController extends Controller
 {
     public function index(Request $request)
     {
-        // 🔹 1. DAFTAR BULAN (OTOMATIS)
+        // ==============================================================
+        // 🔹 1. DAFTAR BULAN (OTOMATIS DARI DATA KAS)
+        // ==============================================================
         $bulanList = Kas::selectRaw("DATE_FORMAT(tanggal,'%Y-%m') as bulan")
             ->groupBy('bulan')
             ->orderBy('bulan', 'asc')
             ->pluck('bulan');
 
-        // 🔹 2. PENGATURAN AKUN
-        $akunAktiva = ['Kas', 'Kambing', 'Piutang', 'Pakan', 'Perlengkapan', 'Upah', 'Kandang', 'Operasional'];
-        $akunPasiva = ['Hutang', 'Titipan', 'Penyertaan BMT Hasanah', 'Penyertaan DF'];
+        // ==============================================================
+        // 🔹 2. PENGATURAN AKUN (STRUKTUR NERACA)
+        // ==============================================================
+        $akunAktiva = [
+            'Kas',
+            'Kambing',       // Nilai dari HPP Kambing (Stok)
+            'Piutang',       // Saldo Piutang Penjualan
+            'Pakan',         // Akumulasi Pembelian Pakan
+            'Perlengkapan',  // Akumulasi Perlengkapan (Complifit)
+            'Upah',          // Akumulasi Biaya Tenaga Kerja (Capitalized)
+            'Kandang',       // Aset Tetap Kandang
+            'Operasional',   // Biaya Operasional
+        ];
 
-        $manualLR = LabaRugiManual::all()->groupBy('bulan');
+        $akunPasiva = [
+            'Hutang',        // Saldo Hutang BMT/Lainnya
+            'Titipan',       // Dana Titipan
+            'Penyertaan BMT Hasanah',
+            'Penyertaan DF',
+        ];
+
+        // Inisialisasi Saldo Awal
         $saldoAwal = [];
-        foreach (array_merge($akunAktiva, $akunPasiva) as $akun) { $saldoAwal[$akun] = 0; }
+        foreach (array_merge($akunAktiva, $akunPasiva) as $akun) {
+            $saldoAwal[$akun] = 0;
+        }
 
         $saldo = [];
         $sisaSaldo = [];
-        $labaRugiPerBulan = []; // 🔹 Untuk menampung laba rugi
+        $totalHppPerBulan = [];
 
-        // 🔹 3. LOOPING PER BULAN
+        // ==============================================================
+        // 🔹 3. LOOPING PER BULAN (LOGIKA INTEGRASI)
+        // ==============================================================
         foreach ($bulanList as $bulan) {
             $akhirBulan = Carbon::createFromFormat('Y-m', $bulan)->endOfMonth();
 
-            // --- A. KAS TUNAI ---
+            // --- A. KAS TUNAI (SALDO RIIL) ---
             $sisaSaldo[$bulan] = Kas::where('tanggal', '<=', $akhirBulan)
-                ->orderBy('tanggal', 'desc')->orderBy('id', 'desc')->value('saldo') ?? 0;
+                ->orderBy('tanggal', 'desc')
+                ->orderBy('id', 'desc')
+                ->value('saldo') ?? 0;
 
-            // --- B. AKTIVA ---
+            // --- B. NILAI STOK KAMBING (DARI MODUL RINCIAN HPP) ---
+            $totalHppPerBulan[$bulan] = HppKambing::where('created_at', '<=', $akhirBulan)
+                ->sum('total_hpp');
+
+            // --- C. KALKULASI AKTIVA (ASET) ---
             foreach ($akunAktiva as $akun) {
-                if ($akun === 'Kas') { $saldo[$akun][$bulan] = $sisaSaldo[$bulan]; } 
-                elseif ($akun === 'Kambing') { $saldo[$akun][$bulan] = HppKambing::where('created_at', '<=', $akhirBulan)->sum('total_hpp'); } 
+                if ($akun === 'Kas') {
+                    $saldo[$akun][$bulan] = $sisaSaldo[$bulan];
+                } 
+                elseif ($akun === 'Kambing') {
+                    $saldo[$akun][$bulan] = $totalHppPerBulan[$bulan];
+                } 
                 elseif ($akun === 'Piutang') {
-                    $masuk = Kas::where('akun', 'Piutang')->where('jenis_transaksi', 'Masuk')->where('tanggal', '<=', $akhirBulan)->sum('jumlah');
-                    $keluar = Kas::where('akun', 'Piutang')->where('jenis_transaksi', 'Keluar')->where('tanggal', '<=', $akhirBulan)->sum('jumlah');
-                    $saldo[$akun][$bulan] = $keluar - $masuk;
-                } else {
-                    $saldo[$akun][$bulan] = Kas::where('akun', $akun)->where('tanggal', '<=', $akhirBulan)->sum('jumlah');
+                    // Logika Piutang: Keluar (Piutang Baru) - Masuk (Pembayaran)
+                    $piutangMasuk = Kas::where('akun', 'Piutang')->where('jenis_transaksi', 'Masuk')->where('tanggal', '<=', $akhirBulan)->sum('jumlah');
+                    $piutangKeluar = Kas::where('akun', 'Piutang')->where('jenis_transaksi', 'Keluar')->where('tanggal', '<=', $akhirBulan)->sum('jumlah');
+                    $saldo[$akun][$bulan] = $piutangKeluar - $piutangMasuk;
+                } 
+                else {
+                    // Akun Umum (Pakan, Upah, Kandang, dll)
+                    $saldo[$akun][$bulan] = Kas::where('akun', $akun)
+                        ->where('tanggal', '<=', $akhirBulan)
+                        ->sum('jumlah');
                 }
             }
 
-            // --- C. PASIVA ---
+            // --- D. KALKULASI PASIVA (KEWAJIBAN) ---
             foreach ($akunPasiva as $akun) {
                 if ($akun === 'Hutang') {
-                    $masuk = Kas::where('akun', 'Hutang')->where('jenis_transaksi', 'Masuk')->where('tanggal', '<=', $akhirBulan)->sum('jumlah');
-                    $keluar = Kas::where('akun', 'Hutang')->where('jenis_transaksi', 'Keluar')->where('tanggal', '<=', $akhirBulan)->sum('jumlah');
-                    $saldo[$akun][$bulan] = $masuk - $keluar;
-                } else {
-                    $saldo[$akun][$bulan] = Kas::where('akun', $akun)->where('tanggal', '<=', $akhirBulan)->sum('jumlah');
+                    // Logika Hutang: Masuk (Pinjaman Baru) - Keluar (Bayar Cicilan)
+                    $hutangMasuk = Kas::where('akun', 'Hutang')->where('jenis_transaksi', 'Masuk')->where('tanggal', '<=', $akhirBulan)->sum('jumlah');
+                    $hutangKeluar = Kas::where('akun', 'Hutang')->where('jenis_transaksi', 'Keluar')->where('tanggal', '<=', $akhirBulan)->sum('jumlah');
+                    $saldo[$akun][$bulan] = $hutangMasuk - $hutangKeluar;
+                } 
+                elseif (in_array($akun, ['Penyertaan BMT Hasanah', 'Penyertaan DF'])) {
+                    // Ambil dari Kas yang keterangannya mengandung nama penyertaan
+                    $saldo[$akun][$bulan] = Kas::where('keterangan', 'LIKE', '%' . $akun . '%')
+                        ->where('tanggal', '<=', $akhirBulan)
+                        ->sum('jumlah');
+                } 
+                else {
+                    $saldo[$akun][$bulan] = Kas::where('akun', $akun)
+                        ->where('tanggal', '<=', $akhirBulan)
+                        ->sum('jumlah');
                 }
             }
-
-            // --- D. LOGIKA LABA RUGI UNTUK NERACA ---
-            // Mengambil hitungan otomatis
-            $oto_laba_kambing = Penjualan::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])->sum('laba');
-            $oto_beban_mati = KambingMati::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])->sum('harga');
-            $oto_laba_pakan = PakanDetail::whereHas('kas', fn($q) => $q->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan]))
-                                ->get()->sum(fn($q) => ($q->harga_jual_kg - $q->harga_kg) * $q->qty_kg);
-            $oto_basil = Kas::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])
-                                ->where('keterangan', 'LIKE', '%Basil%')->where('jenis_transaksi', 'Masuk')->sum('jumlah');
-            $oto_adj = Kas::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])
-                                ->where('akun', 'Penyesuaian')->where('jenis_transaksi', 'Masuk')->sum('jumlah');
-
-            // Override dengan manual jika ada
-            $getM = function($kat, $oto) use ($manualLR, $bulan) {
-                $m = $manualLR->has($bulan) ? $manualLR[$bulan]->where('kategori', $kat)->first() : null;
-                return ($m && $m->nilai != 0) ? $m->nilai : $oto;
-            };
-
-            $l_kambing = $getM('laba_kambing', $oto_laba_kambing);
-            $l_pakan   = $getM('laba_pakan', $oto_laba_pakan);
-            $l_basil   = $getM('laba_basil', $oto_basil);
-            $l_adj     = $getM('laba_penyesuaian', $oto_adj);
-            $b_upah    = $getM('beban_upah', 0);
-            $b_lain    = $getM('biaya_lain', 0);
-            $b_mati    = $getM('beban_mati', $oto_beban_mati);
-
-            $labaRugiPerBulan[$bulan] = ($l_kambing + $l_pakan + $l_basil + $l_adj) - ($b_upah + $b_lain + $b_mati);
         }
 
-        return view('neraca.index', compact('bulanList','akunAktiva','akunPasiva','saldoAwal','saldo','sisaSaldo', 'labaRugiPerBulan'));
+        // ==============================================================
+        // 🔹 4. PENGIRIMAN DATA KE VIEW
+        // ==============================================================
+        return view('neraca.index', compact(
+            'bulanList',
+            'akunAktiva',
+            'akunPasiva',
+            'saldoAwal',
+            'saldo',
+            'sisaSaldo',
+            'totalHppPerBulan'
+        ));
+    }
+
+    public function neracaTabel(Request $request)
+    {
+        // Placeholder untuk fungsi cetak/export jika dibutuhkan
     }
 }
