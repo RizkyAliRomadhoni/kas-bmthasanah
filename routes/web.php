@@ -274,21 +274,17 @@ Route::middleware(['auth'])->group(function () {
 
 use App\Http\Controllers\KambingRincianHppController;
 
-// ... route lain ...
-
-// ==============================================================
-// 🔹 MODUL: RINCIAN HPP & STOK BULANAN (KAMBING RINCIAN HPP)
-// ==============================================================
 Route::middleware(['auth'])->group(function () {
+    // Halaman Utama
+    Route::get('/rincian-hpp', [KambingRincianHppController::class, 'index'])->name('rincian-hpp.index');
     
-    // 1. Menampilkan halaman utama tabel (seperti tampilan Excel)
-    Route::get('/rincian-hpp-stok', [KambingRincianHppController::class, 'index'])->name('rincian-hpp.index');
+    // Simpan Baris Baru
+    Route::post('/rincian-hpp/store', [KambingRincianHppController::class, 'store'])->name('rincian-hpp.store');
     
-    // 2. Menambah baris supplier baru (melalui Modal)
-    Route::post('/rincian-hpp-stok/store', [KambingRincianHppController::class, 'store'])->name('rincian-hpp.store');
+    // Tambah Kolom Bulan
+    Route::post('/rincian-hpp/tambah-bulan', [KambingRincianHppController::class, 'tambahBulan'])->name('rincian-hpp.tambah-bulan');
     
-    // 3. Update data per sel (Harga/Qty) otomatis via AJAX/Fetch
-    Route::post('/rincian-hpp-stok/update-cell', [KambingRincianHppController::class, 'simpanCell'])->name('rincian-hpp.update');
-
+    // Update Sel Tabel (AJAX)
+    Route::post('/rincian-hpp/update-cell', [KambingRincianHppController::class, 'updateCell'])->name('rincian-hpp.update');
 });
 

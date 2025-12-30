@@ -8,19 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class KambingRincianHpp extends Model
 {
     use HasFactory;
+    protected $guarded = [];
 
-    protected $table = 'kambing_rincian_hpps';
-
-    protected $fillable = [
-        'tanggal',
-        'keterangan',
-        'jenis',
-        'klaster',
-        'harga_awal',
-        'qty_awal'
-    ];
-
-    // Relasi ke tabel detail histori bulanan
+    // Menghubungkan baris ke detail bulanan (sel tabel)
     public function rincian_bulanan()
     {
         return $this->hasMany(KambingRincianHppDetail::class, 'kambing_rincian_hpp_id');

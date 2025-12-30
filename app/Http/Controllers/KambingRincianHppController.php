@@ -4,65 +4,70 @@ namespace App\Http\Controllers;
 
 use App\Models\KambingRincianHpp;
 use App\Models\KambingRincianHppDetail;
+use App\Models\KambingRincianPeriode;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
 class KambingRincianHppController extends Controller
 {
-    /**
-     * Tampilan Utama Laporan (Excel Style)
-     */
     public function index()
     {
-        // 1. Tentukan rentang bulan yang muncul di kolom (Contoh: Sep 2025 s/d Des 2025)
-        // Anda bisa membuat ini dinamis jika ingin
-        $bulanList = ['2025-09', '2025-10', '2025-11', '2025-12'];
+        // 1. Ambil daftar kolom bulan dari database
+        $bulanList = KambingRincianPeriode::orderBy('bulan', 'asc')->pluck('bulan')->toArray();
 
-        // 2. Ambil data stok urut tanggal terbaru di atas
-        $stok = KambingRincianHpp::with('rincian_bulanan')
-                ->orderBy('tanggal', 'desc')
-                ->get();
+        // Jika database periode masih kosong, buat otomatis bulan ini sebagai awal
+        if (empty($bulanList)) {
+            $now = Carbon::now()->format('Y-m');
+            KambingRincianPeriode::create(['bulan' => $now]);
+            $bulanList = [$now];
+        }
 
-        // 3. Ringkasan Stock Kandang (Berdasarkan Jenis)
-        $summaryJenis = KambingRincianHpp::selectRaw('jenis, SUM(qty_awal) as total')
-                        ->groupBy('jenis')
-                        ->get();
+        // 2. Ambil data baris beserta rinciannya
+        $stok = KambingRincianHpp::with('rincian_bulanan')->orderBy('tanggal', 'desc')->get();
 
-        // 4. Ringkasan Klaster Bangsalan
-        $summaryKlaster = KambingRincianHpp::selectRaw('klaster, SUM(qty_awal) as total')
-                        ->groupBy('klaster')
-                        ->get();
+        // 3. Hitung Ringkasan untuk Sidebar Kanan
+        $summaryJenis = KambingRincianHpp::selectRaw('jenis, SUM(qty_awal) as total')->groupBy('jenis')->get();
+        $summaryKlaster = KambingRincianHpp::selectRaw('klaster, SUM(qty_awal) as total')->groupBy('klaster')->get();
 
-        return view('neraca.kambing-rincian-hpp.index', compact('stok', 'bulanList', 'summaryJenis', 'summaryKlaster'));
+        return view('kambing-rincian-hpp.index', compact('stok', 'bulanList', 'summaryJenis', 'summaryKlaster'));
     }
 
-    /**
-     * Simpan Baris Supplier Baru
-     */
+    public function tambahBulan()
+    {
+        // Ambil bulan terakhir, tambah 1 bulan kedepan
+        $terakhir = KambingRincianPeriode::orderBy('bulan', 'desc')->first();
+        $bulanBaru = Carbon::parse($terakhir->bulan . "-01")->addMonth()->format('Y-m');
+        
+        KambingRincianPeriode::create(['bulan' => $bulanBaru]);
+        return back()->with('success', 'Kolom bulan baru berhasil ditambahkan!');
+    }
+
     public function store(Request $request)
     {
         $request->validate([
             'tanggal' => 'required|date',
-            'keterangan' => 'required|string|max:255',
-            'jenis' => 'required|string',
-            'klaster' => 'required|string',
+            'keterangan' => 'required',
+            'jenis' => 'required',
+            'klaster' => 'required',
             'harga_awal' => 'required|numeric',
-            'qty_awal' => 'required|integer',
+            'qty_awal' => 'required|numeric',
         ]);
 
-        // Simpan Data Induk
+        // Simpan baris master
         $induk = KambingRincianHpp::create([
             'tanggal' => $request->tanggal,
-            'keterangan' => $request->keterangan,
+            'keterangan' => strtoupper($request->keterangan),
             'jenis' => strtoupper($request->jenis),
             'klaster' => strtoupper($request->klaster),
             'harga_awal' => $request->harga_awal,
             'qty_awal' => $request->qty_awal,
         ]);
 
-        // Otomatis buat histori di bulan yang sesuai dengan tanggal input
+        // Pastikan bulan dari tanggal input terdaftar di tabel periode
         $bulanInput = Carbon::parse($request->tanggal)->format('Y-m');
+        KambingRincianPeriode::firstOrCreate(['bulan' => $bulanInput]);
 
+        // Buat detail awal di bulan tersebut
         KambingRincianHppDetail::create([
             'kambing_rincian_hpp_id' => $induk->id,
             'bulan' => $bulanInput,
@@ -70,16 +75,13 @@ class KambingRincianHppController extends Controller
             'qty_update' => $request->qty_awal,
         ]);
 
-        return back()->with('success', 'Data kambing berhasil ditambahkan ke rincian.');
+        return back()->with('success', 'Data baris baru berhasil disimpan.');
     }
 
-    /**
-     * Simpan Update per Sel (AJAX Fetch)
-     */
-    public function simpanCell(Request $request)
+    public function updateCell(Request $request)
     {
-        // Mencari atau membuat data histori bulanan baru
-        $detail = KambingRincianHppDetail::updateOrCreate(
+        // Fungsi Update Otomatis (AJAX)
+        KambingRincianHppDetail::updateOrCreate(
             [
                 'kambing_rincian_hpp_id' => $request->id, 
                 'bulan' => $request->bulan
@@ -89,9 +91,6 @@ class KambingRincianHppController extends Controller
             ]
         );
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Data otomatis tersimpan pada ' . Carbon::now()->format('H:i:s')
-        ]);
+        return response()->json(['status' => 'Success', 'message' => 'Tersimpan otomatis']);
     }
 }
