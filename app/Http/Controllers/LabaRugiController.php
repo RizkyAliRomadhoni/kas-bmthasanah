@@ -14,73 +14,57 @@ class LabaRugiController extends Controller
 {
     public function index()
     {
-        // 1. Ambil daftar bulan unik
-        $bulanKas = Kas::selectRaw("DATE_FORMAT(tanggal, '%Y-%m') as bulan")->pluck('bulan')->toArray();
-        $bulanJual = Penjualan::selectRaw("DATE_FORMAT(tanggal, '%Y-%m') as bulan")->pluck('bulan')->toArray();
-        $bulanMati = KambingMati::selectRaw("DATE_FORMAT(tanggal, '%Y-%m') as bulan")->pluck('bulan')->toArray();
+        // 1. Ambil list bulan unik dari semua transaksi
+        $bulanList = collect(array_merge(
+            Kas::selectRaw("DATE_FORMAT(tanggal, '%Y-%m') as bulan")->pluck('bulan')->toArray(),
+            Penjualan::selectRaw("DATE_FORMAT(tanggal, '%Y-%m') as bulan")->pluck('bulan')->toArray(),
+            KambingMati::selectRaw("DATE_FORMAT(tanggal, '%Y-%m') as bulan")->pluck('bulan')->toArray()
+        ))->unique()->sort()->values();
 
-        $bulanList = collect(array_merge($bulanKas, $bulanJual, $bulanMati))
-            ->unique()
-            ->sort()
-            ->values();
-
-        // 2. Ambil data input manual dari database
+        // 2. Ambil data manual dari database
         $manualEntries = LabaRugiManual::all()->groupBy('bulan');
 
         $labaRugiData = [];
 
         foreach ($bulanList as $bulan) {
-            // --- A. PENDAPATAN ---
+            // --- A. PENDAPATAN OTOMATIS ---
             $penjualan = Penjualan::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])->get();
-            $labaJualKambing = 0;
-            $rugiJualKambing = 0;
-
+            $labaJualKambing = 0; $rugiJualKambing = 0;
             foreach ($penjualan as $jual) {
                 $selisih = (int)$jual->harga_jual - (int)$jual->hpp;
-                if ($selisih > 0) { $labaJualKambing += $selisih; } 
-                else { $rugiJualKambing += abs($selisih); }
+                $selisih > 0 ? $labaJualKambing += $selisih : $rugiJualKambing += abs($selisih);
             }
 
-            $labaJualPakan = PakanDetail::whereHas('kas', function($q) use ($bulan) {
-                $q->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan]);
-            })->get()->sum(fn($q) => ($q->harga_jual_kg - $q->harga_kg) * $q->qty_kg);
+            $labaPakan = PakanDetail::whereHas('kas', fn($q) => $q->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan]))
+                         ->get()->sum(fn($q) => ($q->harga_jual_kg - $q->harga_kg) * $q->qty_kg);
 
-            $labaBasil = Kas::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])
-                ->where('keterangan', 'LIKE', '%Basil%')->where('jenis_transaksi', 'Masuk')->sum('jumlah');
+            $labaLain = Kas::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])
+                        ->where(fn($q) => $q->where('keterangan', 'LIKE', '%Basil%')->orWhere('akun', 'Penyesuaian'))
+                        ->where('jenis_transaksi', 'Masuk')->sum('jumlah');
 
-            $labaPenyesuaian = Kas::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])
-                ->where('akun', 'Penyesuaian')->sum('jumlah');
+            $totalPendapatan = $labaJualKambing + $labaPakan + $labaLain;
 
-            $totalPendapatan = $labaJualKambing + $labaJualPakan + $labaBasil + $labaPenyesuaian;
-
-            // --- B. BIAYA ---
+            // --- B. BIAYA (OTOMATIS + MANUAL) ---
             $bebanMati = KambingMati::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])->sum('harga');
-
-            // Ambil Data Manual (Jika tidak ada di DB, set 0)
-            $bebanUpah = 0;
-            $biayaLain = 0;
-            if (isset($manualEntries[$bulan])) {
-                $bebanUpah = $manualEntries[$bulan]->where('kategori', 'beban_upah')->first()->nilai ?? 0;
-                $biayaLain = $manualEntries[$bulan]->where('kategori', 'biaya_lain')->first()->nilai ?? 0;
-            }
+            
+            // Ambil dari tabel manual
+            $bebanUpah = $manualEntries->has($bulan) ? $manualEntries[$bulan]->where('kategori', 'beban_upah')->first()->nilai ?? 0 : 0;
+            $biayaLain = $manualEntries->has($bulan) ? $manualEntries[$bulan]->where('kategori', 'biaya_lain')->first()->nilai ?? 0 : 0;
 
             $totalBiaya = $rugiJualKambing + $bebanMati + $bebanUpah + $biayaLain;
 
-            // --- C. LABA BERSIH ---
-            $netLabaRugi = $totalPendapatan - $totalBiaya;
-
+            // --- C. FINAL ---
             $labaRugiData[$bulan] = [
-                'laba_jual_kambing' => $labaJualKambing,
-                'laba_jual_pakan'   => $labaJualPakan,
-                'laba_penyesuaian'  => $labaPenyesuaian,
-                'laba_basil'        => $labaBasil,
-                'total_pendapatan'  => $totalPendapatan,
-                'rugi_jual_kambing' => $rugiJualKambing,
-                'beban_mati'        => $bebanMati,
-                'beban_upah'        => $bebanUpah,
-                'biaya_lain'        => $biayaLain,
-                'total_biaya'       => $totalBiaya,
-                'net_laba_rugi'     => $netLabaRugi,
+                'laba_kambing' => $labaJualKambing,
+                'laba_pakan'   => $labaPakan,
+                'laba_lain'    => $labaLain,
+                'rugi_jual'    => $rugiJualKambing,
+                'beban_mati'   => $bebanMati,
+                'beban_upah'   => $bebanUpah,
+                'biaya_lain'   => $biayaLain,
+                'total_pendapatan' => $totalPendapatan,
+                'total_biaya' => $totalBiaya,
+                'net_laba_rugi' => $totalPendapatan - $totalBiaya,
             ];
         }
 
@@ -89,23 +73,24 @@ class LabaRugiController extends Controller
 
     public function storeManual(Request $request)
     {
-        if ($request->has('manual')) {
-            foreach ($request->manual as $bulan => $kategoriData) {
-                foreach ($kategoriData as $kategori => $nilai) {
-                    LabaRugiManual::updateOrCreate(
-                        ['bulan' => $bulan, 'kategori' => $kategori],
-                        ['nilai' => $nilai ?? 0]
-                    );
-                }
-            }
-        }
-        return redirect()->back()->with('success', 'Input manual berhasil disimpan.');
+        $request->validate([
+            'bulan' => 'required',
+            'kategori' => 'required',
+            'nilai' => 'required|numeric'
+        ]);
+
+        LabaRugiManual::updateOrCreate(
+            ['bulan' => $request->bulan, 'kategori' => $request->kategori],
+            ['nilai' => $request->nilai]
+        );
+
+        return back()->with('success', 'Data manual berhasil disimpan!');
     }
 
     public function refresh()
     {
         Artisan::call('view:clear');
         Artisan::call('cache:clear');
-        return redirect()->route('neraca.laba-rugi')->with('success', 'Data Laba Rugi berhasil diperbarui.');
+        return redirect()->route('neraca.laba-rugi')->with('success', 'Data berhasil diperbarui.');
     }
 }
