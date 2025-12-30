@@ -1,4 +1,5 @@
 <x-app-layout>
+    <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
 <div class="container-fluid py-4">
     
     <!-- CARD 1: FORM INPUT MANUAL -->
@@ -150,4 +151,5 @@
     .bg-gray-50 { background-color: #fcfcfc !important; }
     .italic { font-style: italic; }
 </style>
+</main>
 </x-app-layout>
