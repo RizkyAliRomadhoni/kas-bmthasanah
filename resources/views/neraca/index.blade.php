@@ -17,21 +17,30 @@
 
             <!-- NAVIGASI TOMBOL KELOLA AKUN (YANG SEMPAT HILANG) -->
             <div class="card shadow-none border-0 bg-transparent mb-4">
-                <div class="d-flex flex-wrap gap-2">
-                    <a href="{{ route('kambing-akun.index') }}" class="btn-nav"><i class="fas fa-sheep text-dark"></i> Stok Kambing</a>
-                     <a href="{{ route('kambing-rincian-hpp.index') }}" class="btn-nav"><i class="fas fa-sheep text-dark"></i> Kelola Kambing</a>
-                    <a href="{{ route('pakan.index') }}" class="btn-nav"><i class="fas fa-utensils text-warning"></i> Pakan</a>
-                    <a href="{{ route('kandang.index') }}" class="btn-nav"><i class="fas fa-tools text-info"></i> Kandang</a>
-                    <a href="{{ route('perlengkapan.index') }}" class="btn-nav"><i class="fas fa-box text-primary"></i> Perlengkapan</a>
-                    <a href="{{ route('upah.index') }}" class="btn-nav"><i class="fas fa-user-tie text-secondary"></i> Upah</a>
-                    <a href="{{ route('operasional.index') }}" class="btn-nav"><i class="fas fa-cogs text-secondary"></i> Operasional</a>
-                    <div class="vr mx-1 d-none d-md-block" style="height: 30px; align-self: center; opacity: 0.2;"></div>
-                    <a href="{{ route('neraca.penjualan.index') }}" class="btn-nav"><i class="fas fa-shopping-cart text-primary"></i> Penjualan</a>
-                    <a href="{{ route('neraca.rincian-kambing.index') }}" class="btn-nav"><i class="fas fa-horse-head text-success"></i> Rincian (HPP & Mati)</a>
-                    <a href="{{ route('piutang.index') }}" class="btn-nav"><i class="fas fa-file-invoice-dollar text-warning"></i> Piutang</a>
-                    <a href="{{ route('hutang.index') }}" class="btn-nav"><i class="fas fa-hand-holding-usd text-danger"></i> Hutang</a>
-                </div>
-            </div>
+    <div class="d-flex flex-wrap gap-2">
+        <!-- Tombol Lama -->
+        <a href="{{ route('kambing-akun.index') }}" class="btn-nav"><i class="fas fa-sheep text-dark"></i> Stok Kambing</a>
+        
+        <!-- TOMBOL BARU: RINCIAN HPP & STOK (SESUAI ROUTE BARU) -->
+        <a href="{{ route('rincian-hpp.index') }}" class="btn-nav">
+            <i class="fas fa-calculator text-success"></i> Rincian HPP & Stok
+        </a>
+
+        <!-- Tombol Lainnya -->
+        <a href="{{ route('pakan.index') }}" class="btn-nav"><i class="fas fa-utensils text-warning"></i> Pakan</a>
+        <a href="{{ route('kandang.index') }}" class="btn-nav"><i class="fas fa-tools text-info"></i> Kandang</a>
+        <a href="{{ route('perlengkapan.index') }}" class="btn-nav"><i class="fas fa-box text-primary"></i> Perlengkapan</a>
+        <a href="{{ route('upah.index') }}" class="btn-nav"><i class="fas fa-user-tie text-secondary"></i> Upah</a>
+        <a href="{{ route('operasional.index') }}" class="btn-nav"><i class="fas fa-cogs text-secondary"></i> Operasional</a>
+        
+        <div class="vr mx-1 d-none d-md-block" style="height: 30px; align-self: center; opacity: 0.2;"></div>
+        
+        <a href="{{ route('neraca.penjualan.index') }}" class="btn-nav"><i class="fas fa-shopping-cart text-primary"></i> Penjualan</a>
+        <a href="{{ route('neraca.rincian-kambing.index') }}" class="btn-nav"><i class="fas fa-horse-head text-success"></i> Rincian (HPP & Mati)</a>
+        <a href="{{ route('piutang.index') }}" class="btn-nav"><i class="fas fa-file-invoice-dollar text-warning"></i> Piutang</a>
+        <a href="{{ route('hutang.index') }}" class="btn-nav"><i class="fas fa-hand-holding-usd text-danger"></i> Hutang</a>
+    </div>
+</div>
 
             <!-- TABEL NERACA -->
             <div class="card shadow-sm border-0 border-radius-xl overflow-hidden">
