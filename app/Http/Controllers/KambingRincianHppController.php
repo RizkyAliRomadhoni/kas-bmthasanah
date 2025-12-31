@@ -28,7 +28,7 @@ class KambingRincianHppController extends Controller
         $summaryStock = KambingManualSummary::where('tipe', 'stock')->get();
         $summaryKlaster = KambingManualSummary::where('tipe', 'klaster')->get();
 
-        return view('kambing-rincian-hpp.index', compact('stok', 'bulanList', 'summaryStock', 'summaryKlaster'));
+        return view('neraca.kambing-rincian-hpp.index', compact('stok', 'bulanList', 'summaryStock', 'summaryKlaster'));
     }
 
     public function tambahBulan()
