@@ -282,4 +282,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/rincian-hpp/tambah-bulan', [KambingRincianHppController::class, 'tambahBulan'])->name('rincian-hpp.tambah-bulan');
     Route::post('/rincian-hpp/update-cell', [KambingRincianHppController::class, 'updateCell'])->name('rincian-hpp.update');
     Route::post('/rincian-hpp/update-summary', [KambingRincianHppController::class, 'updateSummary'])->name('rincian-hpp.update-summary');
+    
+    // ROUTE BARU UNTUK LABEL SIDEBAR
+    Route::post('/rincian-hpp/add-label', [KambingRincianHppController::class, 'addSummaryLabel'])->name('rincian-hpp.add-label');
+    Route::delete('/rincian-hpp/delete-label/{id}', [KambingRincianHppController::class, 'deleteSummaryLabel'])->name('rincian-hpp.delete-label');
 });
