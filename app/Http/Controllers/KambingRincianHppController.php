@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\KambingRincianHpp;
 use App\Models\KambingRincianHppDetail;
 use App\Models\KambingRincianPeriode;
+use App\Models\KambingManualSummary;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -12,41 +13,30 @@ class KambingRincianHppController extends Controller
 {
     public function index()
     {
-        // 1. Ambil daftar bulan dari database
         $bulanList = KambingRincianPeriode::orderBy('bulan', 'asc')->pluck('bulan')->toArray();
 
-        // 🔹 LOGIKA MULAI DARI SEPTEMBER 2025 (JIKA DATABASE KOSONG)
         if (empty($bulanList)) {
-            $start = Carbon::create(2025, 9, 1); // Set ke 01-09-2025
-            
-            // Otomatis buatkan 4 kolom awal: Sep, Okt, Nov, Des 2025
+            $start = Carbon::create(2025, 9, 1);
             for ($i = 0; $i < 4; $i++) {
                 $month = $start->copy()->addMonths($i)->format('Y-m');
                 KambingRincianPeriode::create(['bulan' => $month]);
             }
-            
-            // Ambil ulang list bulan yang baru dibuat
             $bulanList = KambingRincianPeriode::orderBy('bulan', 'asc')->pluck('bulan')->toArray();
         }
 
-        // 2. Ambil data stok urut tanggal
-        $stok = KambingRincianHpp::with('rincian_bulanan')->orderBy('tanggal', 'asc')->get();
+        $stok = KambingRincianHpp::with('rincian_bulanan')->orderBy('tanggal', 'desc')->get();
+        $summaryStock = KambingManualSummary::where('tipe', 'stock')->get();
+        $summaryKlaster = KambingManualSummary::where('tipe', 'klaster')->get();
 
-        // 3. Summary Kanan
-        $summaryJenis = KambingRincianHpp::selectRaw('jenis, SUM(qty_awal) as total')->groupBy('jenis')->get();
-        $summaryKlaster = KambingRincianHpp::selectRaw('klaster, SUM(qty_awal) as total')->groupBy('klaster')->get();
-
-        return view('neraca.kambing-rincian-hpp.index', compact('stok', 'bulanList', 'summaryJenis', 'summaryKlaster'));
+        return view('kambing-rincian-hpp.index', compact('stok', 'bulanList', 'summaryStock', 'summaryKlaster'));
     }
 
     public function tambahBulan()
     {
-        // Ambil bulan terakhir, tambah 1 bulan kedepan
         $terakhir = KambingRincianPeriode::orderBy('bulan', 'desc')->first();
         $bulanBaru = Carbon::parse($terakhir->bulan . "-01")->addMonth()->format('Y-m');
-        
         KambingRincianPeriode::create(['bulan' => $bulanBaru]);
-        return back()->with('success', 'Kolom bulan ' . $bulanBaru . ' ditambahkan!');
+        return back()->with('success', 'Kolom bulan baru ditambahkan!');
     }
 
     public function store(Request $request)
@@ -56,6 +46,7 @@ class KambingRincianHppController extends Controller
             'keterangan' => strtoupper($request->keterangan),
             'jenis' => strtoupper($request->jenis),
             'klaster' => strtoupper($request->klaster),
+            'tag' => strtoupper($request->tag),
             'harga_awal' => $request->harga_awal,
             'qty_awal' => $request->qty_awal,
         ]);
@@ -70,7 +61,32 @@ class KambingRincianHppController extends Controller
             'qty_update' => $request->qty_awal,
         ]);
 
-        return back()->with('success', 'Data berhasil disimpan!');
+        return back()->with('success', 'Data baris berhasil ditambahkan.');
+    }
+
+    // UPDATE DATA INDUK (DARI MODAL EDIT)
+    public function update(Request $request, $id)
+    {
+        $item = KambingRincianHpp::findOrFail($id);
+        $item->update([
+            'tanggal' => $request->tanggal,
+            'keterangan' => strtoupper($request->keterangan),
+            'jenis' => strtoupper($request->jenis),
+            'tag' => strtoupper($request->tag),
+            'klaster' => strtoupper($request->klaster),
+            'harga_awal' => $request->harga_awal,
+            'qty_awal' => $request->qty_awal,
+        ]);
+
+        return back()->with('success', 'Data induk berhasil diperbarui.');
+    }
+
+    // HAPUS BARIS
+    public function destroy($id)
+    {
+        $item = KambingRincianHpp::findOrFail($id);
+        $item->delete(); // Karena pakai onDelete('cascade'), detail bulanan otomatis terhapus
+        return back()->with('success', 'Baris data berhasil dihapus.');
     }
 
     public function updateCell(Request $request)
@@ -79,6 +95,15 @@ class KambingRincianHppController extends Controller
             ['kambing_rincian_hpp_id' => $request->id, 'bulan' => $request->bulan],
             [$request->kolom => $request->nilai]
         );
-        return response()->json(['status' => 'Saved']);
+        return response()->json(['status' => 'Success']);
+    }
+
+    public function updateSummary(Request $request)
+    {
+        KambingManualSummary::updateOrCreate(
+            ['tipe' => $request->tipe, 'label' => $request->label],
+            ['nilai' => $request->nilai]
+        );
+        return response()->json(['status' => 'Success']);
     }
 }

@@ -275,16 +275,11 @@ Route::middleware(['auth'])->group(function () {
 use App\Http\Controllers\KambingRincianHppController;
 
 Route::middleware(['auth'])->group(function () {
-    // Halaman Utama
     Route::get('/rincian-hpp', [KambingRincianHppController::class, 'index'])->name('rincian-hpp.index');
-    
-    // Simpan Baris Baru
     Route::post('/rincian-hpp/store', [KambingRincianHppController::class, 'store'])->name('rincian-hpp.store');
-    
-    // Tambah Kolom Bulan
+    Route::put('/rincian-hpp/update/{id}', [KambingRincianHppController::class, 'update'])->name('rincian-hpp.update-induk');
+    Route::delete('/rincian-hpp/delete/{id}', [KambingRincianHppController::class, 'destroy'])->name('rincian-hpp.destroy');
     Route::post('/rincian-hpp/tambah-bulan', [KambingRincianHppController::class, 'tambahBulan'])->name('rincian-hpp.tambah-bulan');
-    
-    // Update Sel Tabel (AJAX)
     Route::post('/rincian-hpp/update-cell', [KambingRincianHppController::class, 'updateCell'])->name('rincian-hpp.update');
+    Route::post('/rincian-hpp/update-summary', [KambingRincianHppController::class, 'updateSummary'])->name('rincian-hpp.update-summary');
 });
-
