@@ -74,7 +74,7 @@
         /* PERBAIKAN TOMBOL (+) DI SIDEBAR */
         .btn-plus-manual { 
             background-color: #ffffff !important; 
-            color: #344767 !important; 
+            color: #000000ff !important; 
             border: none; 
             border-radius: 8px; 
             width: 32px; /* Lebar tetap */
