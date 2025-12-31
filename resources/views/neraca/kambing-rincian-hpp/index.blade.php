@@ -21,10 +21,19 @@
             border: 1px solid #e9ecef !important; 
             vertical-align: middle; 
             color: #4e4e4e;
-            padding: 0 !important; /* Menghilangkan padding agar input penuh */
+            padding: 0 !important; 
         }
         
-        /* Sticky Column agar nama supplier tidak hilang saat geser kanan */
+        /* Footer Tabel untuk Total */
+        .table-hpp tfoot td {
+            font-size: 0.75rem;
+            font-weight: 800;
+            border: 1px solid #e9ecef !important;
+            vertical-align: middle;
+            color: #344767;
+        }
+        
+        /* Sticky Column agar nama supplier & label Total tidak hilang saat geser kanan */
         .sticky-col { 
             position: sticky; 
             left: 0; 
@@ -32,6 +41,13 @@
             z-index: 10; 
             min-width: 180px;
             border-right: 2px solid #e9ecef !important;
+        }
+
+        .sticky-label {
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            background-color: #f8f9fa !important;
         }
 
         /* Input Sel Tabel (Live Edit) */
@@ -65,10 +81,9 @@
         }
         .btn-nav i { margin-right: 8px; font-size: 0.85rem; }
 
-        /* Highlight Warna */
         .bg-light-warning { background-color: #fff9e6 !important; }
+        .bg-total { background-color: #f8f9fa !important; }
         .text-xxs { font-size: 0.65rem !important; }
-        .rounded-pill-sm { border-radius: 50px; padding: 4px 15px; font-size: 11px; }
     </style>
 
     <div class="container-fluid py-4">
@@ -94,7 +109,7 @@
             </div>
         </div>
 
-        <!-- NAVIGASI MENU (LENGKAP) -->
+        <!-- NAVIGASI MENU LENGKAP -->
         <div class="card shadow-none border-0 bg-transparent mb-4">
             <div class="d-flex flex-wrap gap-2">
                 <a href="{{ route('kambing-akun.index') }}" class="btn-nav"><i class="fas fa-sheep text-dark"></i> Stok Kambing</a>
@@ -113,7 +128,7 @@
         </div>
 
         <div class="row">
-            <!-- TABEL UTAMA (COL 9) -->
+            <!-- TABEL RINCIAN -->
             <div class="col-lg-9 col-12 mb-4">
                 <div class="card shadow-sm border-0 border-radius-xl overflow-hidden">
                     <div class="table-responsive">
@@ -152,7 +167,6 @@
                                         {{ $item->jenis }}
                                     </td>
                                     
-                                    <!-- Stok Awal (Background Kuning Soft) -->
                                     <td class="text-end px-3 font-weight-bold text-dark" style="background-color: #fffdf5;">
                                         {{ number_format($item->harga_awal, 0, ',', '.') }}
                                     </td>
@@ -160,7 +174,6 @@
                                         {{ $item->qty_awal }}
                                     </td>
                                     
-                                    <!-- Input Sel per Bulan (AJAX Ready) -->
                                     @foreach($bulanList as $bulan)
                                         @php 
                                             $detail = $item->rincian_bulanan->where('bulan', $bulan)->first(); 
@@ -178,41 +191,74 @@
                                     @endforeach
                                 </tr>
                                 @empty
-                                <tr><td colspan="100" class="text-center py-5 text-secondary">Belum ada data. Silakan klik "Tambah Baris".</td></tr>
+                                <tr><td colspan="100" class="text-center py-5 text-secondary">Belum ada data.</td></tr>
                                 @endforelse
                             </tbody>
+
+                            <!-- TFOOT: BARIS TOTAL KESELURUHAN -->
+                            <tfoot class="bg-total fw-bold text-dark">
+                                <tr>
+                                    <td colspan="4" class="text-center text-uppercase sticky-label py-3" style="background-color: #f8f9fa !important;">
+                                        TOTAL KESELURUHAN
+                                    </td>
+                                    <td class="text-end px-3" style="background-color: #fff9e6;">
+                                        {{ number_format($stok->sum('harga_awal'), 0, ',', '.') }}
+                                    </td>
+                                    <td class="text-center" style="background-color: #fff9e6;">
+                                        {{ $stok->sum('qty_awal') }}
+                                    </td>
+
+                                    @foreach($bulanList as $bulan)
+                                        @php
+                                            $totalHargaBulan = 0;
+                                            $totalQtyBulan = 0;
+                                            foreach($stok as $item) {
+                                                $det = $item->rincian_bulanan->where('bulan', $bulan)->first();
+                                                if($det) {
+                                                    $totalHargaBulan += $det->harga_update;
+                                                    $totalQtyBulan += $det->qty_update;
+                                                }
+                                            }
+                                        @endphp
+                                        <td class="text-center py-3">
+                                            {{ number_format($totalHargaBulan, 0, ',', '.') }}
+                                        </td>
+                                        <td class="text-center py-3">
+                                            {{ $totalQtyBulan }}
+                                        </td>
+                                    @endforeach
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- SIDEBAR RINGKASAN (COL 3) -->
+            <!-- SIDEBAR RINGKASAN -->
             <div class="col-lg-3 col-12">
-                <!-- Stock Kandang -->
                 <div class="card shadow-sm border-0 mb-4 rounded-4 overflow-hidden">
                     <div class="card-header bg-dark p-3">
-                        <h6 class="text-white mb-0 text-xs fw-bold text-uppercase"><i class="fas fa-box-open me-2"></i>Stock Kandang</h6>
+                        <h6 class="text-white mb-0 text-xs fw-bold text-uppercase">Stock Kandang</h6>
                     </div>
                     <div class="card-body p-0">
                         <ul class="list-group list-group-flush">
                             @foreach($summaryJenis as $sj)
-                            <li class="list-group-item d-flex justify-content-between align-items-center px-3 py-2 border-0 border-bottom">
-                                <span class="text-xxs font-weight-bold text-uppercase text-secondary">{{ $sj->jenis }}</span>
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-3 py-2 border-0 border-bottom text-xxs font-weight-bold text-uppercase">
+                                <span>{{ $sj->jenis }}</span>
                                 <span class="badge bg-light text-dark rounded-pill">{{ $sj->total }}</span>
                             </li>
                             @endforeach
                             <li class="list-group-item d-flex justify-content-between align-items-center px-3 py-3 bg-light">
-                                <span class="text-xs font-weight-bolder text-dark">TOTAL POPULASI</span>
+                                <span class="text-xs font-weight-bolder text-dark text-uppercase">TOTAL POPULASI</span>
                                 <span class="text-sm font-weight-bolder text-primary">{{ $summaryJenis->sum('total') }}</span>
                             </li>
                         </ul>
                     </div>
                 </div>
 
-                <!-- Klaster Bangsalan -->
                 <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
                     <div class="card-header bg-secondary p-3">
-                        <h6 class="text-white mb-0 text-xs fw-bold text-uppercase"><i class="fas fa-warehouse me-2"></i>Klaster Bangsalan</h6>
+                        <h6 class="text-white mb-0 text-xs fw-bold text-uppercase">Klaster Bangsalan</h6>
                     </div>
                     <div class="card-body p-0">
                         @foreach($summaryKlaster as $sk)
@@ -227,14 +273,14 @@
         </div>
     </div>
 
-    <!-- MODAL TAMBAH DATA (ELEGANT ROUNDED) -->
-    <div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
+    <!-- MODAL TAMBAH DATA -->
+    <div class="modal fade" id="addModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <form action="{{ route('rincian-hpp.store') }}" method="POST" class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
                 @csrf
                 <div class="modal-body p-4">
                     <div class="text-center mb-4">
-                        <h5 class="fw-bold text-primary">Tambah Baris Stok Baru</h5>
+                        <h5 class="fw-bold text-primary">Tambah Stok Baru</h5>
                         <p class="text-xs text-secondary">Masukkan data pembelian awal kambing</p>
                     </div>
                     <div class="row g-3">
@@ -256,11 +302,11 @@
                         </div>
                         <div class="col-6">
                             <label class="text-xxs fw-bold text-uppercase text-secondary">Harga Modal (Rp)</label>
-                            <input type="number" name="harga_awal" class="form-control rounded-3" placeholder="0" required>
+                            <input type="number" name="harga_awal" class="form-control rounded-3" required>
                         </div>
                         <div class="col-6">
                             <label class="text-xxs fw-bold text-uppercase text-secondary">Qty Awal</label>
-                            <input type="number" name="qty_awal" class="form-control rounded-3" placeholder="0" required>
+                            <input type="number" name="qty_awal" class="form-control rounded-3" required>
                         </div>
                     </div>
                     <div class="mt-4 d-flex gap-2">
@@ -285,11 +331,10 @@
             })
             .then(res => res.json())
             .then(data => {
-                console.log('Update Successful:', data);
+                console.log('Update Successful');
             })
             .catch(err => {
                 console.error('Error saving data:', err);
-                alert('Gagal menyimpan, periksa koneksi internet Anda!');
             });
         }
     </script>
