@@ -1,5 +1,8 @@
 <x-app-layout>
-     <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
+      <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
+    <!-- Tambahkan link FontAwesome ini di atas (sebagai cadangan) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <style>
         /* Desain Latar & Font */
         .main-content { background-color: #f4f7fe; min-height: 100vh; }
@@ -52,11 +55,7 @@
             color: #344767;
             transition: 0.2s;
         }
-        .input-cell:focus { 
-            outline: none; 
-            background: #eef1ff; 
-            box-shadow: inset 0 0 0 1px #5e72e4; 
-        }
+        .input-cell:focus { outline: none; background: #eef1ff; box-shadow: inset 0 0 0 1px #5e72e4; }
 
         /* Sidebar Manual Input */
         .input-sidebar { 
@@ -71,28 +70,27 @@
         }
         .input-sidebar:focus { outline: 1px solid #5e72e4; background: white; }
 
-        /* PERBAIKAN TOMBOL (+) DI SIDEBAR */
+        /* PERBAIKAN TOMBOL (+) DI SIDEBAR - PAKAI TEKS BIAR PASTI KELIHATAN */
         .btn-plus-manual { 
             background-color: #ffffff !important; 
-            color: #000000ff !important; 
+            color: #344767 !important; 
             border: none; 
             border-radius: 8px; 
-            width: 32px; /* Lebar tetap */
-            height: 32px; /* Tinggi tetap */
+            width: 32px; 
+            height: 32px; 
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
             cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             transition: all 0.2s;
+            font-size: 22px; /* Ukuran teks plus */
+            font-weight: bold;
+            line-height: 1;
         }
         .btn-plus-manual:hover { 
-            background-color: #f2f2f2 !important; 
-            transform: scale(1.1);
-        }
-        .btn-plus-manual i {
-            font-weight: 900 !important;
+            background-color: #e2e2e2 !important; 
+            transform: scale(1.05);
         }
 
         .bg-light-warning { background-color: #fff9e6 !important; }
@@ -114,23 +112,23 @@
                 <form action="{{ route('rincian-hpp.tambah-bulan') }}" method="POST">
                     @csrf
                     <button type="submit" class="btn btn-sm btn-outline-primary shadow-sm rounded-pill px-4 fw-bold">
-                        <i class="fas fa-calendar-plus me-2"></i>Bulan
+                        + Bulan
                     </button>
                 </form>
                 <button class="btn btn-sm btn-primary shadow-sm rounded-pill px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#addModal">
-                    <i class="fas fa-plus me-2"></i>Baris Baru
+                    + Baris Baru
                 </button>
             </div>
         </div>
 
         @if(session('success'))
             <div class="alert alert-success text-white text-sm rounded-4 mb-4 border-0 shadow-sm">
-                <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
+                {{ session('success') }}
             </div>
         @endif
 
         <div class="row">
-            <!-- TABEL UTAMA (KIRI) -->
+            <!-- TABEL UTAMA (COL 9) -->
             <div class="col-lg-9 col-12 mb-4">
                 <div class="card shadow-sm border-0 border-radius-xl overflow-hidden">
                     <div class="table-responsive">
@@ -163,18 +161,14 @@
                                     <td class="text-center font-weight-bold text-secondary">{{ $index + 1 }}</td>
                                     <td class="text-center text-xs px-2">{{ $item->tanggal->format('d/m/y') }}</td>
                                     <td class="sticky-col fw-bold px-3 text-uppercase text-dark text-start">{{ $item->keterangan }}</td>
-                                    <td class="px-2 text-uppercase text-secondary" style="font-size: 10px;">{{ $item->jenis }}</td>
+                                    <td class="px-2 text-uppercase" style="font-size: 10px;">{{ $item->jenis }}</td>
                                     <td class="text-center fw-bold text-primary">{{ $item->tag ?? '-' }}</td>
                                     <td class="text-center px-2">
                                         <div class="d-flex justify-content-center gap-1">
-                                            <button class="btn btn-link text-warning p-0 mb-0" data-bs-toggle="modal" data-bs-target="#editModal{{ $item->id }}">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
+                                            <button class="btn btn-link text-warning p-0 mb-0" data-bs-toggle="modal" data-bs-target="#editModal{{ $item->id }}"><i class="fas fa-edit"></i></button>
                                             <form action="{{ route('rincian-hpp.destroy', $item->id) }}" method="POST" class="d-inline">
                                                 @csrf @method('DELETE')
-                                                <button type="submit" class="btn btn-link text-danger p-0 mb-0" onclick="return confirm('Hapus baris data ini?')">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
+                                                <button type="submit" class="btn btn-link text-danger p-0 mb-0" onclick="return confirm('Hapus baris data ini?')"><i class="fas fa-trash"></i></button>
                                             </form>
                                         </div>
                                     </td>
@@ -192,25 +186,26 @@
                                         </td>
                                     @endforeach
                                 </tr>
-                                <!-- Modal Edit Baris (Pindahkan ke sini agar ID-nya unik) -->
+
+                                <!-- Modal Edit Baris -->
                                 <div class="modal fade" id="editModal{{ $item->id }}" tabindex="-1">
                                     <div class="modal-dialog modal-dialog-centered">
                                         <form action="{{ route('rincian-hpp.update-induk', $item->id) }}" method="POST" class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
                                             @csrf @method('PUT')
                                             <div class="modal-body p-4 text-start">
-                                                <h5 class="fw-bold text-primary mb-3 text-center">EDIT DATA INDUK</h5>
+                                                <h5 class="fw-bold text-primary mb-3 text-center uppercase">Edit Data Induk</h5>
                                                 <div class="row g-3">
-                                                    <div class="col-6"><label class="text-xxs fw-bold">TANGGAL</label><input type="date" name="tanggal" class="form-control" value="{{ $item->tanggal->format('Y-m-d') }}"></div>
-                                                    <div class="col-6"><label class="text-xxs fw-bold">TAG ID</label><input type="text" name="tag" class="form-control" value="{{ $item->tag }}"></div>
-                                                    <div class="col-12"><label class="text-xxs fw-bold text-uppercase">Supplier</label><input type="text" name="keterangan" class="form-control text-uppercase" value="{{ $item->keterangan }}"></div>
-                                                    <div class="col-6"><label class="text-xxs fw-bold text-uppercase">Jenis</label><input type="text" name="jenis" class="form-control text-uppercase" value="{{ $item->jenis }}"></div>
-                                                    <div class="col-6"><label class="text-xxs fw-bold text-uppercase">Klaster</label><input type="text" name="klaster" class="form-control text-uppercase" value="{{ $item->klaster }}"></div>
-                                                    <div class="col-6"><label class="text-xxs fw-bold text-uppercase">Modal</label><input type="number" name="harga_awal" class="form-control" value="{{ (int)$item->harga_awal }}"></div>
-                                                    <div class="col-6"><label class="text-xxs fw-bold text-uppercase">Qty</label><input type="number" name="qty_awal" class="form-control" value="{{ $item->qty_awal }}"></div>
+                                                    <div class="col-6"><label class="text-xxs fw-bold text-secondary">TANGGAL</label><input type="date" name="tanggal" class="form-control" value="{{ $item->tanggal->format('Y-m-d') }}"></div>
+                                                    <div class="col-6"><label class="text-xxs fw-bold text-secondary">TAG ID</label><input type="text" name="tag" class="form-control" value="{{ $item->tag }}"></div>
+                                                    <div class="col-12"><label class="text-xxs fw-bold text-secondary text-uppercase">Keterangan / Supplier</label><input type="text" name="keterangan" class="form-control text-uppercase" value="{{ $item->keterangan }}"></div>
+                                                    <div class="col-6"><label class="text-xxs fw-bold text-secondary text-uppercase">Jenis</label><input type="text" name="jenis" class="form-control text-uppercase" value="{{ $item->jenis }}"></div>
+                                                    <div class="col-6"><label class="text-xxs fw-bold text-secondary text-uppercase">Klaster</label><input type="text" name="klaster" class="form-control text-uppercase" value="{{ $item->klaster }}"></div>
+                                                    <div class="col-6"><label class="text-xxs fw-bold text-secondary text-uppercase">Modal</label><input type="number" name="harga_awal" class="form-control" value="{{ (int)$item->harga_awal }}"></div>
+                                                    <div class="col-6"><label class="text-xxs fw-bold text-secondary text-uppercase">Qty</label><input type="number" name="qty_awal" class="form-control" value="{{ $item->qty_awal }}"></div>
                                                 </div>
                                                 <div class="mt-4 d-flex gap-2">
                                                     <button type="button" class="btn btn-light w-100 rounded-pill fw-bold text-xs" data-bs-dismiss="modal">BATAL</button>
-                                                    <button type="submit" class="btn btn-primary w-100 rounded-pill shadow fw-bold text-xs text-uppercase">Simpan Perubahan</button>
+                                                    <button type="submit" class="btn btn-primary w-100 rounded-pill shadow fw-bold text-xs uppercase">Simpan Perubahan</button>
                                                 </div>
                                             </div>
                                         </form>
@@ -248,16 +243,17 @@
                 <!-- CARD 1: STOCK KANDANG -->
                 <div class="card shadow-sm border-0 mb-4 overflow-hidden bg-white">
                     <div class="card-header bg-dark p-3 d-flex justify-content-between align-items-center">
-                        <h6 class="text-white mb-0 text-xs fw-bold text-uppercase"><i class="fas fa-box-open me-2"></i>Stock Kandang</h6>
+                        <h6 class="text-white mb-0 text-xs fw-bold text-uppercase">Stock Kandang</h6>
+                        <!-- Tombol Plus Pakai Teks + -->
                         <button class="btn-plus-manual" data-bs-toggle="modal" data-bs-target="#modalAddStock">
-                            <i class="fas fa-plus"></i>
+                            +
                         </button>
                     </div>
                     <div class="card-body p-0">
                         @forelse($summaryStock as $s)
                             <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
                                 <form action="{{ route('rincian-hpp.delete-label', $s->id) }}" method="POST" class="m-0">@csrf @method('DELETE')
-                                    <button class="btn btn-link text-danger p-0 m-0 me-2" onclick="return confirm('Hapus?')"><i class="fas fa-times-circle"></i></button>
+                                    <button class="btn btn-link text-danger p-0 m-0 me-2" onclick="return confirm('Hapus?')"><i class="fas fa-trash"></i></button>
                                 </form>
                                 <span class="text-xxs font-weight-bold text-uppercase text-secondary flex-grow-1">{{ $s->label }}</span>
                                 <input type="text" class="input-sidebar" value="{{ $s->nilai }}" onchange="saveSummary('stock', '{{ $s->label }}', this.value)">
@@ -271,16 +267,17 @@
                 <!-- CARD 2: KLASTER BANGSALAN -->
                 <div class="card shadow-sm border-0 mb-4 overflow-hidden bg-white">
                     <div class="card-header bg-secondary p-3 d-flex justify-content-between align-items-center">
-                        <h6 class="text-white mb-0 text-xs fw-bold text-uppercase"><i class="fas fa-warehouse me-2"></i>Klaster Bangsalan</h6>
+                        <h6 class="text-white mb-0 text-xs fw-bold text-uppercase">Klaster Bangsalan</h6>
+                        <!-- Tombol Plus Pakai Teks + -->
                         <button class="btn-plus-manual" data-bs-toggle="modal" data-bs-target="#modalAddKlaster">
-                            <i class="fas fa-plus"></i>
+                            +
                         </button>
                     </div>
                     <div class="card-body p-0">
                         @forelse($summaryKlaster as $k)
                             <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
                                 <form action="{{ route('rincian-hpp.delete-label', $k->id) }}" method="POST" class="m-0">@csrf @method('DELETE')
-                                    <button class="btn btn-link text-danger p-0 m-0 me-2" onclick="return confirm('Hapus?')"><i class="fas fa-times-circle"></i></button>
+                                    <button class="btn btn-link text-danger p-0 m-0 me-2" onclick="return confirm('Hapus?')"><i class="fas fa-trash"></i></button>
                                 </form>
                                 <span class="text-xxs font-weight-bold text-uppercase text-secondary flex-grow-1">{{ $k->label }}</span>
                                 <input type="text" class="input-sidebar" style="width: 100px;" value="{{ $k->nilai }}" onchange="saveSummary('klaster', '{{ $k->label }}', this.value)">
@@ -308,8 +305,8 @@
                         <div class="col-12"><label class="text-xxs fw-bold">SUPPLIER</label><input type="text" name="keterangan" class="form-control text-uppercase" required></div>
                         <div class="col-6"><label class="text-xxs fw-bold">JENIS</label><input type="text" name="jenis" class="form-control text-uppercase" placeholder="Merino" required></div>
                         <div class="col-6"><label class="text-xxs fw-bold">KLASTER</label><input type="text" name="klaster" class="form-control text-uppercase" placeholder="Marto" required></div>
-                        <div class="col-6"><label class="text-xxs fw-bold text-uppercase">Harga Modal</label><input type="number" name="harga_awal" class="form-control" required></div>
-                        <div class="col-6"><label class="text-xxs fw-bold text-uppercase">Qty Awal</label><input type="number" name="qty_awal" class="form-control" required></div>
+                        <div class="col-6"><label class="text-xxs fw-bold">HARGA MODAL</label><input type="number" name="harga_awal" class="form-control" required></div>
+                        <div class="col-6"><label class="text-xxs fw-bold">QTY AWAL</label><input type="number" name="qty_awal" class="form-control" required></div>
                     </div>
                     <button type="submit" class="btn btn-primary w-100 rounded-pill shadow mt-4 fw-bold text-uppercase">Simpan Data</button>
                 </div>
@@ -345,7 +342,7 @@
         </div>
     </div>
 
-    <!-- SCRIPTS -->
+    <!-- AJAX LOGIC -->
     <script>
         function updateCell(id, bulan, kolom, nilai) {
             fetch("{{ route('rincian-hpp.update') }}", {
