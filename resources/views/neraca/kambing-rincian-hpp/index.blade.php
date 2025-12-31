@@ -227,101 +227,83 @@
                 </div>
             </div>
 
-            <!-- SIDEBAR SUMMARY (COL 3) -->
+          <!-- SIDEBAR SUMMARY (COL 3) -->
             <div class="col-lg-3 col-12">
-                <!-- Stock Kandang -->
-                <div class="card shadow-sm border-0 mb-4 rounded-4 overflow-hidden">
+                
+                <!-- CARD 1: STOCK KANDANG -->
+                <div class="card shadow-sm border-0 mb-4 rounded-4 overflow-hidden" style="background: white;">
                     <div class="card-header bg-dark p-3 d-flex justify-content-between align-items-center">
-                        <h6 class="text-white mb-0 text-xs fw-bold text-uppercase">Stock Kandang</h6>
-                        <button class="btn btn-light btn-add-mini" data-bs-toggle="modal" data-bs-target="#modalAddStock"><i class="fas fa-plus"></i></button>
+                        <h6 class="text-white mb-0 text-xs fw-bold text-uppercase">
+                            <i class="fas fa-box-open me-2"></i>Stock Kandang
+                        </h6>
+                        <!-- TOMBOL TAMBAH JENIS -->
+                        <button class="btn btn-light btn-sm m-0 px-2 py-1" data-bs-toggle="modal" data-bs-target="#modalAddStock" title="Tambah Jenis">
+                            <i class="fas fa-plus text-dark"></i>
+                        </button>
                     </div>
                     <div class="card-body p-0">
-                        @foreach($summaryStock as $s)
+                        @forelse($summaryStock as $s)
                             <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
-                                <form action="{{ route('rincian-hpp.delete-label', $s->id) }}" method="POST" class="m-0">@csrf @method('DELETE')
-                                    <button class="btn btn-link text-danger p-0 m-0" style="font-size: 10px;"><i class="fas fa-times"></i></button>
+                                <!-- Tombol Hapus Label -->
+                                <form action="{{ route('rincian-hpp.delete-label', $s->id) }}" method="POST" class="m-0" onsubmit="return confirm('Hapus label ini?')">
+                                    @csrf @method('DELETE')
+                                    <button class="btn btn-link text-danger p-0 m-0 me-2" style="font-size: 12px;"><i class="fas fa-trash"></i></button>
                                 </form>
-                                <span class="text-xxs font-weight-bold text-uppercase text-secondary flex-grow-1 ms-2">{{ $s->label }}</span>
-                                <input type="text" class="input-sidebar" value="{{ $s->nilai }}" onchange="saveSummary('stock', '{{ $s->label }}', this.value)">
+                                
+                                <span class="text-xxs font-weight-bold text-uppercase text-secondary flex-grow-1">{{ $s->label }}</span>
+                                
+                                <!-- Input Nilai Manual -->
+                                <input type="text" class="input-sidebar" 
+                                    value="{{ $s->nilai }}" 
+                                    placeholder="0"
+                                    onchange="saveSummary('stock', '{{ $s->label }}', this.value)">
                             </div>
-                        @endforeach
+                        @empty
+                            <div class="p-3 text-center">
+                                <p class="text-xxs text-secondary mb-0 italic">Belum ada data. Klik (+) di atas untuk menambah jenis (Kambing, Dombo, dll).</p>
+                            </div>
+                        @endforelse
                     </div>
                 </div>
 
-                <!-- Klaster Bangsalan -->
-                <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                <!-- CARD 2: KLASTER BANGSALAN -->
+                <div class="card shadow-sm border-0 rounded-4 overflow-hidden" style="background: white;">
                     <div class="card-header bg-secondary p-3 d-flex justify-content-between align-items-center">
-                        <h6 class="text-white mb-0 text-xs fw-bold text-uppercase">Klaster Bangsalan</h6>
-                        <button class="btn btn-light btn-add-mini" data-bs-toggle="modal" data-bs-target="#modalAddKlaster"><i class="fas fa-plus"></i></button>
+                        <h6 class="text-white mb-0 text-xs fw-bold text-uppercase">
+                            <i class="fas fa-warehouse me-2"></i>Klaster Bangsalan
+                        </h6>
+                        <!-- TOMBOL TAMBAH KLASTER -->
+                        <button class="btn btn-light btn-sm m-0 px-2 py-1" data-bs-toggle="modal" data-bs-target="#modalAddKlaster" title="Tambah Klaster">
+                            <i class="fas fa-plus text-dark"></i>
+                        </button>
                     </div>
                     <div class="card-body p-0">
-                        @foreach($summaryKlaster as $k)
+                        @forelse($summaryKlaster as $k)
                             <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
-                                <form action="{{ route('rincian-hpp.delete-label', $k->id) }}" method="POST" class="m-0">@csrf @method('DELETE')
-                                    <button class="btn btn-link text-danger p-0 m-0" style="font-size: 10px;"><i class="fas fa-times"></i></button>
+                                <!-- Tombol Hapus Label -->
+                                <form action="{{ route('rincian-hpp.delete-label', $k->id) }}" method="POST" class="m-0" onsubmit="return confirm('Hapus klaster ini?')">
+                                    @csrf @method('DELETE')
+                                    <button class="btn btn-link text-danger p-0 m-0 me-2" style="font-size: 12px;"><i class="fas fa-trash"></i></button>
                                 </form>
-                                <span class="text-xxs font-weight-bold text-uppercase text-secondary flex-grow-1 ms-2">{{ $k->label }}</span>
-                                <input type="text" class="input-sidebar" style="width: 100px;" value="{{ $k->nilai }}" onchange="saveSummary('klaster', '{{ $k->label }}', this.value)">
+
+                                <span class="text-xxs font-weight-bold text-uppercase text-secondary flex-grow-1">{{ $k->label }}</span>
+                                
+                                <!-- Input Nilai Manual -->
+                                <input type="text" class="input-sidebar" 
+                                    style="width: 120px;" 
+                                    value="{{ $k->nilai }}" 
+                                    placeholder="Isi catatan..."
+                                    onchange="saveSummary('klaster', '{{ $k->label }}', this.value)">
                             </div>
-                        @endforeach
+                        @empty
+                            <div class="p-3 text-center">
+                                <p class="text-xxs text-secondary mb-0 italic">Belum ada data. Klik (+) di atas untuk menambah nama Klaster (Marto, Sutik, dll).</p>
+                            </div>
+                        @endforelse
                     </div>
                 </div>
+
             </div>
-        </div>
-    </div>
-
-    <!-- MODAL TAMBAH BARIS UTAMA -->
-    <div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <form action="{{ route('rincian-hpp.store') }}" method="POST" class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
-                @csrf
-                <div class="modal-body p-4 text-start">
-                    <h5 class="fw-bold text-primary mb-3 text-center uppercase">Tambah Stok Baru</h5>
-                    <div class="row g-3">
-                        <div class="col-6"><label class="text-xxs fw-bold text-secondary">TANGGAL MASUK</label><input type="date" name="tanggal" class="form-control rounded-3" value="2025-09-01" required></div>
-                        <div class="col-6"><label class="text-xxs fw-bold text-secondary">TAG ID</label><input type="text" name="tag" class="form-control rounded-3" placeholder="Contoh: BB-01"></div>
-                        <div class="col-12"><label class="text-xxs fw-bold text-secondary">SUPPLIER / KETERANGAN</label><input type="text" name="keterangan" class="form-control rounded-3 text-uppercase" placeholder="Masukkan Nama" required></div>
-                        <div class="col-6"><label class="text-xxs fw-bold text-secondary">JENIS</label><input type="text" name="jenis" class="form-control rounded-3 text-uppercase" placeholder="Misal: Merino" required></div>
-                        <div class="col-6"><label class="text-xxs fw-bold text-secondary">KLASTER (KANDANG)</label><input type="text" name="klaster" class="form-control rounded-3 text-uppercase" placeholder="Misal: Marto" required></div>
-                        <div class="col-6"><label class="text-xxs fw-bold text-secondary uppercase">Harga Modal (Rp)</label><input type="number" name="harga_awal" class="form-control rounded-3" required></div>
-                        <div class="col-6"><label class="text-xxs fw-bold text-secondary uppercase">Qty Awal</label><input type="number" name="qty_awal" class="form-control rounded-3" required></div>
-                    </div>
-                    <div class="mt-4 d-flex gap-2">
-                        <button type="button" class="btn btn-light w-100 rounded-pill fw-bold text-xs" data-bs-dismiss="modal">BATAL</button>
-                        <button type="submit" class="btn btn-primary w-100 rounded-pill shadow fw-bold text-xs uppercase">Simpan Data</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL TAMBAH JENIS STOCK SIDEBAR -->
-    <div class="modal fade" id="modalAddStock" tabindex="-1">
-        <div class="modal-dialog modal-sm modal-dialog-centered">
-            <form action="{{ route('rincian-hpp.add-label') }}" method="POST" class="modal-content" style="border-radius: 15px;">
-                @csrf <input type="hidden" name="tipe" value="stock">
-                <div class="modal-body p-3">
-                    <h6 class="fw-bold text-xs mb-3 text-uppercase text-center">Tambah Jenis Stok</h6>
-                    <input type="text" name="label" class="form-control form-control-sm mb-3" placeholder="Contoh: MERINO" required>
-                    <button type="submit" class="btn btn-dark btn-sm w-100 rounded-pill fw-bold">TAMBAH</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL TAMBAH KLASTER SIDEBAR -->
-    <div class="modal fade" id="modalAddKlaster" tabindex="-1">
-        <div class="modal-dialog modal-sm modal-dialog-centered">
-            <form action="{{ route('rincian-hpp.add-label') }}" method="POST" class="modal-content" style="border-radius: 15px;">
-                @csrf <input type="hidden" name="tipe" value="klaster">
-                <div class="modal-body p-3">
-                    <h6 class="fw-bold text-xs mb-3 text-uppercase text-center">Tambah Nama Klaster</h6>
-                    <input type="text" name="label" class="form-control form-control-sm mb-3" placeholder="Contoh: MARTO" required>
-                    <button type="submit" class="btn btn-secondary btn-sm w-100 rounded-pill fw-bold">TAMBAH</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <!-- SCRIPTS AJAX -->
     <script>
