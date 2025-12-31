@@ -36,7 +36,7 @@ class KambingRincianHppController extends Controller
         $summaryJenis = KambingRincianHpp::selectRaw('jenis, SUM(qty_awal) as total')->groupBy('jenis')->get();
         $summaryKlaster = KambingRincianHpp::selectRaw('klaster, SUM(qty_awal) as total')->groupBy('klaster')->get();
 
-        return view('kambing-rincian-hpp.index', compact('stok', 'bulanList', 'summaryJenis', 'summaryKlaster'));
+        return view('neraca.kambing-rincian-hpp.index', compact('stok', 'bulanList', 'summaryJenis', 'summaryKlaster'));
     }
 
     public function tambahBulan()
