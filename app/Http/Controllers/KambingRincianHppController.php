@@ -30,7 +30,7 @@ class KambingRincianHppController extends Controller
         $summaryStock = KambingManualSummary::where('tipe', 'stock')->get();
         $summaryKlaster = KambingManualSummary::where('tipe', 'klaster')->get();
 
-        return view('neracakambing-rincian-hpp.index', compact('stok', 'bulanList', 'summaryStock', 'summaryKlaster'));
+        return view('neraca.kambing-rincian-hpp.index', compact('stok', 'bulanList', 'summaryStock', 'summaryKlaster'));
     }
 
     // FUNGSI BARU: TAMBAH JENIS / KLASTER KE SIDEBAR
