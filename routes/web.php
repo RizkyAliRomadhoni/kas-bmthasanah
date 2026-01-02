@@ -286,4 +286,11 @@ Route::middleware(['auth'])->group(function () {
     // ROUTE BARU UNTUK LABEL SIDEBAR
     Route::post('/rincian-hpp/add-label', [KambingRincianHppController::class, 'addSummaryLabel'])->name('rincian-hpp.add-label');
     Route::delete('/rincian-hpp/delete-label/{id}', [KambingRincianHppController::class, 'deleteSummaryLabel'])->name('rincian-hpp.delete-label');
+
+        // ROUTE KHUSUS UPDATE SEL TABEL (AJAX)
+    Route::post('/rincian-hpp/update-cell', [KambingRincianHppController::class, 'updateCell'])->name('rincian-hpp.update-cell');
+    
+    // ROUTE KHUSUS UPDATE SIDEBAR MANUAL (AJAX)
+    Route::post('/rincian-hpp/update-summary', [KambingRincianHppController::class, 'updateSummary'])->name('rincian-hpp.update-summary');
+    
 });
