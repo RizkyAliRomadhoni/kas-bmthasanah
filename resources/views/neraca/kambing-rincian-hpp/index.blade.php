@@ -140,7 +140,7 @@
                                 <tr>
                                     <th rowspan="2">No</th>
                                     <th rowspan="2">Tanggal</th>
-                                    <th rowspan="2" class="sticky-col">Keterangan</th>
+                                    <th rowspan="2" class="sticky-col text-dark">Keterangan</th>
                                     <th rowspan="2">Jenis</th>
                                     <th rowspan="2">TAG</th>
                                     <th rowspan="2">Aksi</th>
