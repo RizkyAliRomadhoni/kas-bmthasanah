@@ -13,48 +13,41 @@ class KambingRincianHppController extends Controller
 {
     public function index()
     {
+        // 1. Ambil daftar bulan (Start Sep 2025 jika kosong)
         $bulanList = KambingRincianPeriode::orderBy('bulan', 'asc')->pluck('bulan')->toArray();
-
         if (empty($bulanList)) {
             $start = Carbon::create(2025, 9, 1);
             for ($i = 0; $i < 4; $i++) {
-                $month = $start->copy()->addMonths($i)->format('Y-m');
-                KambingRincianPeriode::create(['bulan' => $month]);
+                KambingRincianPeriode::create(['bulan' => $start->copy()->addMonths($i)->format('Y-m')]);
             }
             $bulanList = KambingRincianPeriode::orderBy('bulan', 'asc')->pluck('bulan')->toArray();
         }
 
+        // 2. Data Utama (Eager Loading rincian)
         $stok = KambingRincianHpp::with('rincian_bulanan')->orderBy('tanggal', 'desc')->get();
         
-        // Ambil data sidebar dari database
-        $summaryStock = KambingManualSummary::where('tipe', 'stock')->get();
-        $summaryKlaster = KambingManualSummary::where('tipe', 'klaster')->get();
+        // 3. Data Sidebar Manual
+        $summaryStock = KambingManualSummary::where('tipe', 'stock')->orderBy('label', 'asc')->get();
+        $summaryKlaster = KambingManualSummary::where('tipe', 'klaster')->orderBy('label', 'asc')->get();
 
         return view('neraca.kambing-rincian-hpp.index', compact('stok', 'bulanList', 'summaryStock', 'summaryKlaster'));
     }
 
-    // FUNGSI BARU: TAMBAH JENIS / KLASTER KE SIDEBAR
     public function addSummaryLabel(Request $request)
     {
-        $request->validate([
-            'tipe' => 'required',
-            'label' => 'required'
-        ]);
-
+        $request->validate(['tipe' => 'required', 'label' => 'required']);
         KambingManualSummary::create([
             'tipe' => $request->tipe,
             'label' => strtoupper($request->label),
             'nilai' => '0'
         ]);
-
-        return back()->with('success', 'Label baru berhasil ditambahkan ke sidebar.');
+        return back()->with('success', 'Kategori baru berhasil ditambahkan.');
     }
 
-    // FUNGSI BARU: HAPUS LABEL SIDEBAR
     public function deleteSummaryLabel($id)
     {
         KambingManualSummary::findOrFail($id)->delete();
-        return back()->with('success', 'Label berhasil dihapus.');
+        return back()->with('success', 'Kategori berhasil dihapus.');
     }
 
     public function store(Request $request)
@@ -71,7 +64,6 @@ class KambingRincianHppController extends Controller
 
         $bulanInput = Carbon::parse($request->tanggal)->format('Y-m');
         KambingRincianPeriode::firstOrCreate(['bulan' => $bulanInput]);
-
         KambingRincianHppDetail::create([
             'kambing_rincian_hpp_id' => $induk->id,
             'bulan' => $bulanInput,
@@ -126,6 +118,6 @@ class KambingRincianHppController extends Controller
         $terakhir = KambingRincianPeriode::orderBy('bulan', 'desc')->first();
         $bulanBaru = Carbon::parse($terakhir->bulan . "-01")->addMonth()->format('Y-m');
         KambingRincianPeriode::create(['bulan' => $bulanBaru]);
-        return back();
+        return back()->with('success', 'Kolom bulan baru ditambahkan.');
     }
 }
