@@ -275,18 +275,34 @@ Route::middleware(['auth'])->group(function () {
 use App\Http\Controllers\KambingRincianHppController;
 
 Route::middleware(['auth'])->group(function () {
-    Route::prefix('rincian-hpp')->group(function () {
-        Route::get('/', [KambingRincianHppController::class, 'index'])->name('rincian-hpp.index');
-        Route::post('/store', [KambingRincianHppController::class, 'store'])->name('rincian-hpp.store');
+     Route::prefix('rincian-hpp')->name('rincian-hpp.')->group(function () {
         
-        // PASTIKAN NAMA ROUTE DI BAWAH INI ADALAH rincian-hpp.update
-        Route::put('/update/{id}', [KambingRincianHppController::class, 'update'])->name('rincian-hpp.update');
+        // 1. Halaman Utama
+        Route::get('/', [KambingRincianHppController::class, 'index'])->name('index');
         
-        Route::delete('/destroy/{id}', [KambingRincianHppController::class, 'destroy'])->name('rincian-hpp.destroy');
-        Route::post('/tambah-bulan', [KambingRincianHppController::class, 'tambahBulan'])->name('rincian-hpp.tambah-bulan');
-        Route::post('/update-cell', [KambingRincianHppController::class, 'updateCell'])->name('rincian-hpp.update-cell');
-        Route::post('/update-summary', [KambingRincianHppController::class, 'updateSummary'])->name('rincian-hpp.update-summary');
-        Route::post('/add-label', [KambingRincianHppController::class, 'addSummaryLabel'])->name('rincian-hpp.add-label');
-        Route::delete('/delete-label/{id}', [KambingRincianHppController::class, 'deleteSummaryLabel'])->name('rincian-hpp.delete-label');
+        // 2. Simpan Baris Baru
+        Route::post('/store', [KambingRincianHppController::class, 'store'])->name('store');
+        
+        // 3. Update Data Induk (Modal Edit) - Ini yang tadi error
+        Route::put('/update/{id}', [KambingRincianHppController::class, 'update'])->name('update');
+        
+        // 4. Hapus Baris
+        Route::delete('/destroy/{id}', [KambingRincianHppController::class, 'destroy'])->name('destroy');
+        
+        // 5. Tambah Kolom Bulan
+        Route::post('/tambah-bulan', [KambingRincianHppController::class, 'tambahBulan'])->name('tambah-bulan');
+        
+        // 6. Live Edit Sel Tabel (AJAX)
+        Route::post('/update-cell', [KambingRincianHppController::class, 'updateCell'])->name('update-cell');
+        
+        // 7. Update Sidebar Manual (AJAX)
+        Route::post('/update-summary', [KambingRincianHppController::class, 'updateSummary'])->name('update-summary');
+        
+        // 8. Tambah Label/Jenis di Sidebar
+        Route::post('/add-label', [KambingRincianHppController::class, 'addSummaryLabel'])->name('add-label');
+        
+        // 9. Hapus Label/Jenis di Sidebar
+        Route::delete('/delete-label/{id}', [KambingRincianHppController::class, 'deleteSummaryLabel'])->name('delete-label');
     });
+
 });
