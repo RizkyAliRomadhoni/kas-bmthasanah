@@ -275,22 +275,18 @@ Route::middleware(['auth'])->group(function () {
 use App\Http\Controllers\KambingRincianHppController;
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/rincian-hpp', [KambingRincianHppController::class, 'index'])->name('rincian-hpp.index');
-    Route::post('/rincian-hpp/store', [KambingRincianHppController::class, 'store'])->name('rincian-hpp.store');
-    Route::put('/rincian-hpp/update/{id}', [KambingRincianHppController::class, 'update'])->name('rincian-hpp.update-induk');
-    Route::delete('/rincian-hpp/delete/{id}', [KambingRincianHppController::class, 'destroy'])->name('rincian-hpp.destroy');
-    Route::post('/rincian-hpp/tambah-bulan', [KambingRincianHppController::class, 'tambahBulan'])->name('rincian-hpp.tambah-bulan');
-    Route::post('/rincian-hpp/update-cell', [KambingRincianHppController::class, 'updateCell'])->name('rincian-hpp.update');
-    Route::post('/rincian-hpp/update-summary', [KambingRincianHppController::class, 'updateSummary'])->name('rincian-hpp.update-summary');
-    
-    // ROUTE BARU UNTUK LABEL SIDEBAR
-    Route::post('/rincian-hpp/add-label', [KambingRincianHppController::class, 'addSummaryLabel'])->name('rincian-hpp.add-label');
-    Route::delete('/rincian-hpp/delete-label/{id}', [KambingRincianHppController::class, 'deleteSummaryLabel'])->name('rincian-hpp.delete-label');
-
-        // ROUTE KHUSUS UPDATE SEL TABEL (AJAX)
-    Route::post('/rincian-hpp/update-cell', [KambingRincianHppController::class, 'updateCell'])->name('rincian-hpp.update-cell');
-    
-    // ROUTE KHUSUS UPDATE SIDEBAR MANUAL (AJAX)
-    Route::post('/rincian-hpp/update-summary', [KambingRincianHppController::class, 'updateSummary'])->name('rincian-hpp.update-summary');
-    
+    Route::prefix('rincian-hpp')->group(function () {
+        Route::get('/', [KambingRincianHppController::class, 'index'])->name('rincian-hpp.index');
+        Route::post('/store', [KambingRincianHppController::class, 'store'])->name('rincian-hpp.store');
+        
+        // PASTIKAN NAMA ROUTE DI BAWAH INI ADALAH rincian-hpp.update
+        Route::put('/update/{id}', [KambingRincianHppController::class, 'update'])->name('rincian-hpp.update');
+        
+        Route::delete('/destroy/{id}', [KambingRincianHppController::class, 'destroy'])->name('rincian-hpp.destroy');
+        Route::post('/tambah-bulan', [KambingRincianHppController::class, 'tambahBulan'])->name('rincian-hpp.tambah-bulan');
+        Route::post('/update-cell', [KambingRincianHppController::class, 'updateCell'])->name('rincian-hpp.update-cell');
+        Route::post('/update-summary', [KambingRincianHppController::class, 'updateSummary'])->name('rincian-hpp.update-summary');
+        Route::post('/add-label', [KambingRincianHppController::class, 'addSummaryLabel'])->name('rincian-hpp.add-label');
+        Route::delete('/delete-label/{id}', [KambingRincianHppController::class, 'deleteSummaryLabel'])->name('rincian-hpp.delete-label');
+    });
 });
