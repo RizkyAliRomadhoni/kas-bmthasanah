@@ -90,20 +90,6 @@
             </a>
         </li>
 
-        <li class="nav-item">
-            <a class="nav-link {{ is_current_route('signin') ? 'active' : '' }}"
-               href="{{ route('signin') }}">
-                <span class="nav-link-text ms-3">Sign In</span>
-            </a>
-        </li>
-
-        <li class="nav-item mb-3">
-            <a class="nav-link {{ is_current_route('signup') ? 'active' : '' }}"
-               href="{{ route('signup') }}">
-                <span class="nav-link-text ms-3">Sign Up</span>
-            </a>
-        </li>
-
     </ul>
 
 </aside>
