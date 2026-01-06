@@ -65,4 +65,31 @@ class LoginController extends Controller
 
         return redirect('/sign-in');
     }
+
+    public function username()
+{
+    return 'username';
 }
+
+public function login(Request $request)
+{
+    $credentials = $request->validate([
+        'username' => ['required'],
+        'password' => ['required'],
+    ]);
+
+    // Logika tambahan: Hanya izinkan username BMThasanah
+    if ($request->username !== 'BMThasanah') {
+        return back()->withErrors(['message' => 'Akses ditolak. Username tidak terdaftar.']);
+    }
+
+    if (Auth::attempt(['username' => 'BMThasanah', 'password' => $request->password])) {
+        $request->session()->regenerate();
+        return redirect()->intended('/'); // Masuk ke dashboard
+    }
+
+    return back()->withErrors(['message' => 'Password salah.']);
+}
+
+}
+
