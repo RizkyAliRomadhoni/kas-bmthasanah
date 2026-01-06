@@ -1,257 +1,258 @@
 <x-guest-layout>
-    <!-- Font Premium -->
+    <!-- Font & Icon -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome untuk Icon -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root {
-            --primary-dark: #06121a;
-            --farm-green: #10b981;
-            --gold-accent: #fbbf24;
-            --glass: rgba(255, 255, 255, 0.9);
+            --primary: #1e293b;
+            --emerald: #10b981;
+            --gold: #f59e0b;
         }
 
-        body, .main-content {
-            font-family: 'Plus Jakarta Sans', sans-serif !important;
-            background-color: var(--primary-dark);
-            overflow: hidden;
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
         }
 
-        /* --- Animasi Background --- */
-        .bg-animate {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+        .login-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- SISI KIRI: IMAGE SECTION --- */
+        .side-image {
+            flex: 1.2;
+            position: relative;
             background-image: url('../assets/img/bmt.jpg');
             background-size: cover;
             background-position: center;
-            animation: zoomInfinite 20s infinite alternate;
-            z-index: -1;
+            display: none; /* Sembunyikan di HP */
         }
 
-        @keyframes zoomInfinite {
-            from { transform: scale(1); }
-            to { transform: scale(1.1); }
+        @media (min-width: 992px) {
+            .side-image { display: block; }
         }
 
-        .overlay-premium {
+        .image-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, rgba(6, 18, 26, 0.7) 0%, rgba(6, 18, 26, 0.95) 100%);
-            z-index: 0;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(6, 78, 59, 0.8) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 80px;
         }
 
-        /* --- Card Animasi --- */
-        .auth-card {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 35px;
-            padding: 50px;
+        .image-content {
+            animation: slideInLeft 1s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* --- SISI KANAN: FORM SECTION --- */
+        .side-form {
+            flex: 1;
+            background-color: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .login-card {
             width: 100%;
-            max-width: 460px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
-            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            z-index: 10;
+            max-width: 400px; /* Ukuran card dibuat ramping */
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            animation: fadeIn 0.8s ease-in-out;
         }
 
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(40px); }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- Typography --- */
-        .gradient-text {
-            background: linear-gradient(135deg, #1e293b 0%, #10b981 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 800;
-        }
-
-        /* --- Input Styling --- */
-        .form-label {
-            font-size: 11px;
-            font-weight: 800;
-            color: #475569;
+        /* Input Styling */
+        .form-group label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
             text-transform: uppercase;
-            letter-spacing: 1.2px;
+            letter-spacing: 0.8px;
             margin-bottom: 8px;
             display: block;
         }
 
-        .custom-input {
-            background: rgba(241, 245, 249, 0.5) !important;
-            border: 1.5px solid #e2e8f0 !important;
-            border-radius: 16px !important;
-            padding: 14px 20px !important;
-            font-size: 15px !important;
-            transition: all 0.3s ease !important;
+        .input-custom {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1.5px solid #e2e8f0;
+            font-size: 15px;
+            color: var(--primary);
+            transition: 0.3s;
         }
 
-        .custom-input:focus {
-            background: #fff !important;
-            border-color: var(--farm-green) !important;
-            box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.15) !important;
-            transform: scale(1.01);
+        .input-custom:focus {
+            outline: none;
+            border-color: var(--emerald);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
         }
 
-        /* --- Button "Mahal" --- */
-        .btn-premium {
-            position: relative;
-            background: #1e293b;
+        /* Button Styling */
+        .btn-main {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary);
             color: white;
-            padding: 16px;
-            border-radius: 18px;
+            border: none;
+            border-radius: 12px;
             font-weight: 700;
             font-size: 15px;
-            width: 100%;
-            border: none;
-            overflow: hidden;
-            transition: all 0.4s ease;
-            box-shadow: 0 10px 20px -5px rgba(30, 41, 59, 0.4);
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
         }
 
-        .btn-premium::before {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%; width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: 0.5s;
-        }
-
-        .btn-premium:hover::before {
-            left: 100%;
-        }
-
-        .btn-premium:hover {
-            background: #0f172a;
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px -5px rgba(30, 41, 59, 0.6);
+        .btn-main:hover {
+            background-color: #0f172a;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
         .btn-google {
-            background: #fff;
-            border: 1.5px solid #e2e8f0;
-            padding: 12px;
-            border-radius: 18px;
-            font-weight: 600;
-            color: #334155;
             width: 100%;
+            padding: 12px;
+            background: white;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: 0.3s;
+            font-weight: 600;
             font-size: 14px;
+            color: #475569;
+            margin-top: 15px;
+            transition: 0.2s;
         }
 
-        .btn-google:hover {
-            background: #f8fafc;
-            border-color: #cbd5e1;
-        }
+        .btn-google:hover { background-color: #f8fafc; }
 
         .divider {
-            display: flex;
-            align-items: center;
-            margin: 35px 0;
-            color: #94a3b8;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .divider::before, .divider::after {
-            content: ''; flex: 1; border-bottom: 1px solid #e2e8f0;
-        }
-
-        .divider:not(:empty)::before { margin-right: 15px; }
-        .divider:not(:empty)::after { margin-left: 15px; }
-
-        .footer-brand {
-            position: absolute;
-            bottom: 30px;
-            color: rgba(255,255,255,0.5);
-            font-size: 12px;
-            letter-spacing: 1px;
             text-align: center;
-            width: 100%;
-            z-index: 5;
+            margin: 25px 0;
+            position: relative;
         }
+
+        .divider::before {
+            content: ""; position: absolute; top: 50%; left: 0; width: 100%;
+            height: 1px; background: #e2e8f0; z-index: 1;
+        }
+
+        .divider span {
+            position: relative; z-index: 2; background: #fff; padding: 0 15px;
+            font-size: 12px; color: #94a3b8; font-weight: 600;
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .signup-link a {
+            color: var(--emerald);
+            font-weight: 700;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .signup-link a:hover { text-decoration: underline; }
     </style>
 
     <main class="main-content">
-        <div class="position-relative min-vh-100 d-flex align-items-center justify-content-center px-3">
-            <!-- Background & Overlay -->
-            <div class="bg-animate"></div>
-            <div class="overlay-premium"></div>
+        <div class="login-wrapper">
             
-            <!-- Auth Card -->
-            <div class="auth-card">
-                <div class="text-center mb-5">
-                    <div class="bg-gradient-success d-inline-flex p-3 rounded-pill shadow-lg mb-3" style="background: linear-gradient(135deg, #10b981, #059669);">
-                        <i class="fas fa-leaf text-white fa-lg"></i>
-                    </div>
-                    <h2 class="gradient-text mb-1" style="font-size: 34px; letter-spacing: -1.5px;">BMT Hasanah</h2>
-                    <p class="text-secondary fw-medium" style="font-size: 14px;">Professional Farm Management System</p>
-                </div>
-
-                <!-- Notifikasi / Error -->
-                @if (session('status'))
-                    <div class="alert alert-success py-2 px-3 text-white border-radius-lg mb-4 text-xs" style="background:#10b981; border:none;">{{ session('status') }}</div>
-                @endif
-                @error('message')
-                    <div class="alert alert-danger py-2 px-3 text-white border-radius-lg mb-4 text-xs" style="background:#ef4444; border:none;">{{ $message }}</div>
-                @enderror
-
-                <!-- Form Login -->
-                <form role="form" method="POST" action="sign-in">
-                    @csrf
-                    <div class="mb-4">
-                        <label class="form-label">Email Address</label>
-                        <input type="email" name="email" id="email" class="form-control custom-input" 
-                            value="{{ old('email') ? old('email') : 'admin@corporateui.com' }}" required autofocus>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Password</label>
-                        <input type="password" name="password" id="password" class="form-control custom-input" 
-                            value="{{ old('password') ? old('password') : 'secret' }}" required>
-                    </div>
-
-                    <div class="d-flex align-items-center justify-content-between mb-4 mt-3">
-                        <div class="form-check m-0 p-0 d-flex align-items-center">
-                            <input class="form-check-input m-0" type="checkbox" id="remember" style="width: 18px; height: 18px; cursor: pointer; border-radius: 6px;">
-                            <label class="ms-2 text-sm text-slate-600 fw-bold" for="remember" style="cursor: pointer; color:#64748b;">Ingat saya</label>
+            <!-- SISI KIRI (VISUAL) -->
+            <div class="side-image">
+                <div class="image-overlay text-start">
+                    <div class="image-content">
+                        <div class="mb-4">
+                            <i class="fas fa-leaf fa-3x text-white"></i>
                         </div>
-                        <a href="{{ route('password.request') }}" class="text-xs fw-bold" style="color: var(--farm-green); text-decoration: none;">Lupa sandi?</a>
+                        <h1 class="text-white font-weight-bolder display-4 mb-3">Hasanah Farm <br><span style="color: var(--emerald)">Management System.</span></h1>
+                        <p class="text-white opacity-8 text-lg" style="max-width: 500px; line-height: 1.6;">
+                            Kelola ekosistem peternakan Anda dengan presisi tinggi. Akurasi keuangan BMT Hasanah kini dalam satu dashboard terpadu.
+                        </p>
                     </div>
-
-                    <button type="submit" class="btn-premium">
-                        MASUK KE DASHBOARD
-                    </button>
-
-                    <div class="divider">Atau gunakan</div>
-
-                    <button type="button" class="btn-google shadow-sm">
-                        <img class="w-5 me-3" src="../assets/img/logos/google-logo.svg" alt="google">
-                        <span>Lanjutkan dengan Google</span>
-                    </button>
-                </form>
-
-                <div class="text-center mt-5">
-                    <p class="text-sm text-secondary mb-0">
-                        Belum memiliki akses? 
-                        <a href="{{ route('sign-up') }}" class="fw-bold" style="color: var(--farm-green); text-decoration: none;">Hubungi Admin</a>
-                    </p>
+                    <div class="position-absolute bottom-5">
+                        <p class="text-white text-xs opacity-5 italic">© 2026 PT. Hasanah Farm Teknologi. All rights reserved.</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Footer -->
-            <div class="footer-brand">
-                <p class="mb-0">© 2026 HASANAH FARM TECH • MAGANG UMPO TI</p>
+            <!-- SISI KANAN (FORM) -->
+            <div class="side-form">
+                <div class="login-card">
+                    <div class="text-center mb-5">
+                        <h3 class="fw-bold text-dark mb-2">Masuk ke Dashboard</h3>
+                        <p class="text-secondary text-sm">Selamat datang kembali di sistem BMT.</p>
+                    </div>
+
+                    @if (session('status'))
+                        <div class="alert alert-success text-xs py-2 px-3 mb-4" style="border-radius: 8px;">{{ session('status') }}</div>
+                    @endif
+
+                    <form role="form" method="POST" action="sign-in">
+                        @csrf
+                        <div class="form-group mb-4">
+                            <label>Email Address</label>
+                            <input type="email" name="email" class="input-custom" 
+                                value="{{ old('email') ? old('email') : 'admin@corporateui.com' }}" required autofocus>
+                        </div>
+
+                        <div class="form-group mb-2">
+                            <label>Password</label>
+                            <input type="password" name="password" class="input-custom" 
+                                value="{{ old('password') ? old('password') : 'secret' }}" required>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-between mb-4 mt-3">
+                            <div class="form-check p-0 m-0 d-flex align-items-center">
+                                <input class="form-check-input m-0" type="checkbox" id="remember" style="width: 18px; height: 18px;">
+                                <label class="ms-2 text-xs font-weight-bold text-secondary" for="remember" style="cursor: pointer;">Ingat Saya</label>
+                            </div>
+                            <a href="{{ route('password.request') }}" class="text-xs font-weight-bold" style="color: var(--emerald); text-decoration: none;">Lupa Password?</a>
+                        </div>
+
+                        <button type="submit" class="btn-main">LOGIN SEKARANG</button>
+
+                        <div class="divider">
+                            <span>Atau masuk dengan</span>
+                        </div>
+
+                        <button type="button" class="btn-google">
+                            <img src="../assets/img/logos/google-logo.svg" alt="google" style="width: 18px; margin-right: 10px;">
+                            Akun Google
+                        </button>
+                    </form>
+
+                    <div class="signup-link">
+                        Belum memiliki akses? <a href="{{ route('sign-up') }}">Daftar di sini</a>
+                    </div>
+                </div>
             </div>
+
         </div>
     </main>
 </x-guest-layout>
