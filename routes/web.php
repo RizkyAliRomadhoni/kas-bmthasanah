@@ -97,11 +97,15 @@ Route::get('/kas/{id}', [KasController::class, 'show'])->name('kas.show')->middl
 // =====================================================================
 // NERACA
 // =====================================================================
+Route::middleware(['auth'])->group(function () {
 Route::get('/neraca', [NeracaController::class, 'index'])
     ->name('neraca.index')
     ->middleware('auth');
 Route::get('/neraca-tabel', [NeracaController::class, 'neracaTabel'])
     ->name('neraca.tabel');
+     Route::get('/neraca', [NeracaController::class, 'index'])->name('neraca.index');
+    Route::post('/neraca/add-account', [NeracaController::class, 'addAccount'])->name('neraca.add-account');
+});
 
 
 // =====================================================================
