@@ -1,4 +1,5 @@
 <x-app-layout>
+        <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
     <!-- Google Font: Inter & Plus Jakarta Sans -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
     <!-- Chart.js & FontAwesome -->
@@ -92,7 +93,7 @@
         .badge-balance { padding: 6px 14px; border-radius: 50px; font-size: 10px; font-weight: 800; text-transform: uppercase; color: white; }
     </style>
 
-    <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
+
         <div class="container-fluid py-4">
 
             <!-- HEADER UTAMA -->
@@ -288,7 +289,7 @@
             </button>
 
         </div>
-    </main>
+   
 
     <!-- MODAL TAMBAH AKUN -->
     <div class="modal fade" id="addAccountModal" tabindex="-1" aria-hidden="true">
@@ -369,4 +370,5 @@
             }
         });
     </script>
+     </main>
 </x-app-layout>
