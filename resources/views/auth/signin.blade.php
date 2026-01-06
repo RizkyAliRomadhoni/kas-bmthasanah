@@ -1,153 +1,160 @@
-<x-app-layout>
+<x-guest-layout>
+    <style>
+        /* Modern UI Variable */
+        :root {
+            --primary-dark: #1e293b; /* Midnight Slate */
+            --accent-color: #10b981; /* Emerald BMT */
+            --bg-light: #f8fafc;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+        }
+
+        .custom-input:focus {
+            border-color: var(--accent-color) !important;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+        }
+
+        .btn-signin {
+            background: var(--primary-dark);
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-signin:hover {
+            background: #0f172a;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+
+    <div class="container position-sticky z-index-sticky top-0">
+        <div class="row">
+            <div class="col-12">
+                <x-guest.sidenav-guest />
+            </div>
+        </div>
+    </div>
+
     <main class="main-content mt-0">
-        <div class="page-header min-vh-100" style="background-image: url('../assets/img/bmt.jpg'); background-size: cover; background-position: center; position: relative;">
-            <!-- Dark Overlay untuk kontras yang mewah -->
-            <span class="mask" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(5, 44, 36, 0.8) 100%); position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></span>
-            
-            <div class="container z-index-1">
-                <div class="row justify-content-center">
-                    <div class="col-xl-4 col-lg-5 col-md-7 d-flex flex-column mx-auto">
-                        
-                        <!-- Box Login -->
-                        <div class="card card-plain bg-white shadow-2xl mt-5" style="border-radius: 24px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
-                            
-                            <!-- Header dengan Logo Minimalis -->
-                            <div class="card-header pb-0 text-center bg-transparent pt-5">
-                                <div class="icon-box mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 64px; height: 64px; background: #10B981; border-radius: 16px; transform: rotate(-5deg); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);">
-                                    <i class="fas fa-leaf text-white fa-lg" style="transform: rotate(5deg);"></i>
-                                </div>
-                                <h3 class="font-weight-bolder text-dark mb-1" style="font-family: 'Inter', sans-serif; letter-spacing: -1px;">Hasanah Farm</h3>
-                                <p class="text-secondary text-sm mb-0">Sistem Manajemen Keuangan Terpadu</p>
-                            </div>
-
-                            <div class="card-body p-4 pt-4">
-                                <!-- Form tetap mempertahankan atribut aslinya -->
-                                <form role="form" method="POST" action="{{ route('login') }}" class="text-start">
-                                    @csrf
+        <section>
+            <div class="page-header min-vh-100">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <!-- KIRI: FORM LOGIN -->
+                        <div class="col-xl-4 col-lg-5 col-md-7 d-flex flex-column mx-auto">
+                            <div class="card card-plain bg-white p-4 shadow-xl border-radius-lg">
+                                <div class="card-header pb-0 text-start bg-transparent">
+                                    <h3 class="font-weight-bolder text-dark mb-1" style="letter-spacing: -1px;">Selamat Datang</h3>
+                                    <p class="mb-3 text-sm text-secondary">Silakan masuk untuk akses dashboard BMT Hasanah.</p>
                                     
-                                    <div class="form-group mb-3">
-                                        <label class="form-label text-xs font-weight-bold text-uppercase text-secondary ms-1">Email Address</label>
-                                        <div class="input-container">
-                                            <input type="email" name="email" class="form-control custom-input" placeholder="name@company.com" required autofocus>
-                                        </div>
+                                    <!-- Hint Login (Dibuat lebih rapi dalam box) -->
+                                    <div class="p-2 border-radius-sm mb-3" style="background-color: #f1f5f9; border-left: 4px solid var(--accent-color);">
+                                        <p class="mb-0 text-xs text-dark"><strong>Demo Akun:</strong> admin@corporateui.com</p>
+                                        <p class="mb-0 text-xs text-dark"><strong>Password:</strong> secret</p>
                                     </div>
+                                </div>
 
-                                    <div class="form-group mb-2">
-                                        <label class="form-label text-xs font-weight-bold text-uppercase text-secondary ms-1">Password</label>
-                                        <div class="input-container">
-                                            <input type="password" name="password" class="form-control custom-input" placeholder="••••••••" required>
+                                <div class="text-center">
+                                    @if (session('status'))
+                                        <div class="mb-4 font-weight-bold text-sm text-success">
+                                            {{ session('status') }}
                                         </div>
-                                    </div>
-
-                                    <div class="d-flex align-items-center justify-content-between mt-3 mb-4">
-                                        <div class="form-check form-switch mb-0">
-                                            <input class="form-check-input" type="checkbox" id="rememberMe" name="remember">
-                                            <label class="form-check-label text-xs text-secondary mb-0" for="rememberMe" style="cursor:pointer;">Ingat saya</label>
+                                    @endif
+                                    @error('message')
+                                        <div class="alert alert-danger text-white text-xs border-radius-md" role="alert">
+                                            {{ $message }}
                                         </div>
-                                        <a href="{{ route('password.request') }}" class="text-xs font-weight-bold" style="color: #10B981; text-decoration: none;">Lupa Password?</a>
-                                    </div>
+                                    @enderror
+                                </div>
 
-                                    <div class="text-center">
-                                        <button type="submit" class="btn btn-slate w-100 py-3 mb-3">
-                                            Sign In to Dashboard
-                                        </button>
+                                <div class="card-body pt-2">
+                                    <form role="form" class="text-start" method="POST" action="sign-in">
+                                        @csrf
+                                        <label class="text-xs font-weight-bold text-secondary text-uppercase ms-1">Email Address</label>
+                                        <div class="mb-3">
+                                            <input type="email" id="email" name="email" class="form-control custom-input py-2"
+                                                placeholder="Contoh: admin@mail.com"
+                                                value="{{ old('email') ? old('email') : 'admin@corporateui.com' }}"
+                                                required>
+                                        </div>
                                         
-                                        <div class="divider my-4">
-                                            <span class="text-xxs text-secondary text-uppercase font-weight-bold bg-white px-3">Atau</span>
+                                        <label class="text-xs font-weight-bold text-secondary text-uppercase ms-1">Password</label>
+                                        <div class="mb-3">
+                                            <input type="password" id="password" name="password"
+                                                value="{{ old('password') ? old('password') : 'secret' }}"
+                                                class="form-control custom-input py-2" placeholder="••••••••"
+                                                required>
                                         </div>
 
-                                        <button type="button" class="btn btn-google w-100 d-flex align-items-center justify-content-center py-2">
-                                            <img src="../assets/img/logos/google-logo.svg" alt="google" class="w-5 me-2">
-                                            <span class="text-dark font-weight-bold text-xs uppercase">Google Account</span>
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="form-check form-switch mb-0">
+                                                <input class="form-check-input" type="checkbox" id="flexCheckDefault" checked>
+                                                <label class="form-check-label text-xs text-secondary mb-0 ms-2" for="flexCheckDefault">
+                                                    Ingat saya
+                                                </label>
+                                            </div>
+                                            <a href="{{ route('password.request') }}" class="text-xs font-weight-bold text-primary ms-auto">Lupa Password?</a>
+                                        </div>
 
-                            <div class="card-footer text-center pt-0 px-4 pb-4">
-                                <p class="mb-0 text-sm text-secondary">
-                                    Belum memiliki akses? 
-                                    <a href="{{ route('register') }}" class="font-weight-bold" style="color: #10B981; text-decoration: none;">Hubungi Admin</a>
-                                </p>
+                                        <div class="text-center">
+                                            <button type="submit" class="btn btn-signin text-white w-100 py-2 border-radius-md mt-2 shadow-sm">
+                                                Sign In
+                                            </button>
+                                            <div class="position-relative my-4 text-center">
+                                                <hr class="horizontal dark">
+                                                <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-xs text-secondary">Atau masuk dengan</span>
+                                            </div>
+                                            <button type="button" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center py-2 border-radius-md transition-all">
+                                                <img class="w-5 me-2" src="../assets/img/logos/google-logo.svg" alt="google-logo" />
+                                                <span class="text-xs font-weight-bold">Google Account</span>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div class="card-footer text-center pt-0 px-lg-2 px-1 bg-transparent">
+                                    <p class="mb-0 text-xs mx-auto text-secondary">
+                                        Belum punya akun?
+                                        <a href="{{ route('sign-up') }}" class="text-dark font-weight-bold">Daftar di sini</a>
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Footer luar kartu -->
-                        <div class="text-center mt-4">
-                            <p class="text-white text-xxs opacity-6">
-                                © 2026 Hasanah Farm Management. Build with precision.
-                            </p>
+                        <!-- KANAN: GAMBAR & BRANDING -->
+                        <div class="col-md-6">
+                            <div class="position-absolute w-40 top-0 end-0 h-100 d-md-block d-none">
+                                <div class="oblique-image position-absolute fixed-top ms-auto h-100 z-index-0 bg-cover ms-n8"
+                                    style="background-image:url('../assets/img/bmt.jpg'); background-position: center;">
+                                    
+                                    <!-- Overlay Gradien -->
+                                    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.8) 100%);"></div>
+
+                                    <div class="mt-12 p-5 text-start border-radius-md position-absolute bottom-0 m-4 glass-card" style="max-width: 500px;">
+                                        <h2 class="text-white font-weight-bolder mb-2">BMT Hasanah</h2>
+                                        <p class="text-white text-lg opacity-9 mb-4">"Amanah, Profesional, dan Berkah. Website resmi pengelolaan keuangan terintegrasi."</p>
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-white p-1 border-radius-sm me-3">
+                                                <i class="fas fa-shield-alt text-dark p-2"></i>
+                                            </div>
+                                            <h6 class="text-white text-sm mb-0">Magang Umpo TI 2025</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
     </main>
-
-    <!-- CSS khusus untuk tampilan elegan -->
-    <style>
-        /* Import font Inter jika belum ada */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
-        .custom-input {
-            border-radius: 12px !important;
-            padding: 12px 16px !important;
-            border: 1px solid #E2E8F0 !important;
-            background-color: #F8FAFC !important;
-            font-size: 14px !important;
-            transition: all 0.2s ease;
-        }
-
-        .custom-input:focus {
-            border-color: #10B981 !important;
-            background-color: #ffffff !important;
-            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1) !important;
-            outline: none;
-        }
-
-        .btn-slate {
-            background-color: #0F172A;
-            color: #ffffff;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 14px;
-            border: none;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
-        }
-
-        .btn-slate:hover {
-            background-color: #1e293b;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.3);
-        }
-
-        .btn-google {
-            background: #ffffff;
-            border: 1px solid #E2E8F0;
-            border-radius: 12px;
-            transition: all 0.2s;
-        }
-
-        .btn-google:hover {
-            background: #F8FAFC;
-            border-color: #CBD5E1;
-            transform: translateY(-1px);
-        }
-
-        .divider {
-            position: relative;
-            text-align: center;
-            border-bottom: 1px solid #F1F5F9;
-            line-height: 0.1em;
-        }
-
-        .divider span {
-            background: #fff;
-        }
-
-        .shadow-2xl {
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
-        }
-    </style>
-</x-app-layout>
+</x-guest-layout>
