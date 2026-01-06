@@ -1,151 +1,174 @@
 <x-guest-layout>
-    <!-- Font & Icon -->
+    <!-- Google Font: Plus Jakarta Sans (Font Standar Dashboard Mahal) -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root {
-            --primary-dark: #0f172a;
-            --emerald-pro: #10b981;
-            --teal-deep: #065f46;
-            --amber-gold: #f59e0b;
+            --primary-emerald: #059669;
+            --dark-emerald: #064e3b;
             --soft-mint: #f0fdf4;
+            --slate-dark: #0f172a;
         }
 
-        body, html {
-            margin: 0; padding: 0; height: 100%;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #f8fafc;
-        }
-
-        .login-wrapper {
-            display: flex;
+        body, .main-content {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            margin: 0; padding: 0;
+            /* Background Interaktif: Gradasi Lembut */
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
             min-height: 100vh;
-        }
-
-        /* --- SISI KIRI: VISUAL BRANDING --- */
-        .side-visual {
-            flex: 1.3;
-            position: relative;
-            background-image: url('../assets/img/bmt.jpg');
-            background-size: cover;
-            background-position: center;
-            display: none; /* Sembunyikan di Mobile */
-        }
-
-        @media (min-width: 992px) {
-            .side-visual { display: block; }
-        }
-
-        .visual-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(6, 95, 70, 0.8) 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 60px;
-        }
-
-        /* Animasi Floating Ikon */
-        .brand-icon {
-            width: 60px; height: 60px;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            border-radius: 18px;
-            display: flex; align-items: center; justify-content: center;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        /* --- SISI KANAN: FORM INTERAKTIF --- */
-        .side-form {
-            flex: 1;
-            background: linear-gradient(180deg, var(--soft-mint) 0%, #ffffff 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 40px;
+            overflow-x: hidden;
         }
 
-        .login-card {
+        /* Dekorasi Lingkaran blur di background agar terlihat mewah */
+        .bg-decoration {
+            position: absolute;
+            width: 500px; height: 500px;
+            background: rgba(5, 150, 105, 0.1);
+            filter: blur(100px);
+            border-radius: 50%;
+            z-index: 0;
+        }
+
+        /* Floating Card Mode */
+        .auth-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
             width: 100%;
-            max-width: 420px;
-            animation: fadeInBlur 1s ease-out;
+            max-width: 440px;
+            padding: 50px 40px;
+            border-radius: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+            z-index: 10;
+            animation: cardAppear 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        @keyframes fadeInBlur {
-            from { opacity: 0; filter: blur(10px); transform: scale(0.95); }
-            to { opacity: 1; filter: blur(0); transform: scale(1); }
+        @keyframes cardAppear {
+            from { opacity: 0; transform: scale(0.9) translateY(30px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
+        .auth-title {
+            font-weight: 800;
+            font-size: 34px;
+            color: var(--slate-dark);
+            letter-spacing: -1.5px;
+            margin-bottom: 10px;
+        }
+
+        /* Input Styling */
         .form-label {
-            font-size: 13px; font-weight: 700; color: var(--teal-deep);
-            margin-bottom: 8px; display: block; letter-spacing: 0.5px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--dark-emerald);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-left: 5px;
         }
 
-        .input-group-custom {
-            position: relative; margin-bottom: 20px;
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 25px;
         }
 
-        .input-custom {
+        .input-wrapper i {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-emerald);
+            transition: 0.3s;
+            font-size: 18px;
+        }
+
+        .form-control {
+            border-radius: 20px !important;
+            padding: 16px 20px 16px 55px !important;
+            border: 2px solid transparent !important;
+            background-color: white !important;
+            font-size: 15px !important;
+            font-weight: 500;
+            color: var(--slate-dark);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+            transition: all 0.3s ease !important;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-emerald) !important;
+            background-color: #fff !important;
+            box-shadow: 0 10px 20px -5px rgba(5, 150, 105, 0.2) !important;
+            transform: translateY(-2px);
+        }
+
+        .form-control:focus + i {
+            color: var(--dark-emerald);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        /* Tombol Premium */
+        .btn-premium {
+            background: linear-gradient(135deg, var(--primary-emerald) 0%, var(--dark-emerald) 100%);
+            color: white;
+            padding: 18px;
+            border-radius: 22px;
+            font-weight: 700;
+            font-size: 16px;
             width: 100%;
-            padding: 14px 16px 14px 45px;
-            border-radius: 16px;
-            border: 2px solid #e2e8f0;
-            background-color: rgba(255, 255, 255, 0.6);
-            font-size: 15px; font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .input-group-custom i {
-            position: absolute; left: 16px; top: 50%;
-            transform: translateY(-50%); color: #94a3b8;
-            transition: color 0.3s;
-        }
-
-        .input-custom:focus {
-            outline: none; border-color: var(--emerald-pro);
-            background-color: #fff;
-            box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.15);
-        }
-
-        .input-custom:focus + i { color: var(--emerald-pro); }
-
-        /* Tombol Gradiasi Interaktif */
-        .btn-gradient {
-            width: 100%; padding: 16px;
-            background: linear-gradient(135deg, var(--emerald-pro) 0%, var(--teal-deep) 100%);
-            color: white; border: none; border-radius: 16px;
-            font-weight: 700; font-size: 16px; cursor: pointer;
+            border: none;
+            cursor: pointer;
             transition: all 0.4s ease;
-            box-shadow: 0 10px 20px -5px rgba(6, 95, 70, 0.4);
+            box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .btn-gradient:hover {
+        .btn-premium:hover {
             transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 20px 30px -10px rgba(6, 95, 70, 0.5);
+            box-shadow: 0 20px 35px -10px rgba(5, 150, 105, 0.5);
             filter: brightness(1.1);
         }
 
         .btn-google {
-            width: 100%; padding: 14px; background: white;
-            border: 2px solid #e2e8f0; border-radius: 16px;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 600; color: var(--primary-dark);
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 14px;
+            border-radius: 20px;
+            font-weight: 600;
+            color: var(--slate-dark);
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
             transition: 0.3s;
+            margin-top: 20px;
         }
 
-        .btn-google:hover { background: #f8fafc; border-color: #cbd5e1; }
+        .btn-google:hover {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+        }
 
         .divider {
-            text-align: center; margin: 30px 0; color: #94a3b8;
-            font-size: 12px; font-weight: 600; text-transform: uppercase;
-            display: flex; align-items: center;
+            text-align: center;
+            margin: 35px 0 20px 0;
+            color: #94a3b8;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
         }
 
         .divider::before, .divider::after {
@@ -153,105 +176,84 @@
         }
         .divider span { padding: 0 15px; }
 
-        .signup-section {
-            background: var(--primary-dark);
-            padding: 15px; border-radius: 20px;
-            text-align: center; margin-top: 40px;
+        .link-emerald {
+            color: var(--primary-emerald);
+            text-decoration: none;
+            font-weight: 700;
+            transition: 0.2s;
+        }
+
+        .link-emerald:hover { color: var(--dark-emerald); text-decoration: underline; }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 14px;
+            color: #64748b;
         }
     </style>
 
+    <!-- Elemen Dekorasi (Lingkaran Blur) -->
+    <div class="bg-decoration" style="top: -100px; left: -100px;"></div>
+    <div class="bg-decoration" style="bottom: -100px; right: -100px; background: rgba(16, 185, 129, 0.1);"></div>
+
     <main class="main-content">
-        <div class="login-wrapper">
-            
-            <!-- SEKSI KIRI: VISUAL (DIBUAT LEBIH ELEGAN) -->
-            <div class="side-visual">
-                <div class="visual-overlay">
-                    <div class="brand-icon">
-                        <i class="fas fa-leaf fa-2x text-white"></i>
-                    </div>
-                    
-                    <div class="content-text">
-                        <h1 class="text-white font-weight-bolder display-4 mb-3" style="line-height: 1.1;">
-                            Masa Depan <br> <span style="color: var(--emerald-pro);">Farm Management</span>
-                        </h1>
-                        <p class="text-white opacity-8 text-lg" style="max-width: 450px;">
-                            Pantau laporan keuangan, aset BMT Hasanah, dan perkembangan ternak secara real-time dengan teknologi cerdas.
-                        </p>
-                    </div>
-
-                    <div class="footer-note">
-                        <p class="text-white text-xs opacity-5 mb-0">© 2026 Hasanah Farm Digital Ecosystem.</p>
-                    </div>
+        <div class="auth-card">
+            <div class="text-center mb-5">
+                <div class="d-inline-flex p-3 rounded-pill mb-3" style="background: rgba(5, 150, 105, 0.1);">
+                    <i class="fas fa-leaf text-success fa-xl"></i>
                 </div>
+                <h2 class="auth-title">Welcome Back!</h2>
+                <p class="text-secondary" style="font-size: 15px;">Silakan masuk ke akun Anda untuk melanjutkan.</p>
             </div>
 
-            <!-- SEKSI KANAN: FORM (WARNA INTERAKTIF) -->
-            <div class="side-form">
-                <div class="login-card">
-                    <div class="mb-5">
-                        <h2 class="fw-bold text-dark mb-2">Welcome Back!</h2>
-                        <p class="text-secondary">Silakan masuk ke akun Anda untuk melanjutkan.</p>
-                    </div>
-
-                    @if (session('status'))
-                        <div class="alert alert-success text-sm py-3 px-4 border-0 mb-4" style="background: var(--soft-mint); color: var(--teal-deep); border-radius: 12px;">
-                            <i class="fas fa-check-circle me-2"></i> {{ session('status') }}
-                        </div>
-                    @endif
-
-                    <form role="form" method="POST" action="sign-in">
-                        @csrf
-                        <div class="form-group">
-                            <label class="form-label">Email Address</label>
-                            <div class="input-group-custom">
-                                <input type="email" name="email" class="input-custom" 
-                                    placeholder="your@email.com" value="{{ old('email') }}" required autofocus>
-                                <i class="fas fa-envelope"></i>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Password</label>
-                            <div class="input-group-custom">
-                                <input type="password" name="password" class="input-custom" 
-                                    placeholder="••••••••" required>
-                                <i class="fas fa-lock"></i>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <div class="form-check p-0 m-0 d-flex align-items-center">
-                                <input class="form-check-input m-0" type="checkbox" id="remember" style="width: 20px; height: 20px; border-radius: 6px; cursor: pointer;">
-                                <label class="ms-2 text-sm fw-600 text-secondary" for="remember" style="cursor: pointer;">Ingat saya</label>
-                            </div>
-                            <a href="{{ route('password.request') }}" class="text-sm fw-bold" style="color: var(--emerald-pro); text-decoration: none;">Lupa sandi?</a>
-                        </div>
-
-                        <button type="submit" class="btn-gradient">
-                            LOGIN KE DASHBOARD <i class="fas fa-arrow-right ms-2"></i>
-                        </button>
-
-                        <div class="divider">
-                            <span>Atau masuk dengan</span>
-                        </div>
-
-                        <button type="button" class="btn-google">
-                            <img src="../assets/img/logos/google-logo.svg" alt="google" style="width: 20px; margin-right: 12px;">
-                            Akun Google
-                        </button>
-                    </form>
-
-                    <div class="signup-section shadow-sm">
-                        <p class="text-white text-sm mb-0">
-                            Belum punya akses? 
-                            <a href="{{ route('sign-up') }}" class="fw-bold ms-1" style="color: var(--emerald-pro); text-decoration: none;">
-                                Daftar Akun Baru
-                            </a>
-                        </p>
+            <!-- Form Start -->
+            <form role="form" method="POST" action="sign-in">
+                @csrf
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <div class="input-wrapper">
+                        <input type="email" name="email" id="email" class="form-control" 
+                            placeholder="yourname@email.com" value="{{ old('email') }}" required autofocus>
+                        <i class="fas fa-envelope"></i>
                     </div>
                 </div>
-            </div>
 
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <div class="input-wrapper">
+                        <input type="password" name="password" id="password" class="form-control" 
+                            placeholder="••••••••" required>
+                        <i class="fas fa-lock"></i>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="form-check p-0 m-0 d-flex align-items-center">
+                        <input class="form-check-input m-0" type="checkbox" id="remember" style="width: 18px; height: 18px; cursor: pointer; border-radius: 5px;">
+                        <label class="ms-2 text-sm text-secondary font-weight-semibold" for="remember" style="cursor: pointer;">Ingat saya</label>
+                    </div>
+                    <a href="{{ route('password.request') }}" class="link-emerald text-sm">Lupa sandi?</a>
+                </div>
+
+                <button type="submit" class="btn-premium">
+                    LOGIN KE DASHBOARD <i class="fas fa-arrow-right"></i>
+                </button>
+
+                <div class="divider">
+                    <span>ATAU MASUK DENGAN</span>
+                </div>
+
+                <button type="button" class="btn-google">
+                    <img src="../assets/img/logos/google-logo.svg" alt="google" style="width: 20px;">
+                    Akun Google
+                </button>
+            </form>
+
+            <div class="footer-text">
+                Belum punya akses? <a href="{{ route('sign-up') }}" class="link-emerald">Daftar Akun Baru</a>
+            </div>
         </div>
     </main>
+
 </x-guest-layout>
