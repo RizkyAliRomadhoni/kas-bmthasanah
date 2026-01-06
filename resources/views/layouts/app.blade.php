@@ -6,19 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     @if (config('app.is_demo'))
-        <title itemprop="name">Corporate UI Dashboard Laravel by Creative Tim & UPDIVISION</title>
-        <meta name="twitter:card" content="summary_large_image">
-        <meta name="twitter:site" content="@CreativeTim" />
-        <meta name="twitter:creator" content="@CreativeTim" />
-        <meta name="twitter:title" content="Corporate UI Dashboard Laravel by Creative Tim & UPDIVISION" />
-        <meta name="twitter:description" content="Fullstack tool for building Laravel apps with hundreds of UI components and ready-made CRUDs" />
+        <title itemprop="name">Kelola Kas & Neraca Keuangan BMT HASANAH</title>
+        <meta name="twitter:card" content="KasBMThasanah" />
+        <meta name="twitter:site" content="@KasBMThasanah" />
+        <meta name="twitter:creator" content="@KasBMThasanah" />
+        <meta name="twitter:title" content="Kelola Kas & Neraca Keuangan BMT HASANAH" />
+        <meta name="twitter:description" content="Web Pengelola Keuangan Dan Kontrol Farm BMT HASANAH Ponorogo" />
         <meta name="twitter:image" content="https://s3.amazonaws.com/creativetim_bucket/products/737/original/corporate-ui-dashboard-laravel.jpg" />
         <meta name="twitter:url" content="https://www.creative-tim.com/live/corporate-ui-dashboard-laravel" />
     @endif
 
     <link rel="apple-touch-icon" sizes="76x76" href="{{ asset('assets/img/apple-icon.png') }}">
     <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon.png') }}">
-    <title>Corporate UI by Creative Tim & UPDIVISION</title>
+    <title>Kelola Kas & Neraca Keuangan BMT HASANAH</title>
 
     <!-- Fonts and icons -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700|Noto+Sans:300,400,500,600,700,800|PT+Mono:300,400,500,600,700" rel="stylesheet" />
