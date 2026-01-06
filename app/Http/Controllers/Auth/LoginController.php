@@ -28,24 +28,28 @@ class LoginController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {
+{
+    // 1. Validasi input
+    $credentials = $request->validate([
+        'username' => ['required', 'string'],
+        'password' => ['required', 'string'],
+    ]);
 
-        $credentials = $request->only('email', 'password');
+    // 2. Coba login (menggunakan username, bukan email)
+    if (Auth::attempt($credentials, $request->filled('remember'))) {
+        
+        // Jika sukses, buat ulang session agar aman
+        $request->session()->regenerate();
 
-        $rememberMe = $request->rememberMe ? true : false;
-
-        if (Auth::attempt($credentials, $rememberMe)) {
-            $request->session()->regenerate();
-
-            return redirect()->intended('/dashboard');
-        }
-
-
-
-        return back()->withErrors([
-            'message' => 'The provided credentials do not match our records.',
-        ])->withInput($request->only('email'));
+        // Lempar ke halaman dashboard
+        return redirect()->intended('/dashboard');
     }
+
+    // 3. Jika gagal, balikkan ke login dengan pesan error
+    return back()->withErrors([
+        'message' => 'Username atau password salah.',
+    ])->withInput($request->only('username'));
+}
 
 
 
