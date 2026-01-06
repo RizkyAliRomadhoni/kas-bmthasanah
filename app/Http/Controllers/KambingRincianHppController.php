@@ -23,7 +23,7 @@ class KambingRincianHppController extends Controller
             $bulanList = KambingRincianPeriode::orderBy('bulan', 'asc')->pluck('bulan')->toArray();
         }
 
-        // 2. Data Utama (Eager Loading rincian)
+        // 2. Data Utama (Baris)
         $stok = KambingRincianHpp::with('rincian_bulanan')->orderBy('tanggal', 'desc')->get();
         
         // 3. Data Sidebar Manual
@@ -31,23 +31,6 @@ class KambingRincianHppController extends Controller
         $summaryKlaster = KambingManualSummary::where('tipe', 'klaster')->orderBy('label', 'asc')->get();
 
         return view('neraca.kambing-rincian-hpp.index', compact('stok', 'bulanList', 'summaryStock', 'summaryKlaster'));
-    }
-
-    public function addSummaryLabel(Request $request)
-    {
-        $request->validate(['tipe' => 'required', 'label' => 'required']);
-        KambingManualSummary::create([
-            'tipe' => $request->tipe,
-            'label' => strtoupper($request->label),
-            'nilai' => '0'
-        ]);
-        return back()->with('success', 'Kategori baru berhasil ditambahkan.');
-    }
-
-    public function deleteSummaryLabel($id)
-    {
-        KambingManualSummary::findOrFail($id)->delete();
-        return back()->with('success', 'Kategori berhasil dihapus.');
     }
 
     public function store(Request $request)
@@ -62,8 +45,10 @@ class KambingRincianHppController extends Controller
             'qty_awal' => $request->qty_awal,
         ]);
 
+        // Pastikan bulan input terdaftar di periode
         $bulanInput = Carbon::parse($request->tanggal)->format('Y-m');
         KambingRincianPeriode::firstOrCreate(['bulan' => $bulanInput]);
+
         KambingRincianHppDetail::create([
             'kambing_rincian_hpp_id' => $induk->id,
             'bulan' => $bulanInput,
@@ -71,28 +56,20 @@ class KambingRincianHppController extends Controller
             'qty_update' => $request->qty_awal,
         ]);
 
-        return back()->with('success', 'Data baris berhasil ditambahkan.');
+        return back()->with('success', 'Baris baru berhasil ditambahkan.');
     }
 
     public function update(Request $request, $id)
     {
         $item = KambingRincianHpp::findOrFail($id);
-        $item->update([
-            'tanggal' => $request->tanggal,
-            'keterangan' => strtoupper($request->keterangan),
-            'jenis' => strtoupper($request->jenis),
-            'tag' => strtoupper($request->tag),
-            'klaster' => strtoupper($request->klaster),
-            'harga_awal' => $request->harga_awal,
-            'qty_awal' => $request->qty_awal,
-        ]);
-        return back()->with('success', 'Data berhasil diperbarui.');
+        $item->update($request->all());
+        return back()->with('success', 'Data induk diperbarui.');
     }
 
     public function destroy($id)
     {
         KambingRincianHpp::findOrFail($id)->delete();
-        return back()->with('success', 'Data berhasil dihapus.');
+        return back()->with('success', 'Baris data dihapus.');
     }
 
     public function updateCell(Request $request)
@@ -102,6 +79,22 @@ class KambingRincianHppController extends Controller
             [$request->kolom => $request->nilai]
         );
         return response()->json(['status' => 'Success']);
+    }
+
+    public function addSummaryLabel(Request $request)
+    {
+        KambingManualSummary::create([
+            'tipe' => $request->tipe,
+            'label' => strtoupper($request->label),
+            'nilai' => '0'
+        ]);
+        return back()->with('success', 'Label baru ditambahkan.');
+    }
+
+    public function deleteSummaryLabel($id)
+    {
+        KambingManualSummary::findOrFail($id)->delete();
+        return back()->with('success', 'Label dihapus.');
     }
 
     public function updateSummary(Request $request)
@@ -116,8 +109,10 @@ class KambingRincianHppController extends Controller
     public function tambahBulan()
     {
         $terakhir = KambingRincianPeriode::orderBy('bulan', 'desc')->first();
-        $bulanBaru = Carbon::parse($terakhir->bulan . "-01")->addMonth()->format('Y-m');
-        KambingRincianPeriode::create(['bulan' => $bulanBaru]);
-        return back()->with('success', 'Kolom bulan baru ditambahkan.');
+        if($terakhir) {
+            $bulanBaru = Carbon::parse($terakhir->bulan . "-01")->addMonth()->format('Y-m');
+            KambingRincianPeriode::create(['bulan' => $bulanBaru]);
+        }
+        return back();
     }
 }
