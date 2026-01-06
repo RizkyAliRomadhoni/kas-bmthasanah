@@ -16,8 +16,8 @@
         <meta name="twitter:url" content="https://www.creative-tim.com/live/corporate-ui-dashboard-laravel" />
     @endif
 
-    <link rel="apple-touch-icon" sizes="76x76" href="{{ asset('assets/img/apple-icon.png') }}">
-    <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon.png') }}">
+    <link rel="apple-touch-icon" sizes="76x76" href="{{ asset('assets/img/logobmt.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/logobmt.png') }}">
     <title>Kelola Kas & Neraca Keuangan BMT HASANAH</title>
 
     <!-- Fonts and icons -->
