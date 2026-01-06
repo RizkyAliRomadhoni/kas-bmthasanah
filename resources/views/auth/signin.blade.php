@@ -196,7 +196,7 @@
                         </p>
                     </div>
                     <div class="position-absolute bottom-5">
-                        <p class="text-white text-xs opacity-5 italic">© 2026 PT. Hasanah Farm Teknologi. All rights reserved.</p>
+                        <p class="text-white text-xs opacity-5 italic">© 2025 Magang TI Universitas Muhammadiyah Ponorogo</p>
                     </div>
                 </div>
             </div>
