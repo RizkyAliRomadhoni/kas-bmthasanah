@@ -16,7 +16,7 @@ class NeracaController extends Controller
 {
     public function index(Request $request)
     {
-        // 1. DAFTAR BULAN (OTOMATIS)
+        // 1. Ambil Semua Daftar Bulan Unik dari Seluruh Sistem
         $bulanKas = Kas::selectRaw("DATE_FORMAT(tanggal,'%Y-%m') as bulan")->pluck('bulan');
         $bulanJual = Penjualan::selectRaw("DATE_FORMAT(tanggal,'%Y-%m') as bulan")->pluck('bulan');
         $bulanMati = KambingMati::selectRaw("DATE_FORMAT(tanggal,'%Y-%m') as bulan")->pluck('bulan');
@@ -25,41 +25,43 @@ class NeracaController extends Controller
         $bulanList = collect($bulanKas)->merge($bulanJual)->merge($bulanMati)->merge($bulanManual)
             ->unique()->sort()->values();
 
-        // 2. PENGATURAN AKUN
+        // 2. Pengaturan Nama Akun
         $akunAktiva = ['Kas', 'Kambing', 'Piutang', 'Pakan', 'Perlengkapan', 'Upah', 'Kandang', 'Operasional'];
         $akunPasiva = ['Hutang', 'Titipan', 'Penyertaan BMT Hasanah', 'Penyertaan DF'];
 
         $manualLR = LabaRugiManual::all()->groupBy('bulan');
-        $saldoAwal = [];
-        foreach (array_merge($akunAktiva, $akunPasiva) as $akun) { $saldoAwal[$akun] = 0; }
-
         $saldo = [];
         $sisaSaldo = [];
         $labaRugiKumulatif = []; 
         $totalLabaBerjalan = 0;   
         
-        // Data untuk Grafik
+        // Persiapan Data Chart
+        $chartLabels = [];
         $chartDataAset = [];
         $chartDataLaba = [];
 
-        // 3. LOOPING PER BULAN
+        // 3. Looping Hitung Neraca per Bulan
         foreach ($bulanList as $bulan) {
             $akhirBulan = Carbon::createFromFormat('Y-m', $bulan)->endOfMonth();
+            $chartLabels[] = Carbon::parse($bulan)->translatedFormat('M y');
 
             // --- A. KAS TUNAI ---
             $sisaSaldo[$bulan] = Kas::where('tanggal', '<=', $akhirBulan)
                 ->orderBy('tanggal', 'desc')->orderBy('id', 'desc')->value('saldo') ?? 0;
 
-            // --- B. AKTIVA ---
+            // --- B. AKTIVA (ASET) ---
             $totalAktivaBulan = 0;
             foreach ($akunAktiva as $akun) {
                 if ($akun === 'Kas') {
                     $val = $sisaSaldo[$bulan];
-                } elseif ($akun === 'Kambing') {
+                } 
+                elseif ($akun === 'Kambing') {
+                    // INTEGRASI DENGAN RINCIAN HPP
                     $val = KambingRincianHppDetail::where('bulan', $bulan)
                         ->selectRaw('SUM(harga_update * qty_update) as total')
                         ->value('total') ?? 0;
-                } elseif ($akun === 'Piutang') {
+                } 
+                elseif ($akun === 'Piutang') {
                     $in = Kas::where('akun', 'Piutang')->where('jenis_transaksi', 'Masuk')->where('tanggal', '<=', $akhirBulan)->sum('jumlah');
                     $out = Kas::where('akun', 'Piutang')->where('jenis_transaksi', 'Keluar')->where('tanggal', '<=', $akhirBulan)->sum('jumlah');
                     $val = $out - $in;
@@ -71,7 +73,7 @@ class NeracaController extends Controller
             }
             $chartDataAset[] = $totalAktivaBulan;
 
-            // --- C. PASIVA ---
+            // --- C. PASIVA (KEWAJIBAN) ---
             foreach ($akunPasiva as $akun) {
                 if ($akun === 'Hutang') {
                     $in = Kas::where('akun', 'Hutang')->where('jenis_transaksi', 'Masuk')->where('tanggal', '<=', $akhirBulan)->sum('jumlah');
@@ -84,36 +86,26 @@ class NeracaController extends Controller
                 }
             }
 
-            // --- D. LABA RUGI (AKUMULASI) ---
-            $oto_laba_kambing = Penjualan::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])->sum('laba');
-            $oto_beban_mati = KambingMati::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])->sum('harga');
-            $oto_laba_pakan = PakanDetail::whereHas('kas', fn($q) => $q->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan]))
-                                ->get()->sum(fn($q) => ($q->harga_jual_kg - $q->harga_kg) * $q->qty_kg);
-            $oto_basil = Kas::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])
-                                ->where('keterangan', 'LIKE', '%Basil%')->where('jenis_transaksi', 'Masuk')->sum('jumlah');
-            $oto_adj = Kas::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])
-                                ->where('akun', 'Penyesuaian')->where('jenis_transaksi', 'Masuk')->sum('jumlah');
-
+            // --- D. LOGIKA LABA RUGI (AKUMULASI) ---
             $getM = function($kat, $oto) use ($manualLR, $bulan) {
                 $m = $manualLR->has($bulan) ? $manualLR[$bulan]->where('kategori', $kat)->first() : null;
                 return ($m && $m->nilai != 0) ? $m->nilai : $oto;
             };
 
-            $labaBulanIni = ($getM('laba_kambing', $oto_laba_kambing) + $getM('laba_pakan', $oto_laba_pakan) + $getM('laba_basil', $oto_basil) + $getM('laba_penyesuaian', $oto_adj)) 
-                            - ($getM('beban_upah', 0) + $getM('biaya_lain', 0) + $getM('beban_mati', $oto_beban_mati));
+            $untungJual = Penjualan::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])->sum('laba');
+            $untungPakan = PakanDetail::whereHas('kas', fn($q) => $q->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan]))->get()->sum(fn($q) => ($q->harga_jual_kg - $q->harga_kg) * $q->qty_kg);
+            $bebanMati = KambingMati::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])->sum('harga');
+
+            $labaBulanIni = ($getM('laba_kambing', $untungJual) + $getM('laba_pakan', $untungPakan)) 
+                            - ($getM('beban_upah', 0) + $getM('biaya_lain', 0) + $getM('beban_mati', $bebanMati));
             
             $totalLabaBerjalan += $labaBulanIni;
             $labaRugiKumulatif[$bulan] = $totalLabaBerjalan;
             $chartDataLaba[] = $totalLabaBerjalan;
         }
 
-        // Ambil Nama Bulan untuk Label Grafik
-        $chartLabels = $bulanList->map(function($b) {
-            return Carbon::parse($b)->translatedFormat('M y');
-        });
-
         return view('neraca.index', compact(
-            'bulanList','akunAktiva','akunPasiva','saldoAwal','saldo','sisaSaldo','labaRugiKumulatif',
+            'bulanList','akunAktiva','akunPasiva','saldo','sisaSaldo','labaRugiKumulatif',
             'chartLabels', 'chartDataAset', 'chartDataLaba'
         ));
     }
