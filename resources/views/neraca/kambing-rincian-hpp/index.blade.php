@@ -1,280 +1,314 @@
 <x-app-layout>
-    
-    <!-- Font & Icon Setup -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+     <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
+    <!-- Font Inter & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
     <style>
-        :root {
-            --primary: #4f46e5;
-            --dark: #1e293b;
-            --border: #e2e8f0;
-            --bg-body: #f8fafc;
+        /* Base Setup */
+        body, .main-content { 
+            font-family: 'Inter', sans-serif !important; 
+            background-color: #f8fafc; 
+            color: #1e293b;
         }
 
-        body, .main-content { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: #334155; }
-
-        /* === SCROLLABLE TABLE LAYOUT === */
-        .table-pro-container { 
-            background: white; 
-            border-radius: 1rem; 
-            border: 1px solid var(--border); 
-            overflow: auto; 
-            max-height: 600px;
-        }
-        .table-pro { width: 100%; border-collapse: separate; border-spacing: 0; }
+        /* Card Styling */
+        .card-elegant { border: none; border-radius: 16px; background: white; box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
         
+        /* === TABLE REFINEMENT PRO === */
+        .table-pro-container { 
+            border-radius: 12px; 
+            border: 1px solid #e2e8f0; 
+            overflow: auto; 
+            max-height: 650px;
+            background: #fff;
+        }
+        
+        .table-pro { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+
+        /* Header Styling */
         .table-pro thead th { 
-            position: sticky; top: 0; z-index: 20;
-            background: var(--dark) !important; color: #fff !important; 
-            font-size: 11px; padding: 15px 12px; text-transform: uppercase; 
-            letter-spacing: 0.05em; border: 0.5px solid #334155;
+            background-color: #1e293b !important; 
+            color: #ffffff !important; 
+            font-size: 10px; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 0.05em; 
+            padding: 12px 5px;
+            border: 0.5px solid #334155 !important;
+            vertical-align: middle;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 20;
         }
 
-        /* Fixed Left Columns */
-        .sticky-col-id { position: sticky; left: 0; z-index: 25; background: #fff !important; min-width: 50px; }
-        .sticky-col-date { position: sticky; left: 50px; z-index: 25; background: #fff !important; min-width: 100px; }
-        .sticky-col-supplier { position: sticky; left: 150px; z-index: 25; background: #fff !important; border-right: 2px solid var(--border) !important; min-width: 220px; text-align: left !important; }
+        /* STICKY COLUMN PRECISION */
+        /* Menghitung jarak kiri secara presisi agar tidak tumpang tindih */
+        .sticky-1 { position: sticky; left: 0; z-index: 30; width: 45px; }
+        .sticky-2 { position: sticky; left: 45px; z-index: 30; width: 90px; }
+        .sticky-3 { position: sticky; left: 135px; z-index: 30; width: 220px; border-right: 2px solid #e2e8f0 !important; }
 
-        /* Monthly Columns Width (Bigger) */
-        .col-month-harga { min-width: 150px; }
-        .col-month-qty { min-width: 80px; }
+        .table-pro thead th.sticky-1, .table-pro thead th.sticky-2, .table-pro thead th.sticky-3 {
+            background-color: #1e293b !important;
+        }
 
         .table-pro tbody td { 
-            font-size: 13px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border);
-            padding: 0 !important; vertical-align: middle; 
+            font-size: 12.5px; 
+            padding: 0 !important; 
+            border-bottom: 1px solid #f1f5f9; 
+            border-right: 1px solid #f1f5f9;
+            color: #475569;
+            vertical-align: middle;
+            background-color: #fff;
         }
 
-        /* Header Corners Fix */
-        .table-pro thead th.sticky-col-id, 
-        .table-pro thead th.sticky-col-date, 
-        .table-pro thead th.sticky-col-supplier { z-index: 30; background: var(--dark) !important; }
+        .table-pro tbody td.sticky-1, .table-pro tbody td.sticky-2, .table-pro tbody td.sticky-3 {
+            background-color: #ffffff !important;
+        }
 
-        /* Inputs */
-        .input-cell { width: 100%; height: 45px; border: none; background: transparent; text-align: center; font-weight: 600; color: var(--dark); transition: 0.2s; }
-        .input-cell:focus { outline: none; background: #f0f7ff; box-shadow: inset 0 0 0 2px var(--primary); }
+        /* Monthly Columns Width */
+        .col-month { min-width: 140px; }
+        .col-qty { min-width: 70px; }
 
-        /* Summary Cards Below */
-        .metric-card { border: none; border-radius: 1rem; background: white; border: 1px solid var(--border); overflow: hidden; height: 100%; }
-        .metric-header { background: var(--dark); color: white; padding: 15px; font-weight: 800; font-size: 11px; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center; }
-        .input-sidebar { border: 1px solid var(--border); background: #f8fafc; text-align: right; width: 100px; font-weight: 700; padding: 6px; border-radius: 8px; }
+        /* Input Table Interactions */
+        .input-cell { 
+            width: 100%; height: 42px; border: none; background: transparent; 
+            text-align: center; font-weight: 600; color: #1e293b; font-size: 13px;
+            transition: 0.2s ease;
+        }
+        .input-cell:focus { outline: none; background-color: #f0f7ff; box-shadow: inset 0 0 0 2px #3b82f6; z-index: 50; }
 
-        /* Buttons */
-        .btn-pro { border-radius: 50px; font-weight: 700; font-size: 11px; padding: 10px 22px; transition: 0.2s; border: 1px solid var(--border); display: inline-flex; align-items: center; gap: 8px; text-decoration: none !important; }
-        .btn-pro:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .btn-primary-pro { background: var(--primary); color: white; border: none; }
-        .btn-plus-sq { background: #fff; color: var(--dark); width: 26px; height: 26px; border-radius: 6px; border: none; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+        /* Footer Total */
+        .table-pro tfoot td {
+            position: sticky;
+            bottom: 0;
+            z-index: 25;
+            background-color: #f8fafc !important;
+            font-weight: 800;
+            color: #1e293b;
+            padding: 15px 5px !important;
+            border-top: 2px solid #1e293b !important;
+        }
 
-        .tag-badge { background: #eef2ff; color: #4338ca; font-weight: 800; padding: 4px 10px; border-radius: 8px; font-size: 10px; }
-        .bg-soft-yellow { background-color: #fffdf2 !important; }
+        /* Actions & UI */
+        .btn-action-mini { width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; border: none; transition: 0.2s; font-size: 10px; }
+        .btn-edit { background: #fef9c3; color: #854d0e; }
+        .btn-delete { background: #fee2e2; color: #991b1b; }
+        .tag-pill { background: #f1f5f9; color: #475569; font-weight: 800; padding: 3px 8px; border-radius: 6px; font-size: 10px; }
+        
+        .btn-header-pro { background: #fff; color: #475569; font-weight: 700; font-size: 12px; padding: 10px 20px; border-radius: 12px; border: 1px solid #e2e8f0; transition: 0.2s; text-decoration: none !important; }
+        .btn-header-pro:hover { background: #f8fafc; color: #10b981; border-color: #10b981; transform: translateY(-2px); }
     </style>
 
-    <main class="main-content">
-        <div class="container-fluid py-4">
-
-            <!-- 1. TOP HEADER -->
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-5 gap-3 px-2">
-                <div class="text-start text-start">
-                    <h3 class="fw-bold text-dark mb-0 uppercase tracking-tighter" style="font-family: 'Plus Jakarta Sans'; font-size: 26px;">Rincian HPP Pro</h3>
-                    <p class="text-secondary text-sm mb-0">Hasanah Farm • Sinkronisasi Tabel & Rekapitulasi Metrik</p>
-                </div>
-                <div class="d-flex gap-2">
-                    <a href="{{ route('neraca.index') }}" class="btn-pro bg-white shadow-sm text-secondary"><i class="fas fa-arrow-left"></i> Neraca</a>
-                    <form action="{{ route('rincian-hpp.tambah-bulan') }}" method="POST">@csrf
-                        <button type="submit" class="btn-pro bg-white text-primary shadow-sm"><i class="fas fa-calendar-plus"></i> + Bulan</button>
-                    </form>
-                    <button class="btn-pro btn-primary-pro shadow" data-bs-toggle="modal" data-bs-target="#addModal"><i class="fas fa-plus"></i> Baris Baru</button>
-                </div>
+    <div class="container-fluid py-4 text-start">
+        
+        <!-- HEADER UTAMA -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3 px-2">
+            <div>
+                <h4 class="fw-bold text-dark mb-0 text-uppercase tracking-tighter" style="font-size: 22px;">Rincian HPP & Stok Bulanan</h4>
+                <p class="text-secondary mb-0" style="font-size: 13px;">Hasanah Farm • Periode Aktif September 2025</p>
             </div>
+            <div class="d-flex gap-2">
+                <a href="{{ route('neraca.index') }}" class="btn-header-pro shadow-sm">
+                    <i class="fas fa-arrow-left me-2"></i> NERACA
+                </a>
+                <form action="{{ route('rincian-hpp.tambah-bulan') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="btn-header-pro shadow-sm text-primary">
+                        <i class="fas fa-calendar-plus me-2"></i> + BULAN
+                    </button>
+                </form>
+                <button class="btn-header-pro shadow-sm text-white" style="background: #3b82f6; border:none;" data-bs-toggle="modal" data-bs-target="#addModal">
+                    <i class="fas fa-plus me-2"></i> BARIS BARU
+                </button>
+            </div>
+        </div>
 
-            <!-- 2. MAIN TABLE (SCROLLABLE) -->
-            <div class="table-pro-container shadow-sm mb-5 mx-2">
-                <table class="table-pro text-center">
-                    <thead>
-                        <tr>
-                            <th rowspan="2" class="sticky-col-id">#</th>
-                            <th rowspan="2" class="sticky-col-date">Tanggal</th>
-                            <th rowspan="2" class="sticky-col-supplier">Supplier / Keterangan</th>
-                            <th rowspan="2" style="min-width: 120px;">Jenis</th>
-                            <th rowspan="2" style="width: 65px;">TAG</th>
-                            <th rowspan="2" style="width: 90px;">Aksi</th>
-                            <th colspan="2" class="bg-soft-yellow" style="color: #92400e; border-left: 1px solid #334155;">STOK AWAL</th>
-                            @foreach($bulanList as $bulan)
-                                <th colspan="2" style="border-left: 1px solid #4b5b7c;">{{ \Carbon\Carbon::parse($bulan)->translatedFormat('M y') }}</th>
-                            @endforeach
-                        </tr>
-                        <tr>
-                            <th class="bg-soft-yellow" style="font-size: 9px; border-left: 1px solid #334155;">HARGA</th>
-                            <th class="bg-soft-yellow" style="font-size: 9px;">QTY</th>
-                            @foreach($bulanList as $bulan)
-                                <th class="col-month-harga" style="font-size: 9px; border-left: 1px solid #4b5b7c;">HARGA</th>
-                                <th class="col-month-qty" style="font-size: 9px;">QTY</th>
-                            @endforeach
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($stok as $index => $item)
-                        <tr>
-                            <td class="font-bold text-slate-400 sticky-col-id">{{ $index + 1 }}</td>
-                            <td class="text-xs sticky-col-date">{{ $item->tanggal->format('d/m/y') }}</td>
-                            <td class="sticky-col-supplier font-bold text-dark text-uppercase px-3">{{ $item->keterangan }}</td>
-                            <td class="text-uppercase text-secondary" style="font-size: 10px;">{{ $item->jenis }}</td>
-                            <td class="text-center"><span class="tag-pill">{{ $item->tag ?? '-' }}</span></td>
-                            <td>
-                                <div class="d-flex justify-content-center gap-1 px-2">
-                                    <button class="btn btn-action btn-edit" data-bs-toggle="modal" data-bs-target="#editModal{{ $item->id }}"><i class="fas fa-pen"></i></button>
-                                    <form action="{{ route('rincian-hpp.destroy', $item->id) }}" method="POST">@csrf @method('DELETE')
-                                        <button type="submit" class="btn btn-action btn-delete" onclick="return confirm('Hapus?')"><i class="fas fa-trash-alt"></i></button>
-                                    </form>
-                                </div>
-                            </td>
-                            <td class="text-end px-3 font-bold bg-soft-yellow border-start">{{ number_format($item->harga_awal, 0, ',', '.') }}</td>
-                            <td class="text-center font-bold bg-soft-yellow">{{ $item->qty_awal }}</td>
-                            @foreach($bulanList as $bulan)
-                                @php $det = $item->rincian_bulanan->where('bulan', $bulan)->first(); @endphp
-                                <td style="border-left: 1px solid #f1f5f9;"><input type="number" class="input-cell" value="{{ $det ? (int)$det->harga_update : '' }}" onchange="updateCell('{{ $item->id }}', '{{ $bulan }}', 'harga_update', this.value)"></td>
-                                <td><input type="number" class="input-cell" value="{{ $det ? $det->qty_update : '' }}" onchange="updateCell('{{ $item->id }}', '{{ $bulan }}', 'qty_update', this.value)"></td>
-                            @endforeach
-                        </tr>
+        @if(session('success'))
+            <div class="alert alert-success border-0 shadow-sm text-white mb-4 py-3 px-4 mx-2" style="background: #10b981; border-radius: 12px;">
+                <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
+            </div>
+        @endif
 
-                        <!-- MODAL EDIT INDUK -->
-                        <div class="modal fade" id="editModal{{ $item->id }}" tabindex="-1">
-                            <div class="modal-dialog modal-dialog-centered">
-                                <form action="{{ route('rincian-hpp.update', $item->id) }}" method="POST" class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
-                                    @csrf @method('PUT')
-                                    <div class="modal-body p-4 text-start">
-                                        <h6 class="font-bold text-dark mb-4 text-center uppercase">Update Data Baris</h6>
-                                        <div class="row g-3">
-                                            <div class="col-6"><label class="text-xxs font-bold text-slate-400">TANGGAL</label><input type="date" name="tanggal" class="form-control" value="{{ $item->tanggal->format('Y-m-d') }}"></div>
-                                            <div class="col-6"><label class="text-xxs font-bold text-slate-400">TAG ID</label><input type="text" name="tag" class="form-control" value="{{ $item->tag }}"></div>
-                                            <div class="col-12"><label class="text-xxs font-bold text-slate-400">SUPPLIER</label><input type="text" name="keterangan" class="form-control text-uppercase" value="{{ $item->keterangan }}"></div>
-                                            <div class="col-6"><label class="text-xxs font-bold text-slate-400">JENIS</label><input type="text" name="jenis" class="form-control text-uppercase" value="{{ $item->jenis }}"></div>
-                                            <div class="col-6"><label class="text-xxs font-bold text-slate-400">KLASTER</label><input type="text" name="klaster" class="form-control text-uppercase" value="{{ $item->klaster }}"></div>
-                                            <div class="col-6"><label class="text-xxs font-bold text-slate-400">MODAL</label><input type="number" name="harga_awal" class="form-control" value="{{ (int)$item->harga_awal }}"></div>
-                                            <div class="col-6"><label class="text-xxs font-bold text-slate-400">QTY</label><input type="number" name="qty_awal" class="form-control" value="{{ $item->qty_awal }}"></div>
-                                        </div>
-                                        <div class="mt-4 d-flex gap-2">
-                                            <button type="button" class="btn btn-light w-100 rounded-pill font-bold" data-bs-dismiss="modal">BATAL</button>
-                                            <button type="submit" class="btn btn-primary w-100 rounded-pill border-0 font-bold shadow py-2" style="background: var(--primary);">SIMPAN</button>
-                                        </div>
-                                    </div>
+        <!-- TABEL UTAMA (FULL WIDTH) -->
+        <div class="table-pro-container shadow-sm mx-2 mb-5">
+            <table class="table-pro text-center">
+                <thead>
+                    <tr>
+                        <th rowspan="2" class="sticky-1">ID</th>
+                        <th rowspan="2" class="sticky-2">TANGGAL</th>
+                        <th rowspan="2" class="sticky-3 text-start px-3">SUPPLIER / KETERANGAN</th>
+                        <th rowspan="2" style="width: 100px;">JENIS</th>
+                        <th rowspan="2" style="width: 60px;">TAG</th>
+                        <th rowspan="2" style="width: 85px;">AKSI</th>
+                        <th colspan="2" style="background: #fffdf2; color: #92400e; border-left: 2px solid #334155;">STOK AWAL</th>
+                        @foreach($bulanList as $bulan)
+                            <th colspan="2" style="border-left: 2px solid #4b5b7c;">{{ \Carbon\Carbon::parse($bulan)->translatedFormat('M y') }}</th>
+                        @endforeach
+                    </tr>
+                    <tr>
+                        <th style="background: #fffdf2; font-size: 9px; border-left: 2px solid #334155;">HARGA</th>
+                        <th style="background: #fffdf2; font-size: 9px;">QTY</th>
+                        @foreach($bulanList as $bulan)
+                            <th class="col-month" style="font-size: 9px; border-left: 1px solid #4b5b7c;">HARGA</th>
+                            <th class="col-qty" style="font-size: 9px;">QTY</th>
+                        @endforeach
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($stok as $index => $item)
+                    <tr>
+                        <td class="font-bold text-secondary sticky-1 text-center">{{ $index + 1 }}</td>
+                        <td class="text-xs sticky-2 text-center">{{ $item->tanggal->format('d/m/y') }}</td>
+                        <td class="sticky-3 font-bold text-dark text-uppercase px-3 text-start">{{ $item->keterangan }}</td>
+                        <td class="text-uppercase text-secondary text-center" style="font-size: 10px;">{{ $item->jenis }}</td>
+                        <td class="text-center"><span class="tag-pill">{{ $item->tag ?? '-' }}</span></td>
+                        <td class="px-2">
+                            <div class="d-flex justify-content-center gap-1">
+                                <button class="btn-action-mini btn-edit" data-bs-toggle="modal" data-bs-target="#editModal{{ $item->id }}"><i class="fas fa-pen"></i></button>
+                                <form action="{{ route('rincian-hpp.destroy', $item->id) }}" method="POST">@csrf @method('DELETE')
+                                    <button type="submit" class="btn-action-mini btn-delete" onclick="return confirm('Hapus?')"><i class="fas fa-trash-alt"></i></button>
                                 </form>
                             </div>
-                        </div>
+                        </td>
+                        <td class="text-end px-2 font-bold" style="background: #fffdf2; border-left: 1px solid #e2e8f0;">{{ number_format($item->harga_awal, 0, ',', '.') }}</td>
+                        <td class="text-center font-bold" style="background: #fffdf2;">{{ $item->qty_awal }}</td>
+                        @foreach($bulanList as $bulan)
+                            @php $det = $item->rincian_bulanan->where('bulan', $bulan)->first(); @endphp
+                            <td style="border-left: 1px solid #f1f5f9;"><input type="number" class="input-cell" value="{{ $det ? (int)$det->harga_update : '' }}" onchange="updateCell('{{ $item->id }}', '{{ $bulan }}', 'harga_update', this.value)"></td>
+                            <td><input type="number" class="input-cell" value="{{ $det ? $det->qty_update : '' }}" onchange="updateCell('{{ $item->id }}', '{{ $bulan }}', 'qty_update', this.value)"></td>
                         @endforeach
-                    </tbody>
-                    <tfoot>
-                        <tr class="footer-total">
-                            <td colspan="6" class="text-center font-bold py-4 sticky-col-id sticky-col-date sticky-col-supplier" style="background: #f8fafc !important;">TOTAL KESELURUHAN</td>
-                            <td class="text-end px-3 font-bold">{{ number_format($stok->sum('harga_awal'), 0, ',', '.') }}</td>
-                            <td class="text-center font-bold">{{ $stok->sum('qty_awal') }}</td>
-                            @foreach($bulanList as $bulan)
-                                @php $tH = 0; $tQ = 0; foreach($stok as $s) { $d = $s->rincian_bulanan->where('bulan', $bulan)->first(); if($d) { $tH += $d->harga_update; $tQ += $d->qty_update; } } @endphp
-                                <td class="text-center font-bold text-primary border-start" style="font-size: 14px;">{{ number_format($tH, 0, ',', '.') }}</td>
-                                <td class="text-center font-bold text-primary" style="font-size: 14px;">{{ $tQ }}</td>
-                            @endforeach
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+                    </tr>
 
-            <!-- 3. SUMMARY METRICS (BELOW TABLE) -->
-            <div class="row g-4 px-2 mt-2">
-                <div class="col-md-6">
-                    <div class="card metric-card">
-                        <div class="metric-header text-start">
-                            <span>REKAPITULASI STOCK KANDANG</span>
-                            <button class="btn-plus-sq" data-bs-toggle="modal" data-bs-target="#modalAddStock"> + </button>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="row g-0">
-                                @forelse($summaryStock as $s)
-                                    <div class="col-6 d-flex justify-content-between align-items-center p-3 border-bottom border-end">
-                                        <div class="d-flex align-items-center">
-                                            <form action="{{ route('rincian-hpp.delete-label', $s->id) }}" method="POST" class="m-0">@csrf @method('DELETE')
-                                                <button class="btn btn-link text-danger p-0 m-0 me-2" onclick="return confirm('Hapus?')"><i class="fas fa-times-circle"></i></button>
-                                            </form>
-                                            <span class="text-xxs font-bold text-secondary text-start">{{ $s->label }}</span>
-                                        </div>
-                                        <input type="text" class="input-metric" value="{{ $s->nilai }}" onchange="saveSummary('stock', '{{ $s->label }}', this.value)">
+                    <!-- MODAL EDIT -->
+                    <div class="modal fade" id="editModal{{ $item->id }}" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <form action="{{ route('rincian-hpp.update', $item->id) }}" method="POST" class="modal-content border-0 shadow-lg" style="border-radius: 24px;">
+                                @csrf @method('PUT')
+                                <div class="modal-body p-4 text-start">
+                                    <h6 class="font-bold text-dark mb-4 text-center uppercase">Update Baris Data</h6>
+                                    <div class="row g-3">
+                                        <div class="col-6"><label class="text-xxs font-bold text-slate-400">TANGGAL</label><input type="date" name="tanggal" class="form-control" value="{{ $item->tanggal->format('Y-m-d') }}"></div>
+                                        <div class="col-6"><label class="text-xxs font-bold text-slate-400">TAG ID</label><input type="text" name="tag" class="form-control" value="{{ $item->tag }}"></div>
+                                        <div class="col-12"><label class="text-xxs font-bold text-slate-400">SUPPLIER</label><input type="text" name="keterangan" class="form-control text-uppercase" value="{{ $item->keterangan }}"></div>
+                                        <div class="col-6"><label class="text-xxs font-bold text-slate-400">JENIS</label><input type="text" name="jenis" class="form-control text-uppercase" value="{{ $item->jenis }}"></div>
+                                        <div class="col-6"><label class="text-xxs font-bold text-slate-400">KLASTER</label><input type="text" name="klaster" class="form-control text-uppercase" value="{{ $item->klaster }}"></div>
+                                        <div class="col-6"><label class="text-xxs font-bold text-slate-400">MODAL</label><input type="number" name="harga_awal" class="form-control" value="{{ (int)$item->harga_awal }}"></div>
+                                        <div class="col-6"><label class="text-xxs font-bold text-slate-400">QTY</label><input type="number" name="qty_awal" class="form-control" value="{{ $item->qty_awal }}"></div>
                                     </div>
-                                @empty
-                                    <div class="p-4 text-center text-slate-400 text-xs italic w-100 text-start">Klik (+) di atas untuk menambah kategori.</div>
-                                @endforelse
-                            </div>
+                                    <div class="mt-4 d-flex gap-2 text-start">
+                                        <button type="button" class="btn btn-light w-100 rounded-pill font-bold" data-bs-dismiss="modal">BATAL</button>
+                                        <button type="submit" class="btn btn-primary w-100 rounded-pill border-0 font-bold shadow py-2" style="background: #3b82f6;">SIMPAN</button>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card metric-card">
-                        <div class="metric-header text-start" style="background:#475569;">
-                            <span>REKAPITULASI KLASTER BANGSALAN</span>
-                            <button class="btn-plus-sq" data-bs-toggle="modal" data-bs-target="#modalAddKlaster"> + </button>
-                        </div>
-                        <div class="card-body p-0">
-                            @forelse($summaryKlaster as $k)
-                                <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                    @endforeach
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="6" class="text-center font-bold py-4 sticky-col sticky-col-id sticky-col-date sticky-col-supplier" style="background: #f8fafc !important; left: 0; z-index: 35;">TOTAL KESELURUHAN</td>
+                        <td class="text-end px-3 font-bold bg-soft-cream" style="background: #fffdf2 !important;">{{ number_format($stok->sum('harga_awal'), 0, ',', '.') }}</td>
+                        <td class="text-center font-bold bg-soft-cream" style="background: #fffdf2 !important;">{{ $stok->sum('qty_awal') }}</td>
+                        @foreach($bulanList as $bulan)
+                            @php $tH = 0; $tQ = 0; foreach($stok as $s) { $d = $s->rincian_bulanan->where('bulan', $bulan)->first(); if($d) { $tH += $d->harga_update; $tQ += $d->qty_update; } } @endphp
+                            <td class="text-center font-bold text-primary border-start" style="font-size: 14px; background: #fff !important;">{{ number_format($tH, 0, ',', '.') }}</td>
+                            <td class="text-center font-bold text-primary" style="font-size: 14px; background: #fff !important;">{{ $tQ }}</td>
+                        @endforeach
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- 3. METRIC CARDS (SIDEBAR DI BAWAH) -->
+        <div class="row g-4 px-2">
+            <div class="col-md-6">
+                <div class="card card-elegant">
+                    <div class="sidebar-header d-flex justify-content-between align-items-center">
+                        <span class="font-bold">STOCK KANDANG</span>
+                        <button class="btn-plus-white" data-bs-toggle="modal" data-bs-target="#modalAddStock"> + </button>
+                    </div>
+                    <div class="card-body p-0 bg-white">
+                        <div class="row g-0">
+                            @forelse($summaryStock as $s)
+                                <div class="col-6 d-flex justify-content-between align-items-center p-3 border-bottom border-end">
                                     <div class="d-flex align-items-center">
-                                        <form action="{{ route('rincian-hpp.delete-label', $k->id) }}" method="POST" class="m-0">@csrf @method('DELETE')
+                                        <form action="{{ route('rincian-hpp.delete-label', $s->id) }}" method="POST" class="m-0">@csrf @method('DELETE')
                                             <button class="btn btn-link text-danger p-0 m-0 me-2" onclick="return confirm('Hapus?')"><i class="fas fa-times-circle"></i></button>
                                         </form>
-                                        <span class="text-xxs font-bold text-secondary text-start">{{ $k->label }}</span>
+                                        <span class="text-xxs font-bold text-secondary text-start">{{ $s->label }}</span>
                                     </div>
-                                    <input type="text" class="input-metric" style="width: 220px;" value="{{ $k->nilai }}" onchange="saveSummary('klaster', '{{ $k->label }}', this.value)">
+                                    <input type="text" class="input-sidebar" value="{{ $s->nilai }}" onchange="saveSummary('stock', '{{ $s->label }}', this.value)">
                                 </div>
                             @empty
-                                <div class="p-4 text-center text-slate-400 text-xs italic w-100 text-start">Klik (+) di atas untuk menambah klaster.</div>
+                                <div class="p-4 text-center text-slate-400 text-xs italic w-100">Klik (+) untuk kategori baru.</div>
                             @endforelse
                         </div>
                     </div>
                 </div>
             </div>
-
-        </div>
-
-        <!-- MODAL TAMBAH BARIS BARU -->
-        <div class="modal fade" id="addModal" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
-                <form action="{{ route('rincian-hpp.store') }}" method="POST" class="modal-content border-0 shadow-lg" style="border-radius: 24px;">
-                    @csrf
-                    <div class="modal-body p-4 text-start">
-                        <h5 class="fw-bold text-primary mb-4 text-center uppercase">Tambah Stok Baru</h5>
-                        <div class="row g-3 text-start text-start">
-                            <div class="col-6"><label class="text-xxs font-bold">TANGGAL</label><input type="date" name="tanggal" class="form-control" value="{{ date('Y-m-d') }}" required></div>
-                            <div class="col-6"><label class="text-xxs font-bold">TAG ID</label><input type="text" name="tag" class="form-control" placeholder="Misal: BB-01"></div>
-                            <div class="col-12"><label class="text-xxs font-bold text-uppercase">Supplier / Keterangan</label><input type="text" name="keterangan" class="form-control text-uppercase" required></div>
-                            <div class="col-6"><label class="text-xxs font-bold text-uppercase">Jenis</label><input type="text" name="jenis" class="form-control text-uppercase" placeholder="Merino" required></div>
-                            <div class="col-6"><label class="text-xxs font-bold text-uppercase">Klaster (Kandang)</label><input type="text" name="klaster" class="form-control text-uppercase" placeholder="Marto" required></div>
-                            <div class="col-6"><label class="text-xxs font-bold text-uppercase">Harga Modal (Rp)</label><input type="number" name="harga_awal" class="form-control" required></div>
-                            <div class="col-6"><label class="text-xxs font-bold text-uppercase">Qty Awal</label><input type="number" name="qty_awal" class="form-control" required></div>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100 rounded-pill shadow mt-4 py-2 font-bold border-0" style="background: var(--primary);">SIMPAN DATA</button>
+            <div class="col-md-6">
+                <div class="card card-elegant">
+                    <div class="sidebar-header d-flex justify-content-between align-items-center" style="background:#475569;">
+                        <span class="font-bold">KLASTER BANGSALAN</span>
+                        <button class="btn-plus-white" data-bs-toggle="modal" data-bs-target="#modalAddKlaster"> + </button>
                     </div>
-                </form>
+                    <div class="card-body p-0 bg-white">
+                        @forelse($summaryKlaster as $k)
+                            <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                                <div class="d-flex align-items-center">
+                                    <form action="{{ route('rincian-hpp.delete-label', $k->id) }}" method="POST" class="m-0">@csrf @method('DELETE')
+                                        <button class="btn btn-link text-danger p-0 m-0 me-2" onclick="return confirm('Hapus?')"><i class="fas fa-times-circle"></i></button>
+                                    </form>
+                                    <span class="text-xxs font-bold text-secondary text-start">{{ $k->label }}</span>
+                                </div>
+                                <input type="text" class="input-sidebar" style="width: 180px;" value="{{ $k->nilai }}" onchange="saveSummary('klaster', '{{ $k->label }}', this.value)">
+                            </div>
+                        @empty
+                            <div class="p-4 text-center text-slate-400 text-xs italic">Klik (+) untuk klaster baru.</div>
+                        @endforelse
+                    </div>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- MODAL TAMBAH LABEL SIDEBAR -->
-        <div class="modal fade" id="modalAddStock" tabindex="-1"><div class="modal-dialog modal-sm modal-dialog-centered"><form action="{{ route('rincian-hpp.add-label') }}" method="POST" class="modal-content border-0 shadow-lg" style="border-radius: 15px;">@csrf <input type="hidden" name="tipe" value="stock"><div class="modal-body p-4 text-center"><h6 class="font-bold text-xs mb-3 uppercase">Tambah Jenis</h6><input type="text" name="label" class="form-control mb-3 text-uppercase" required autofocus><button type="submit" class="btn btn-dark btn-sm w-100 rounded-pill font-bold">TAMBAH</button></div></form></div></div>
-        <div class="modal fade" id="modalAddKlaster" tabindex="-1"><div class="modal-dialog modal-sm modal-dialog-centered"><form action="{{ route('rincian-hpp.add-label') }}" method="POST" class="modal-content border-0 shadow-lg" style="border-radius: 15px;">@csrf <input type="hidden" name="tipe" value="klaster"><div class="modal-body p-4 text-center"><h6 class="font-bold text-xs mb-3 uppercase">Tambah Klaster</h6><input type="text" name="label" class="form-control mb-3 text-uppercase" required autofocus><button type="submit" class="btn btn-secondary btn-sm w-100 rounded-pill font-bold">TAMBAH</button></div></form></div></div>
+    <!-- MODAL TAMBAH BARIS BARU -->
+    <div class="modal fade" id="addModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <form action="{{ route('rincian-hpp.store') }}" method="POST" class="modal-content border-0 shadow-lg" style="border-radius: 24px;">
+                @csrf
+                <div class="modal-body p-4 text-start">
+                    <h5 class="fw-bold text-primary mb-4 text-center uppercase">Tambah Stok Baru</h5>
+                    <div class="row g-3">
+                        <div class="col-6"><label class="text-xxs font-bold">TANGGAL</label><input type="date" name="tanggal" class="form-control" value="{{ date('Y-m-d') }}" required></div>
+                        <div class="col-6"><label class="text-xxs font-bold">TAG ID</label><input type="text" name="tag" class="form-control" placeholder="Misal: BB-01"></div>
+                        <div class="col-12"><label class="text-xxs font-bold text-uppercase">Supplier</label><input type="text" name="keterangan" class="form-control text-uppercase" required></div>
+                        <div class="col-6"><label class="text-xxs font-bold text-uppercase">Jenis</label><input type="text" name="jenis" class="form-control text-uppercase" required></div>
+                        <div class="col-6"><label class="text-xxs font-bold text-uppercase">Klaster</label><input type="text" name="klaster" class="form-control text-uppercase" required></div>
+                        <div class="col-6"><label class="text-xxs font-bold text-uppercase">Harga Modal</label><input type="number" name="harga_awal" class="form-control" required></div>
+                        <div class="col-6"><label class="text-xxs font-bold text-uppercase">Qty</label><input type="number" name="qty_awal" class="form-control" required></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill shadow mt-4 py-2 font-bold border-0" style="background: #3b82f6;">SIMPAN DATA</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-    </main>
+    <!-- MODAL ADD LABEL -->
+    <div class="modal fade" id="modalAddStock" tabindex="-1"><div class="modal-dialog modal-sm modal-dialog-centered"><form action="{{ route('rincian-hpp.add-label') }}" method="POST" class="modal-content border-0 shadow-lg" style="border-radius: 15px;">@csrf <input type="hidden" name="tipe" value="stock"><div class="modal-body p-4 text-center"><h6 class="font-bold text-xs mb-3 uppercase">Tambah Jenis</h6><input type="text" name="label" class="form-control mb-3 text-uppercase" required autofocus><button type="submit" class="btn btn-dark btn-sm w-100 rounded-pill font-bold">TAMBAH</button></div></form></div></div>
+    <div class="modal fade" id="modalAddKlaster" tabindex="-1"><div class="modal-dialog modal-sm modal-dialog-centered"><form action="{{ route('rincian-hpp.add-label') }}" method="POST" class="modal-content border-0 shadow-lg" style="border-radius: 15px;">@csrf <input type="hidden" name="tipe" value="klaster"><div class="modal-body p-4 text-center"><h6 class="font-bold text-xs mb-3 uppercase">Tambah Klaster</h6><input type="text" name="label" class="form-control mb-3 text-uppercase" required autofocus><button type="submit" class="btn btn-secondary btn-sm w-100 rounded-pill font-bold">TAMBAH</button></div></form></div></div>
 
-    <!-- AJAX LOGIC -->
+    <!-- AJAX -->
     <script>
         function updateCell(id, bulan, kolom, nilai) {
-            fetch("{{ route('rincian-hpp.update-cell') }}", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": "{{ csrf_token() }}" },
-                body: JSON.stringify({ id, bulan, kolom, nilai })
-            }).then(res => console.log('Cell Updated'));
+            fetch("{{ route('rincian-hpp.update-cell') }}", { method: "POST", headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": "{{ csrf_token() }}" }, body: JSON.stringify({ id, bulan, kolom, nilai }) });
         }
         function saveSummary(tipe, label, nilai) {
-            fetch("{{ route('rincian-hpp.update-summary') }}", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": "{{ csrf_token() }}" },
-                body: JSON.stringify({ tipe, label, nilai })
-            }).then(res => console.log('Summary Saved'));
+            fetch("{{ route('rincian-hpp.update-summary') }}", { method: "POST", headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": "{{ csrf_token() }}" }, body: JSON.stringify({ tipe, label, nilai }) });
         }
     </script>
+    </main>
 </x-app-layout>
