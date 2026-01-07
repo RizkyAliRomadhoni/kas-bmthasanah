@@ -32,52 +32,42 @@ class KambingRincianHppController extends Controller
     }
 
     /**
-     * TAMBAH BULAN DENGAN LOGIKA AUTO-COPY (CARRY FORWARD)
+     * TAMBAH BARIS BARU DENGAN AUTO-FILL KE SEMUA BULAN
      */
-    public function tambahBulan()
+    public function store(Request $request)
     {
-        // 1. Cari bulan terakhir
-        $terakhir = KambingRincianPeriode::orderBy('bulan', 'desc')->first();
-        $bulanLama = $terakhir->bulan;
-        $bulanBaru = Carbon::parse($bulanLama . "-01")->addMonth()->format('Y-m');
+        $induk = KambingRincianHpp::create([
+            'tanggal' => $request->tanggal,
+            'keterangan' => strtoupper($request->keterangan),
+            'jenis' => strtoupper($request->jenis),
+            'klaster' => strtoupper($request->klaster),
+            'tag' => strtoupper($request->tag),
+            'harga_awal' => $request->harga_awal,
+            'qty_awal' => $request->qty_awal,
+        ]);
 
-        // 2. Simpan bulan baru ke tabel periode
-        KambingRincianPeriode::create(['bulan' => $bulanBaru]);
+        $bulanInput = Carbon::parse($request->tanggal)->format('Y-m');
 
-        // 3. Ambil semua data kambing yang ada
-        $semuaKambing = KambingRincianHpp::all();
+        // Ambil semua periode yang ada di database yang >= bulan input
+        $periodes = KambingRincianPeriode::where('bulan', '>=', $bulanInput)->get();
 
-        foreach ($semuaKambing as $kambing) {
-            // Cari data di bulan sebelumnya
-            $detailLama = KambingRincianHppDetail::where('kambing_rincian_hpp_id', $kambing->id)
-                ->where('bulan', $bulanLama)
-                ->first();
+        // JIKA bulan input belum ada di periode, buat dulu kolomnya
+        if($periodes->where('bulan', $bulanInput)->count() == 0){
+             KambingRincianPeriode::create(['bulan' => $bulanInput]);
+             $periodes = KambingRincianPeriode::where('bulan', '>=', $bulanInput)->get();
+        }
 
-            // Salin datanya ke bulan yang baru (Carry Forward)
+        // AUTO-FILL: Isi setiap kolom bulan yang tersedia untuk baris baru ini
+        foreach ($periodes as $p) {
             KambingRincianHppDetail::create([
-                'kambing_rincian_hpp_id' => $kambing->id,
-                'bulan' => $bulanBaru,
-                'harga_update' => $detailLama ? $detailLama->harga_update : $kambing->harga_awal,
-                'qty_update' => $detailLama ? $detailLama->qty_update : $kambing->qty_awal,
+                'kambing_rincian_hpp_id' => $induk->id,
+                'bulan' => $p->bulan,
+                'harga_update' => $request->harga_awal,
+                'qty_update' => $request->qty_awal,
             ]);
         }
 
-        return back()->with('success', 'Bulan ' . $bulanBaru . ' ditambahkan. Data disalin otomatis dari bulan sebelumnya.');
-    }
-
-    public function store(Request $request)
-    {
-        $induk = KambingRincianHpp::create($request->all());
-        $bulanInput = Carbon::parse($request->tanggal)->format('Y-m');
-        KambingRincianPeriode::firstOrCreate(['bulan' => $bulanInput]);
-        
-        KambingRincianHppDetail::create([
-            'kambing_rincian_hpp_id' => $induk->id,
-            'bulan' => $bulanInput,
-            'harga_update' => $request->harga_awal,
-            'qty_update' => $request->qty_awal,
-        ]);
-        return back()->with('success', 'Baris baru ditambahkan.');
+        return back()->with('success', 'Baris baru berhasil ditambahkan dan otomatis mengisi kolom bulan.');
     }
 
     public function update(Request $request, $id)
@@ -90,7 +80,33 @@ class KambingRincianHppController extends Controller
     public function destroy($id)
     {
         KambingRincianHpp::findOrFail($id)->delete();
-        return back()->with('success', 'Data dihapus.');
+        return back()->with('success', 'Baris data dihapus.');
+    }
+
+    public function tambahBulan()
+    {
+        $terakhir = KambingRincianPeriode::orderBy('bulan', 'desc')->first();
+        $bulanLama = $terakhir->bulan;
+        $bulanBaru = Carbon::parse($bulanLama . "-01")->addMonth()->format('Y-m');
+
+        KambingRincianPeriode::create(['bulan' => $bulanBaru]);
+
+        // Carry forward data dari bulan terakhir ke bulan baru untuk semua baris
+        $semuaKambing = KambingRincianHpp::all();
+        foreach ($semuaKambing as $kambing) {
+            $detailLama = KambingRincianHppDetail::where('kambing_rincian_hpp_id', $kambing->id)
+                ->where('bulan', $bulanLama)
+                ->first();
+
+            KambingRincianHppDetail::create([
+                'kambing_rincian_hpp_id' => $kambing->id,
+                'bulan' => $bulanBaru,
+                'harga_update' => $detailLama ? $detailLama->harga_update : $kambing->harga_awal,
+                'qty_update' => $detailLama ? $detailLama->qty_update : $kambing->qty_awal,
+            ]);
+        }
+
+        return back()->with('success', 'Kolom bulan baru ditambahkan.');
     }
 
     public function updateCell(Request $request)
