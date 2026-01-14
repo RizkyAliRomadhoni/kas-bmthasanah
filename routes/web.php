@@ -75,12 +75,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/penjualan', [PenjualanController::class, 'index'])->name('penjualan.index');
         Route::post('/penjualan', [PenjualanController::class, 'store'])->name('penjualan.store');
 
-        // RINCIAN KAMBING (MODUL LAMA)
-        Route::get('/rincian-kambing', [RincianKambingController::class, 'index'])->name('rincian-kambing.index');
-        Route::post('/rincian-kambing/store-hpp', [RincianKambingController::class, 'storeHpp'])->name('rincian-kambing.storeHpp');
-        Route::post('/rincian-kambing/store-mati', [RincianKambingController::class, 'storeMati'])->name('rincian-kambing.storeMati');
-        Route::get('/rincian-kambing/del-hpp/{id}', [RincianKambingController::class, 'destroyHpp'])->name('rincian-kambing.deleteHpp');
-        Route::get('/rincian-kambing/del-mati/{id}', [RincianKambingController::class, 'destroyMati'])->name('rincian-kambing.deleteMati');
     });
   // KAS (GLOBAL)
     Route::prefix('kas')->name('kas.')->group(function () {
@@ -156,4 +150,19 @@ Route::middleware('auth')->group(function () {
     // TEMPLATE PAGES (KEEP IF NEEDED)
     Route::get('/tables', fn() => view('tables'))->name('tables');
     Route::get('/wallet', fn() => view('wallet'))->name('wallet');
+});
+
+
+Route::middleware(['auth'])->group(function () {
+
+    // Modul Rincian Kambing
+    Route::get('/neraca/rincian-kambing', [RincianKambingController::class, 'index'])->name('rincian-kambing.index');
+    
+    // Pastikan NAMA (name) sama persis dengan yang dipanggil di Blade
+    Route::post('/neraca/rincian-kambing/store-hpp', [RincianKambingController::class, 'storeHpp'])->name('rincian-kambing.storeHpp');
+    
+    Route::post('/neraca/rincian-kambing/store-mati', [RincianKambingController::class, 'storeMati'])->name('rincian-kambing.storeMati');
+    Route::get('/neraca/rincian-kambing/del-hpp/{id}', [RincianKambingController::class, 'destroyHpp'])->name('rincian-kambing.deleteHpp');
+    Route::get('/neraca/rincian-kambing/del-mati/{id}', [RincianKambingController::class, 'destroyMati'])->name('rincian-kambing.deleteMati');
+
 });
