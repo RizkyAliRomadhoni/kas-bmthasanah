@@ -48,18 +48,7 @@ Route::middleware('guest')->group(function () {
 });
 
 
-Route::middleware(['auth'])->group(function () {
-    
-    // --- MODUL RINCIAN KAMBING (HPP & MATI) ---
-    Route::get('/neraca/rincian-kambing', [RincianKambingController::class, 'index'])->name('rincian-kambing.index');
-    Route::post('/neraca/rincian-kambing/store-hpp', [RincianKambingController::class, 'storeHpp'])->name('rincian-kambing.storeHpp');
-    Route::post('/neraca/rincian-kambing/store-mati', [RincianKambingController::class, 'storeMati'])->name('rincian-kambing.storeMati');
-    
-    // Gunakan Route GET untuk menghapus jika Anda menggunakan link <a> biasa di Blade
-    Route::get('/neraca/rincian-kambing/del-hpp/{id}', [RincianKambingController::class, 'destroyHpp'])->name('rincian-kambing.deleteHpp');
-    Route::get('/neraca/rincian-kambing/del-mati/{id}', [RincianKambingController::class, 'destroyMati'])->name('rincian-kambing.deleteMati');
 
-});
 
 // =====================================================================
 // 2. PROTECTED ROUTES (HANYA USER LOGIN)
