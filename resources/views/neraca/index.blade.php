@@ -129,7 +129,7 @@
 
             <!-- 4. MENU NAVIGASI (LENGKAP SEMUA MODUL) -->
             <div class="nav-container text-start">
-                 <a href="{{ route('neraca.rincian-kambing.index') }}" class="btn-nav shadow-sm"><i class="fas fa-sheep text-dark"></i> rincian kambing</a>
+                 <a href="{{ route('rincian-kambing.index') }}" class="btn-nav shadow-sm"><i class="fas fa-sheep text-dark"></i> rincian kambing</a>
                 <a href="{{ route('rincian-hpp.index') }}" class="btn-nav shadow-sm text-primary"><i class="fas fa-calculator"></i> detail transaksi kambing</a>
                 <a href="{{ route('pakan.index') }}" class="btn-nav shadow-sm text-warning"><i class="fas fa-utensils"></i> Pakan</a>
                 <a href="{{ route('kandang.index') }}" class="btn-nav shadow-sm text-info"><i class="fas fa-warehouse"></i> Kandang</a>
