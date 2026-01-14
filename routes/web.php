@@ -101,6 +101,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/update-summary', [KambingRincianHppController::class, 'updateSummary'])->name('update-summary');
         Route::post('/add-label', [KambingRincianHppController::class, 'addSummaryLabel'])->name('add-label');
         Route::delete('/delete-label/{id}', [KambingRincianHppController::class, 'deleteSummaryLabel'])->name('delete-label');
+        // 🔹 INI YANG HARUS ADA (Route untuk memecah baris)
+        Route::post('/split/{id}', [KambingRincianHppController::class, 'splitRow'])->name('split');
+    
     });
 
     // KELOLA AKUN OPERASIONAL (SUB-MENU)
