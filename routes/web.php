@@ -73,17 +73,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/penjualan', [PenjualanController::class, 'index'])->name('penjualan.index');
         Route::post('/penjualan', [PenjualanController::class, 'store'])->name('penjualan.store');
 
-         // --- MODUL RINCIAN KAMBING (HPP & MATI) ---
-    Route::get('/neraca/rincian-kambing', [RincianKambingController::class, 'index'])->name('rincian-kambing.index');
-    Route::post('/neraca/rincian-kambing/store-hpp', [RincianKambingController::class, 'storeHpp'])->name('rincian-kambing.storeHpp');
-    Route::post('/neraca/rincian-kambing/store-mati', [RincianKambingController::class, 'storeMati'])->name('rincian-kambing.storeMati');
-    
-    // Gunakan Route GET untuk menghapus jika Anda menggunakan link <a> biasa di Blade
-    Route::get('/neraca/rincian-kambing/del-hpp/{id}', [RincianKambingController::class, 'destroyHpp'])->name('rincian-kambing.deleteHpp');
-    Route::get('/neraca/rincian-kambing/del-mati/{id}', [RincianKambingController::class, 'destroyMati'])->name('rincian-kambing.deleteMati');
+        // RINCIAN KAMBING (MODUL LAMA)
+        Route::get('/rincian-kambing', [RincianKambingController::class, 'index'])->name('rincian-kambing.index');
+        Route::post('/rincian-kambing/store-hpp', [RincianKambingController::class, 'storeHpp'])->name('rincian-kambing.storeHpp');
+        Route::post('/rincian-kambing/store-mati', [RincianKambingController::class, 'storeMati'])->name('rincian-kambing.storeMati');
+        Route::get('/rincian-kambing/del-hpp/{id}', [RincianKambingController::class, 'destroyHpp'])->name('rincian-kambing.deleteHpp');
+        Route::get('/rincian-kambing/del-mati/{id}', [RincianKambingController::class, 'destroyMati'])->name('rincian-kambing.deleteMati');
     });
-
-    // KAS (GLOBAL)
+  // KAS (GLOBAL)
     Route::prefix('kas')->name('kas.')->group(function () {
         Route::get('/', [KasController::class, 'index'])->name('index');
         Route::get('/create', [KasController::class, 'create'])->name('create');
