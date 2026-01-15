@@ -141,6 +141,13 @@
                 <a href="{{ route('hutang.index') }}" class="btn-nav shadow-sm text-danger"><i class="fas fa-credit-card"></i> Hutang</a>
             </div>
 
+
+            <!-- 5. TABEL NERACA (STIKCY & PROFESIONAL) -->
+
+            <div class="card card-pro overflow-hidden border-0 shadow-sm">
+                <div class="table-wrapper">
+                    <table class="table-neraca text-center mb-0">
+                        
              <form action="{{ route('neraca.destroyMonth', $bulan) }}" method="POST" onsubmit="return confirm('Hapus data manual bulan ini?')">
                         @csrf
                         @method('DELETE')
@@ -148,12 +155,8 @@
                             <i class="fa fa-trash"></i> Hapus
                         </button>
                     </form>
-
-            <!-- 5. TABEL NERACA (STIKCY & PROFESIONAL) -->
-            <div class="card card-pro overflow-hidden border-0 shadow-sm">
-                <div class="table-wrapper">
-                    <table class="table-neraca text-center mb-0">
                         <thead>
+
                             <tr>
                                 <th class="sticky-column text-start ps-4">Klasifikasi Akun Laporan</th>
                                 <th style="min-width: 120px;">Saldo Awal</th>
