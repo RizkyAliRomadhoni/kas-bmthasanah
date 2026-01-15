@@ -11,19 +11,28 @@ use App\Models\PakanDetail;
 use App\Models\LabaRugiManual;
 use App\Models\NeracaAccount;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class NeracaController extends Controller
 {
     public function index()
     {
-        // 1. Ambil List Bulan Unik
-        $bulanKas = Kas::selectRaw("DATE_FORMAT(tanggal,'%Y-%m') as bulan")->pluck('bulan');
-        $bulanJual = Penjualan::selectRaw("DATE_FORMAT(tanggal,'%Y-%m') as bulan")->pluck('bulan');
-        $bulanMati = KambingMati::selectRaw("DATE_FORMAT(tanggal,'%Y-%m') as bulan")->pluck('bulan');
+        // 1. Ambil List Bulan Unik dengan proteksi null
+        $bulanKas = Kas::whereNotNull('tanggal')->selectRaw("DATE_FORMAT(tanggal,'%Y-%m') as bulan")->pluck('bulan');
+        $bulanJual = Penjualan::whereNotNull('tanggal')->selectRaw("DATE_FORMAT(tanggal,'%Y-%m') as bulan")->pluck('bulan');
+        $bulanMati = KambingMati::whereNotNull('tanggal')->selectRaw("DATE_FORMAT(tanggal,'%Y-%m') as bulan")->pluck('bulan');
         $bulanManual = LabaRugiManual::pluck('bulan'); 
-        $bulanList = collect($bulanKas)->merge($bulanJual)->merge($bulanMati)->merge($bulanManual)->unique()->sort()->values();
+        
+        $bulanList = collect($bulanKas)
+            ->merge($bulanJual)
+            ->merge($bulanMati)
+            ->merge($bulanManual)
+            ->filter() // Menghapus nilai null
+            ->unique()
+            ->sort()
+            ->values();
 
-        // 2. Inisialisasi Akun Default jika database kosong
+        // 2. Inisialisasi Akun Default
         if (NeracaAccount::count() == 0) {
             $defaults = [
                 ['nama_akun' => 'Kas', 'tipe' => 'Aktiva'],
@@ -43,13 +52,17 @@ class NeracaController extends Controller
         $akunAktiva = NeracaAccount::where('tipe', 'Aktiva')->pluck('nama_akun')->toArray();
         $akunPasiva = NeracaAccount::where('tipe', 'Pasiva')->pluck('nama_akun')->toArray();
 
-        // 3. Persiapan Data
         $manualLR = LabaRugiManual::all()->groupBy('bulan');
         $saldo = []; $sisaSaldo = []; $labaRugiKumulatif = []; $totalLabaBerjalan = 0;
         $chartLabels = []; $chartDataAset = []; $chartDataLaba = [];
 
         foreach ($bulanList as $bulan) {
-            $akhirBulan = Carbon::createFromFormat('Y-m', $bulan)->endOfMonth();
+            try {
+                $akhirBulan = Carbon::createFromFormat('Y-m', $bulan)->endOfMonth();
+            } catch (\Exception $e) {
+                continue; // Lewati jika format bulan rusak
+            }
+
             $chartLabels[] = Carbon::parse($bulan)->translatedFormat('M y');
 
             // Saldo Kas Riil
@@ -58,8 +71,9 @@ class NeracaController extends Controller
             // Hitung Aktiva
             $totalAktivaBulan = 0;
             foreach ($akunAktiva as $akun) {
-                if ($akun === 'Kas') { $val = $sisaSaldo[$bulan]; }
-                elseif ($akun === 'Kambing') {
+                if ($akun === 'Kas') { 
+                    $val = $sisaSaldo[$bulan]; 
+                } elseif ($akun === 'Kambing') {
                     $val = KambingRincianHppDetail::where('bulan', $bulan)->selectRaw('SUM(harga_update * qty_update) as total')->value('total') ?? 0;
                 } elseif ($akun === 'Piutang') {
                     $in = Kas::where('akun', 'Piutang')->where('jenis_transaksi', 'Masuk')->where('tanggal', '<=', $akhirBulan)->sum('jumlah');
@@ -84,8 +98,9 @@ class NeracaController extends Controller
                 }
             }
 
-            // Hitung Laba Rugi Akumulasi
+            // Hitung Laba Rugi
             $getM = fn($kat, $oto) => (($m = ($manualLR[$bulan] ?? collect())->where('kategori', $kat)->first()) && $m->nilai != 0) ? $m->nilai : $oto;
+            
             $untungJual = Penjualan::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])->sum('laba');
             $untungPakan = PakanDetail::whereHas('kas', fn($q) => $q->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan]))->get()->sum(fn($q) => ($q->harga_jual_kg - $q->harga_kg) * $q->qty_kg);
             $bebanMati = KambingMati::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])->sum('harga');
@@ -98,6 +113,18 @@ class NeracaController extends Controller
 
         $latestMonth = $bulanList->last();
         return view('neraca.index', compact('bulanList','akunAktiva','akunPasiva','saldo','sisaSaldo','labaRugiKumulatif','chartLabels','chartDataAset','chartDataLaba','latestMonth'));
+    }
+
+    // Fungsi Baru: Menghapus data manual pada bulan tertentu
+    public function destroyMonth($bulan)
+    {
+        // Menghapus data di LabaRugiManual untuk bulan tersebut
+        LabaRugiManual::where('bulan', $bulan)->delete();
+
+        // Jika Anda juga ingin menghapus transaksi KAS pada bulan itu (Hati-hati!)
+        // Kas::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])->delete();
+
+        return back()->with('success', "Data manual bulan $bulan berhasil dihapus.");
     }
 
     public function addAccount(Request $request)

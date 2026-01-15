@@ -64,6 +64,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [NeracaController::class, 'index'])->name('index');
         Route::get('/tabel', [NeracaController::class, 'neracaTabel'])->name('tabel');
         Route::post('/add-account', [NeracaController::class, 'addAccount'])->name('add-account');
+        Route::delete('/neraca/bulan/{bulan}', [NeracaController::class, 'destroyMonth'])->name('neraca.destroyMonth');
         
         // LABA RUGI
         Route::get('/laba-rugi', [LabaRugiController::class, 'index'])->name('laba-rugi');

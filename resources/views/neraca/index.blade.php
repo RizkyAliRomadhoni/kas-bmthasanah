@@ -141,6 +141,14 @@
                 <a href="{{ route('hutang.index') }}" class="btn-nav shadow-sm text-danger"><i class="fas fa-credit-card"></i> Hutang</a>
             </div>
 
+             <form action="{{ route('neraca.destroyMonth', $bulan) }}" method="POST" onsubmit="return confirm('Hapus data manual bulan ini?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-xs btn-danger" style="font-size: 10px; padding: 0 5px;">
+                            <i class="fa fa-trash"></i> Hapus
+                        </button>
+                    </form>
+
             <!-- 5. TABEL NERACA (STIKCY & PROFESIONAL) -->
             <div class="card card-pro overflow-hidden border-0 shadow-sm">
                 <div class="table-wrapper">
