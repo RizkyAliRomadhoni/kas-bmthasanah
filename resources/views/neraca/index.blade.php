@@ -148,13 +148,7 @@
                 <div class="table-wrapper">
                     <table class="table-neraca text-center mb-0">
                         
-             <form action="{{ route('neraca.destroyMonth', $bulan) }}" method="POST" onsubmit="return confirm('Hapus data manual bulan ini?')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-xs btn-danger" style="font-size: 10px; padding: 0 5px;">
-                            <i class="fa fa-trash"></i> Hapus
-                        </button>
-                    </form>
+             
                         <thead>
 
                             <tr>
